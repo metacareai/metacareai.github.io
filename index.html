@@ -1,0 +1,1226 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#1A2F4C">
+<title>스마트 메타케어</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --navy:#1A2F4C;--teal:#2A7B7B;--tl:#E1F5EE;--tld:#0F6E56;
+  --cream:#F5F4F2;--gold:#C8A96E;--warn:#BA7517;--wb:#FAEEDA;
+  --bd:rgba(0,0,0,.12);--wh:#fff;--r:16px;--rs:12px;
+  --tx:#1A2F4C;--mu:#6B7280;
+  /* 노인 친화: 큰 폰트 기준 */
+  --fs-xl:24px;--fs-lg:20px;--fs-md:18px;--fs-sm:16px;--fs-xs:14px;
+}
+html,body{height:100%;overflow:hidden;}
+body{font-family:'Noto Sans KR',-apple-system,sans-serif;background:var(--navy);-webkit-tap-highlight-color:transparent;font-size:18px;}
+.app{width:100%;height:100%;background:var(--cream);display:flex;flex-direction:column;overflow:hidden;max-width:480px;margin:0 auto;position:relative;}
+
+/* ── API 설정 화면 ── */
+#setup-screen{position:fixed;inset:0;background:var(--navy);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px;gap:20px;}
+#setup-screen.hidden{display:none;}
+.setup-logo{font-size:60px;margin-bottom:10px;}
+.setup-title{color:#fff;font-size:28px;font-weight:900;text-align:center;}
+.setup-sub{color:rgba(255,255,255,.65);font-size:17px;text-align:center;line-height:1.7;}
+.setup-input{width:100%;padding:18px 20px;border:2px solid rgba(255,255,255,.25);border-radius:14px;background:rgba(255,255,255,.1);color:#fff;font-size:17px;font-family:inherit;outline:none;}
+.setup-input::placeholder{color:rgba(255,255,255,.4);}
+.setup-input:focus{border-color:var(--teal);}
+.setup-btn{width:100%;padding:20px;background:var(--teal);color:#fff;border:none;border-radius:14px;font-size:20px;font-weight:700;cursor:pointer;font-family:inherit;}
+.setup-btn:active{opacity:.85;}
+
+/* ── 헤더 ── */
+.topbar{background:var(--navy);padding:14px 20px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;min-height:70px;}
+.tb-title{color:#fff;font-size:24px;font-weight:700;}
+.tb-sub{color:rgba(255,255,255,.55);font-size:15px;margin-top:3px;}
+.tb-badge{background:var(--teal);color:#fff;font-size:15px;padding:8px 16px;border-radius:20px;font-weight:700;white-space:nowrap;}
+
+/* ── 음성 버튼 (항상 고정) ── */
+.voice-fab{
+  position:fixed;bottom:calc(env(safe-area-inset-bottom,0px) + 88px);
+  right:20px;width:76px;height:76px;
+  border-radius:50%;border:none;cursor:pointer;z-index:300;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:var(--teal);box-shadow:0 6px 24px rgba(42,123,123,.55);
+  transition:all .2s;-webkit-appearance:none;
+}
+.voice-fab i{font-size:34px;color:#fff;}
+.voice-fab.listening{background:#c0392b;box-shadow:0 6px 24px rgba(192,57,43,.6);animation:vfab-pulse 1s infinite;}
+.voice-fab.thinking{background:var(--gold);box-shadow:0 6px 24px rgba(200,169,110,.5);}
+.voice-fab.speaking{background:#1976D2;box-shadow:0 6px 24px rgba(25,118,210,.5);}
+@keyframes vfab-pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.08);}}
+
+/* ── 음성 상태 바 ── */
+.voice-bar{
+  position:fixed;top:70px;left:50%;transform:translateX(-50%);
+  width:calc(100% - 40px);max-width:440px;
+  background:var(--navy);color:#fff;border-radius:14px;
+  padding:14px 20px;font-size:17px;font-weight:600;
+  z-index:250;display:none;align-items:center;gap:12px;
+  box-shadow:0 4px 20px rgba(0,0,0,.3);
+}
+.voice-bar.show{display:flex;}
+.voice-bar-dot{width:12px;height:12px;border-radius:50%;background:#c0392b;flex-shrink:0;animation:vfab-pulse 1s infinite;}
+.voice-bar-dot.think{background:var(--gold);animation:spin .8s linear infinite;}
+.voice-bar-dot.speak{background:#1976D2;animation:none;}
+@keyframes spin{to{transform:rotate(360deg);border-radius:2px;}}
+
+/* ── 페이지 ── */
+.pages{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:86px;}
+.page{display:none;padding:20px;flex-direction:column;gap:18px;}
+.page.active{display:flex;}
+#pg-chat{padding:0;display:none;flex-direction:column;}
+#pg-chat.active{display:flex;}
+
+/* ── 공통 ── */
+.sl{font-size:20px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:8px;}
+.sl i{color:var(--teal);font-size:22px;}
+.card{background:var(--wh);border:1px solid var(--bd);border-radius:var(--r);padding:20px 22px;}
+.divider{height:1px;background:var(--bd);}
+
+/* ── 홈 ── */
+.cam-banner{background:linear-gradient(135deg,#2A7B7B,#1A5C5C);border-radius:var(--r);padding:24px 22px;display:flex;align-items:center;gap:18px;cursor:pointer;position:relative;overflow:hidden;border:none;width:100%;text-align:left;-webkit-appearance:none;}
+.cam-banner:active{opacity:.88;}
+.cam-banner-icon{width:70px;height:70px;border-radius:50%;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.cam-banner-icon i{font-size:36px;color:#fff;}
+.cam-banner-ttl{color:#fff;font-size:22px;font-weight:700;margin-bottom:6px;}
+.cam-banner-sub{color:rgba(255,255,255,.8);font-size:16px;line-height:1.5;}
+.cam-banner-arr{color:rgba(255,255,255,.6);font-size:28px;flex-shrink:0;}
+.stat-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.sc{background:var(--wh);border:1px solid var(--bd);border-radius:var(--r);padding:20px;text-align:center;}
+.slb{font-size:16px;color:var(--mu);margin-bottom:8px;}
+.sv{font-size:30px;font-weight:700;color:var(--navy);}
+.sv.g{color:var(--tld);}
+.photo-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
+.pg-item{aspect-ratio:1;border-radius:10px;overflow:hidden;cursor:pointer;background:#d5d3cf;position:relative;}
+.pg-item img{width:100%;height:100%;object-fit:cover;display:block;}
+.ph-tag{position:absolute;bottom:4px;left:4px;background:rgba(26,47,76,.75);color:#fff;font-size:12px;padding:3px 7px;border-radius:5px;}
+.pg-empty{aspect-ratio:1;border-radius:10px;border:2px dashed #c8c5be;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:#b0aba0;font-size:13px;cursor:pointer;}
+.pg-empty i{font-size:24px;}
+.tip-box{background:var(--wb);border-left:4px solid var(--gold);border-radius:12px;padding:16px 18px;font-size:17px;color:var(--warn);line-height:1.7;}
+.tip-lbl{font-size:13px;font-weight:700;color:var(--gold);margin-bottom:6px;}
+
+/* ── 기록 탭 ── */
+.preview-area{border-radius:var(--r);overflow:hidden;position:relative;}
+.preview-area img{width:100%;display:block;max-height:320px;object-fit:cover;}
+.preview-retake{position:absolute;bottom:12px;right:12px;background:rgba(26,47,76,.85);color:#fff;font-size:15px;padding:11px 18px;border-radius:22px;border:none;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:7px;}
+.type-toggle{display:flex;gap:10px;}
+.tbtn{flex:1;padding:16px;border:2px solid var(--bd);border-radius:12px;background:var(--wh);font-size:18px;font-weight:600;color:var(--mu);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;font-family:inherit;}
+.tbtn.food.active{border-color:var(--teal);background:var(--tl);color:var(--tld);}
+.tbtn.ex.active{border-color:#E67E22;background:#FEF3E2;color:#A04000;}
+.fi{width:100%;border:1.5px solid var(--bd);border-radius:12px;padding:15px 18px;font-size:18px;font-family:inherit;outline:none;background:var(--wh);color:var(--tx);}
+.fi:focus{border-color:var(--teal);}
+.big-btn{background:var(--teal);color:#fff;border:none;border-radius:14px;padding:18px;font-size:19px;font-weight:700;width:100%;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:10px;}
+.big-btn:active{opacity:.88;}
+.fb-box{background:var(--tl);border-radius:14px;padding:18px;font-size:17px;color:var(--tx);line-height:1.8;}
+
+/* ── 기록장 ── */
+.xl-toolbar{display:flex;align-items:center;justify-content:space-between;}
+.autosave-badge{background:var(--tl);color:var(--tld);font-size:14px;font-weight:600;padding:7px 14px;border-radius:20px;display:flex;align-items:center;gap:6px;opacity:0;transition:opacity .3s;}
+.autosave-badge.show{opacity:1;}
+.xl-empty{text-align:center;padding:50px 20px;color:var(--mu);font-size:18px;line-height:2;}
+.xl-empty i{font-size:48px;color:#ccc;display:block;margin-bottom:12px;}
+.xl-actions{display:flex;gap:12px;}
+.xl-btn{flex:1;padding:16px;border:none;border-radius:14px;font-size:18px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;}
+.xl-btn.add{background:var(--teal);color:#fff;}
+.xl-btn.save{background:var(--navy);color:#fff;}
+.xl-btn:active{opacity:.85;}
+.day-card{background:var(--wh);border:1px solid var(--bd);border-radius:var(--r);overflow:hidden;margin-bottom:16px;}
+.day-hd{background:var(--navy);padding:14px 18px;display:flex;align-items:center;gap:10px;}
+.day-date{background:transparent;border:none;color:#fff;font-size:18px;font-weight:600;flex:1;font-family:inherit;outline:none;}
+.day-date::placeholder{color:rgba(255,255,255,.4);}
+.day-del{background:rgba(255,255,255,.12);border:none;color:rgba(255,255,255,.7);width:38px;height:38px;border-radius:9px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.meal-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--bd);}
+.meal-slot{position:relative;background:var(--wh);}
+.meal-slot-lbl{display:block;font-size:14px;font-weight:700;padding:9px 10px 4px;text-align:center;}
+.meal-slot-lbl.am{color:#2A7B7B;}.meal-slot-lbl.pm{color:#1976D2;}.meal-slot-lbl.ev{color:#7B4A2A;}
+.meal-photo-empty{padding:12px 8px 14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;color:#bbb;font-size:13px;min-height:100px;}
+.meal-photo-empty i{font-size:30px;}
+.meal-photo-empty:active{background:#f5f5f5;}
+.meal-photo-filled{position:relative;cursor:pointer;}
+.meal-photo-filled img{width:100%;aspect-ratio:1;object-fit:cover;display:block;}
+.meal-photo-retake{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.5);color:#fff;font-size:12px;text-align:center;padding:6px 0;display:flex;align-items:center;justify-content:center;gap:4px;}
+.steps-row{display:flex;align-items:center;gap:12px;padding:14px 16px;border-top:1px solid #f0f0f0;}
+.steps-lbl{font-size:16px;font-weight:600;color:var(--mu);white-space:nowrap;display:flex;align-items:center;gap:6px;}
+.steps-in{flex:1;border:1.5px solid var(--bd);border-radius:10px;padding:11px 14px;font-size:18px;font-family:inherit;outline:none;}
+.steps-in:focus{border-color:var(--teal);}
+
+/* ── 추천 ── */
+.rec-card{background:var(--wh);border:1px solid var(--bd);border-radius:var(--r);padding:20px 22px;display:flex;gap:16px;align-items:flex-start;}
+.rec-icon{width:52px;height:52px;border-radius:14px;background:var(--tl);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.rec-icon i{font-size:26px;color:var(--teal);}
+.rec-ttl{font-size:18px;font-weight:700;color:var(--tx);margin-bottom:6px;}
+.rec-sub{font-size:15px;color:var(--mu);line-height:1.6;}
+.rec-badge{display:inline-block;background:var(--tl);color:var(--tld);font-size:13px;font-weight:700;padding:5px 12px;border-radius:20px;margin-top:8px;}
+
+/* ── 코치 ── */
+.chat-wrap{display:flex;flex-direction:column;height:100%;}
+.chat-scroll{flex:1;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:14px;-webkit-overflow-scrolling:touch;}
+.bub-wu{display:flex;justify-content:flex-end;}
+.bub{max-width:80%;padding:14px 18px;border-radius:20px;font-size:18px;line-height:1.7;}
+.bub.user{background:var(--navy);color:#fff;border-bottom-right-radius:4px;}
+.bub.ai{background:var(--wh);border:1px solid var(--bd);color:var(--tx);border-bottom-left-radius:4px;}
+.bub-lbl{font-size:14px;font-weight:700;color:var(--teal);margin-bottom:6px;}
+.dots span{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--teal);margin:0 2px;animation:dot .9s infinite alternate;}
+.dots span:nth-child(2){animation-delay:.3s;}.dots span:nth-child(3){animation-delay:.6s;}
+@keyframes dot{from{opacity:.3;transform:translateY(0)}to{opacity:1;transform:translateY(-5px)}}
+.qbtns{display:flex;flex-direction:column;gap:10px;}
+.qbtn{background:var(--tl);border:none;border-radius:12px;padding:14px 16px;font-size:17px;color:var(--tld);font-weight:600;cursor:pointer;font-family:inherit;text-align:left;display:flex;align-items:center;gap:10px;}
+.qbtn i{font-size:20px;}
+.chat-bar{padding:14px 16px;background:var(--wh);border-top:1px solid var(--bd);display:flex;gap:10px;flex-shrink:0;}
+.chat-bar input{flex:1;border:1.5px solid var(--bd);border-radius:12px;padding:14px 16px;font-size:18px;font-family:inherit;outline:none;}
+.chat-bar input:focus{border-color:var(--teal);}
+.send-btn{background:var(--teal);border:none;border-radius:12px;width:52px;height:52px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
+.send-btn i{font-size:24px;color:#fff;}
+
+/* ── 내비 ── */
+.bnav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--wh);border-top:1px solid var(--bd);display:flex;z-index:100;padding-bottom:env(safe-area-inset-bottom,0px);}
+.nb{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:11px 0 10px;gap:4px;cursor:pointer;color:#aaa;font-size:12px;font-weight:600;border:none;background:none;font-family:inherit;}
+.nb i{font-size:26px;}
+.nb.active{color:var(--teal);}
+
+/* ── 바텀시트 ── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:400;display:none;align-items:flex-end;justify-content:center;}
+.overlay.open{display:flex;}
+.sheet{background:var(--wh);border-radius:24px 24px 0 0;width:100%;max-width:480px;padding:24px 22px 36px;}
+.sheet-title{font-size:18px;font-weight:700;color:var(--mu);text-align:center;margin-bottom:20px;}
+.sheet-btn{width:100%;padding:20px;border:none;background:#f6f4f1;border-radius:14px;font-size:19px;font-weight:700;color:var(--tx);cursor:pointer;display:flex;align-items:center;gap:16px;margin-bottom:12px;font-family:inherit;}
+.sheet-btn i{font-size:28px;color:var(--teal);}
+.sheet-btn:active{background:#eceae6;}
+.sheet-cancel{width:100%;padding:17px;border:none;background:#f0eee9;border-radius:14px;font-size:17px;color:var(--mu);cursor:pointer;font-family:inherit;margin-top:6px;}
+
+/* ── 뷰어 ── */
+.viewer{position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:500;display:none;flex-direction:column;align-items:center;justify-content:center;}
+.viewer.open{display:flex;}
+.viewer-img-wrap{display:flex;align-items:center;justify-content:center;width:100%;flex:1;}
+.viewer-img-wrap img{max-width:92vw;max-height:68vh;object-fit:contain;border-radius:10px;transition:transform .25s;}
+.viewer-btns{display:flex;gap:12px;padding:20px 16px;flex-wrap:wrap;justify-content:center;}
+.vbtn{padding:13px 20px;border-radius:14px;border:none;font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;font-family:inherit;}
+.vbtn i{font-size:22px;}
+.vbtn.rot{background:#2c2c2c;color:#fff;}
+.vbtn.change{background:var(--teal);color:#fff;}
+.vbtn.del{background:#c0392b;color:#fff;}
+.vbtn.close{background:#444;color:#fff;}
+
+/* ── 토스트 ── */
+.toast{position:fixed;bottom:96px;left:50%;transform:translateX(-50%);background:rgba(26,47,76,.95);color:#fff;padding:14px 26px;border-radius:32px;font-size:17px;font-weight:600;z-index:999;opacity:0;pointer-events:none;transition:opacity .3s;white-space:nowrap;}
+.toast.show{opacity:1;}
+
+/* ── 음성 도움말 카드 (홈) ── */
+.voice-help{background:linear-gradient(135deg,#1A2F4C,#2A4A6C);border-radius:var(--r);padding:20px 22px;color:#fff;}
+.voice-help-title{font-size:18px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.voice-help-title i{color:var(--teal);font-size:22px;}
+.voice-cmd{display:flex;flex-direction:column;gap:8px;}
+.vcmd{background:rgba(255,255,255,.1);border-radius:10px;padding:12px 16px;font-size:16px;color:rgba(255,255,255,.9);display:flex;align-items:center;gap:10px;}
+.vcmd i{color:var(--teal);font-size:18px;flex-shrink:0;}
+</style>
+</head>
+<body>
+
+<!-- ── API 설정 화면 ── -->
+<div id="setup-screen">
+  <div class="setup-logo">🧬</div>
+  <div class="setup-title">스마트 메타케어</div>
+  <div class="setup-sub">처음 한 번만 설정하면<br>다음부터는 바로 시작됩니다</div>
+  <input class="setup-input" type="password" id="oai-key-input" placeholder="OpenAI API 키를 입력하세요 (sk-...)">
+  <input class="setup-input" type="password" id="ant-key-input" placeholder="Anthropic API 키를 입력하세요 (sk-ant-...)">
+  <input class="setup-input" type="password" id="el-key-input" placeholder="ElevenLabs API 키를 입력하세요 (sk_...)">
+  <button class="setup-btn" onclick="saveKeys()">시작하기 →</button>
+</div>
+
+<div class="app">
+
+<!-- ── 헤더 ── -->
+<div class="topbar">
+  <div>
+    <div class="tb-title">스마트 메타케어</div>
+    <div class="tb-sub">케토 식단 관리</div>
+  </div>
+  <span class="tb-badge">케톤 최적 중</span>
+</div>
+
+<!-- ── 음성 상태 바 ── -->
+<div class="voice-bar" id="voice-bar">
+  <div class="voice-bar-dot" id="voice-dot"></div>
+  <span id="voice-bar-text">듣고 있어요...</span>
+</div>
+
+<!-- ── 페이지 ── -->
+<div class="pages" id="pages">
+
+<!-- 홈 -->
+<div id="pg-home" class="page active">
+  <div style="display:flex;justify-content:space-between;align-items:flex-end;">
+    <div>
+      <div style="font-size:26px;font-weight:700;color:var(--navy);">안녕하세요!</div>
+      <div style="font-size:16px;color:var(--mu);margin-top:5px;">인슐린 통제 대사 모드</div>
+    </div>
+    <div style="text-align:right;">
+      <div style="font-size:14px;color:var(--mu);">연속 케토</div>
+      <div style="font-size:30px;font-weight:700;color:var(--tld);">14일</div>
+    </div>
+  </div>
+  <button class="cam-banner" onclick="goPage('excel')">
+    <div class="cam-banner-icon"><i class="ti ti-camera"></i></div>
+    <div style="flex:1;">
+      <div class="cam-banner-ttl">식사 · 운동 촬영</div>
+      <div class="cam-banner-sub">기록장에서 사진으로 기록하세요</div>
+    </div>
+    <i class="ti ti-chevron-right cam-banner-arr"></i>
+  </button>
+  <div class="sl"><i class="ti ti-photo"></i> 최근 기록 사진</div>
+  <div class="card" style="padding:16px;">
+    <div class="photo-grid" id="home-photo-grid"></div>
+  </div>
+  <div class="sl"><i class="ti ti-chart-bar"></i> 오늘의 영양 현황</div>
+  <div class="stat-row">
+    <div class="sc"><div class="slb">탄수화물</div><div class="sv g">18g</div><div style="font-size:14px;color:var(--tld);margin-top:5px;">목표 20g</div></div>
+    <div class="sc"><div class="slb">단백질</div><div class="sv">82g</div><div style="font-size:14px;color:var(--mu);margin-top:5px;">목표 90g</div></div>
+  </div>
+  <div class="stat-row">
+    <div class="sc"><div class="slb">지방</div><div class="sv">110g</div><div style="font-size:14px;color:var(--mu);margin-top:5px;">목표 120g</div></div>
+    <div class="sc"><div class="slb">칼로리</div><div class="sv">1,420</div><div style="font-size:14px;color:var(--mu);margin-top:5px;">목표 1,600</div></div>
+  </div>
+  <!-- 음성 도움말 -->
+  <div class="voice-help">
+    <div class="voice-help-title"><i class="ti ti-microphone"></i> 이렇게 말해보세요</div>
+    <div class="voice-cmd">
+      <div class="vcmd"><i class="ti ti-camera"></i>"아침 사진 찍어줘"</div>
+      <div class="vcmd"><i class="ti ti-table"></i>"기록장 보여줘"</div>
+      <div class="vcmd"><i class="ti ti-message-circle"></i>"AI 코치한테 물어봐"</div>
+      <div class="vcmd"><i class="ti ti-list-check"></i>"오늘 뭐 먹을까"</div>
+    </div>
+  </div>
+  <div class="tip-box"><div class="tip-lbl">오늘의 조언</div>전해질 보충이 중요합니다. 나트륨·칼륨·마그네슘을 충분히 섭취하면 케토 독감 증상을 예방할 수 있습니다.</div>
+</div>
+
+<!-- 기록 -->
+<div id="pg-upload" class="page">
+  <div class="sl"><i class="ti ti-camera"></i> 사진 기록</div>
+  <button class="cam-banner" style="min-height:170px;flex-direction:column;gap:16px;align-items:center;justify-content:center;text-align:center;" onclick="openUploadSheet()">
+    <div class="cam-banner-icon" style="width:76px;height:76px;"><i class="ti ti-camera" style="font-size:38px;"></i></div>
+    <div style="flex:none;"><div class="cam-banner-ttl" style="font-size:22px;">카메라 / 갤러리</div><div class="cam-banner-sub">사진을 선택해서 기록하세요</div></div>
+  </button>
+  <div id="preview-area" class="preview-area" style="display:none;">
+    <img id="preview-img" src="" alt="">
+    <button class="preview-retake" onclick="openUploadSheet()"><i class="ti ti-refresh"></i> 다시 선택</button>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;color:var(--mu);font-size:16px;"><div style="flex:1;height:1px;background:var(--bd);"></div>직접 입력<div style="flex:1;height:1px;background:var(--bd);"></div></div>
+  <div class="type-toggle">
+    <button class="tbtn food active" id="tb-food" onclick="setType('food')"><i class="ti ti-salad"></i>식사</button>
+    <button class="tbtn ex" id="tb-ex" onclick="setType('ex')"><i class="ti ti-run"></i>운동</button>
+  </div>
+  <input class="fi" type="text" id="upload-name" placeholder="이름 / 메뉴명 (선택)">
+  <textarea class="fi" rows="3" id="upload-memo" placeholder="메모 (선택)"></textarea>
+  <button class="big-btn" onclick="doAnalyze()"><i class="ti ti-sparkles"></i>AI 분석 요청</button>
+  <div class="fb-box" id="fb-box" style="display:none;"></div>
+</div>
+
+<!-- 기록장 -->
+<div id="pg-excel" class="page">
+  <div class="xl-toolbar">
+    <div class="sl" style="margin:0;"><i class="ti ti-table"></i> 만보 · 식단 기록장</div>
+    <div class="autosave-badge" id="autosave-badge"><i class="ti ti-device-floppy"></i> 저장됨</div>
+  </div>
+  <div id="xl-empty" class="xl-empty"><i class="ti ti-notebook"></i>아직 기록이 없어요.<br>아래 버튼으로 오늘을 기록해보세요.</div>
+  <div id="xl-cards"></div>
+  <div class="xl-actions">
+    <button class="xl-btn add" onclick="xlAddDay()"><i class="ti ti-plus"></i>날짜 추가</button>
+    <button class="xl-btn save" onclick="xlExport()"><i class="ti ti-file-spreadsheet"></i>엑셀 저장</button>
+  </div>
+</div>
+
+<!-- 추천 -->
+<div id="pg-rec" class="page">
+  <div class="sl"><i class="ti ti-list-check"></i> 케토 식단 추천</div>
+  <div class="rec-card"><div class="rec-icon"><i class="ti ti-egg"></i></div><div><div class="rec-ttl">스크램블 에그 + 아보카도</div><div class="rec-sub">탄수화물 3g · 단백질 18g · 지방 28g</div><div class="rec-badge">아침 추천</div></div></div>
+  <div class="rec-card"><div class="rec-icon"><i class="ti ti-fish"></i></div><div><div class="rec-ttl">연어 샐러드 (올리브오일)</div><div class="rec-sub">탄수화물 4g · 단백질 34g · 지방 32g</div><div class="rec-badge">점심 추천</div></div></div>
+  <div class="rec-card"><div class="rec-icon"><i class="ti ti-meat"></i></div><div><div class="rec-ttl">삼겹살 + 쌈채소</div><div class="rec-sub">탄수화물 5g · 단백질 42g · 지방 50g</div><div class="rec-badge">저녁 추천</div></div></div>
+  <div class="rec-card"><div class="rec-icon"><i class="ti ti-nut"></i></div><div><div class="rec-ttl">마카다미아 + 치즈</div><div class="rec-sub">탄수화물 2g · 단백질 6g · 지방 22g</div><div class="rec-badge">간식 추천</div></div></div>
+  <div class="sl"><i class="ti ti-ban"></i> 피해야 할 음식</div>
+  <div class="tip-box">밥 · 빵 · 국수 · 과일 · 감자 · 설탕 · 주스 등 탄수화물이 높은 음식은 케토시스를 방해합니다.</div>
+</div>
+
+<!-- 코치 -->
+<div id="pg-chat" class="page">
+  <div class="chat-wrap">
+    <div class="chat-scroll" id="chat-scroll">
+      <div class="bub-lbl">AI 코치</div>
+      <div class="bub ai">안녕하세요! 케토 14일째를 맞이하셨군요. 오늘 어떤 점이 궁금하신가요?</div>
+      <div class="qbtns">
+        <button class="qbtn" onclick="askQ('오늘 식단 어떻게 구성할까요?')"><i class="ti ti-salad"></i>오늘 식단 어떻게 구성할까요?</button>
+        <button class="qbtn" onclick="askQ('케톤 수치가 낮아요, 이유가 뭔가요?')"><i class="ti ti-heart-rate-monitor"></i>케톤 수치가 낮아요</button>
+        <button class="qbtn" onclick="askQ('오늘 운동 추천해주세요')"><i class="ti ti-run"></i>오늘 운동 추천해주세요</button>
+      </div>
+    </div>
+    <div class="chat-bar">
+      <input id="chat-input" type="text" placeholder="메시지를 입력하세요..." onkeydown="if(event.key==='Enter')sendChat()">
+      <button class="send-btn" onclick="sendChat()"><i class="ti ti-send"></i></button>
+    </div>
+  </div>
+</div>
+
+</div><!-- /pages -->
+
+<!-- FAB 음성 버튼 -->
+<button class="voice-fab" id="voice-fab" onclick="toggleListen()">
+  <i class="ti ti-microphone" id="voice-fab-icon"></i>
+</button>
+
+<!-- 내비 -->
+<nav class="bnav">
+  <button class="nb active" id="nb-home"   onclick="goPage('home')"  ><i class="ti ti-home"></i>홈</button>
+  <button class="nb"        id="nb-upload" onclick="goPage('upload')"><i class="ti ti-camera"></i>기록</button>
+  <button class="nb"        id="nb-excel"  onclick="goPage('excel')" ><i class="ti ti-table"></i>기록장</button>
+  <button class="nb"        id="nb-rec"    onclick="goPage('rec')"   ><i class="ti ti-list-check"></i>추천</button>
+  <button class="nb"        id="nb-chat"   onclick="goPage('chat')"  ><i class="ti ti-message-circle"></i>코치</button>
+</nav>
+
+</div><!-- /app -->
+
+<!-- 바텀시트: 기록장 식사 슬롯 -->
+<div class="overlay" id="meal-sheet" onclick="closeMealSheet(event)">
+  <div class="sheet">
+    <div class="sheet-title" id="meal-sheet-title">사진 선택</div>
+    <button class="sheet-btn" onclick="chooseMealSrc('camera')"><i class="ti ti-camera"></i>촬영하기</button>
+    <button class="sheet-btn" onclick="chooseMealSrc('gallery')"><i class="ti ti-photo"></i>폰에서 가져오기</button>
+    <button class="sheet-cancel" onclick="closeMealSheet()">취소</button>
+  </div>
+</div>
+
+<!-- 바텀시트: 기록 탭 -->
+<div class="overlay" id="upload-sheet" onclick="closeUploadSheet(event)">
+  <div class="sheet">
+    <div class="sheet-title">사진 선택</div>
+    <button class="sheet-btn" onclick="chooseUploadSrc('camera')"><i class="ti ti-camera"></i>촬영하기</button>
+    <button class="sheet-btn" onclick="chooseUploadSrc('gallery')"><i class="ti ti-photo"></i>폰에서 가져오기</button>
+    <button class="sheet-cancel" onclick="closeUploadSheet()">취소</button>
+  </div>
+</div>
+
+<!-- 뷰어 -->
+<div class="viewer" id="photo-viewer">
+  <div class="viewer-img-wrap"><img id="viewer-img" src="" alt="식단 사진"></div>
+  <div class="viewer-btns">
+    <button class="vbtn rot" onclick="viewerRotate(-90)"><i class="ti ti-rotate-counterclockwise"></i>왼쪽</button>
+    <button class="vbtn rot" onclick="viewerRotate(90)"><i class="ti ti-rotate-clockwise"></i>오른쪽</button>
+    <button class="vbtn change" onclick="viewerChange()"><i class="ti ti-replace"></i>교체</button>
+    <button class="vbtn del" onclick="viewerDelete()"><i class="ti ti-trash"></i>삭제</button>
+    <button class="vbtn close" onclick="closeViewer()"><i class="ti ti-x"></i>닫기</button>
+  </div>
+</div>
+<div class="viewer" id="home-viewer" onclick="if(event.target===this)closeHomeViewer()" style="z-index:510;">
+  <div style="position:absolute;top:0;left:0;right:0;display:flex;align-items:center;justify-content:space-between;padding:18px 22px;">
+    <span id="home-viewer-lbl" style="color:rgba(255,255,255,.75);font-size:17px;font-weight:600;"></span>
+    <button onclick="closeHomeViewer()" style="background:rgba(255,255,255,.15);border:none;border-radius:50%;width:44px;height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fff;font-size:22px;"><i class="ti ti-x"></i></button>
+  </div>
+  <div class="viewer-img-wrap"><img id="home-viewer-img" src="" alt="사진"></div>
+</div>
+
+<!-- 파일 인풋 -->
+<input type="file" id="meal-cam-input"     accept="image/*" capture="environment" style="display:none;" onchange="onMealFile(event)">
+<input type="file" id="meal-gallery-input" accept="image/*"                        style="display:none;" onchange="onMealFile(event)">
+<input type="file" id="upload-cam-input"   accept="image/*" capture="environment" style="display:none;" onchange="onUploadFile(event)">
+<input type="file" id="upload-gallery-input" accept="image/*"                     style="display:none;" onchange="onUploadFile(event)">
+
+<div class="toast" id="toast-el"></div>
+<canvas id="compress-canvas" style="display:none;"></canvas>
+
+<script>
+'use strict';
+/* ════════════════════════════════════════
+   CONFIG / KEYS
+════════════════════════════════════════ */
+var STORE_KEY = 'metacare_records';
+var ROT_KEY   = 'metacare_rotations';
+var KEY_OAI   = 'metacare_oai_key';
+var KEY_ANT   = 'metacare_ant_key';
+var KEY_EL    = 'metacare_el_key';
+
+function saveKeys() {
+  var oai = document.getElementById('oai-key-input').value.trim();
+  var ant = document.getElementById('ant-key-input').value.trim();
+  var el  = document.getElementById('el-key-input').value.trim();
+  if (!oai || !ant || !el) { alert('세 가지 키를 모두 입력해 주세요.'); return; }
+  localStorage.setItem(KEY_OAI, oai);
+  localStorage.setItem(KEY_ANT, ant);
+  localStorage.setItem(KEY_EL,  el);
+  document.getElementById('setup-screen').classList.add('hidden');
+  speakEl('안녕하세요! 메타케어입니다. 마이크 버튼을 누르고 말씀해 주세요.');
+}
+function getOAI() { return localStorage.getItem(KEY_OAI) || ''; }
+function getANT() { return localStorage.getItem(KEY_ANT) || ''; }
+function getEL()  { return localStorage.getItem(KEY_EL)  || ''; }
+
+(function initKeys() {
+  if (getOAI() && getANT() && getEL()) {
+    document.getElementById('setup-screen').classList.add('hidden');
+  }
+})();
+
+/* ════════════════════════════════════════
+   내비
+════════════════════════════════════════ */
+function goPage(p) {
+  document.querySelectorAll('.page').forEach(function(el){ el.classList.remove('active'); });
+  document.querySelectorAll('.nb').forEach(function(el){ el.classList.remove('active'); });
+  document.getElementById('pg-'+p).classList.add('active');
+  document.getElementById('nb-'+p).classList.add('active');
+  document.getElementById('pages').scrollTop = 0;
+  if (p === 'home')  refreshHomeGrid();
+  if (p === 'excel') xlLoad();
+}
+
+/* ════════════════════════════════════════
+   음성 컨트롤 (큐 방식)
+════════════════════════════════════════ */
+var voiceState  = 'idle'; // idle | listening | thinking | speaking
+var voiceQueue  = [];     // 처리 대기 명령 큐
+var voiceRecog  = null;
+var voiceBusy   = false;
+
+function setVoiceState(state) {
+  voiceState = state;
+  var fab  = document.getElementById('voice-fab');
+  var icon = document.getElementById('voice-fab-icon');
+  var bar  = document.getElementById('voice-bar');
+  var dot  = document.getElementById('voice-dot');
+  var txt  = document.getElementById('voice-bar-text');
+
+  fab.className = 'voice-fab ' + (state !== 'idle' ? state : '');
+
+  if (state === 'idle') {
+    bar.classList.remove('show');
+    icon.className = 'ti ti-microphone';
+  } else if (state === 'listening') {
+    bar.classList.add('show');
+    dot.className = 'voice-bar-dot';
+    txt.textContent = '듣고 있어요... 말씀해 주세요';
+    icon.className = 'ti ti-microphone-off';
+  } else if (state === 'thinking') {
+    bar.classList.add('show');
+    dot.className = 'voice-bar-dot think';
+    txt.textContent = '명령을 처리하고 있어요...';
+    icon.className = 'ti ti-loader';
+  } else if (state === 'speaking') {
+    bar.classList.add('show');
+    dot.className = 'voice-bar-dot speak';
+    txt.textContent = '답변 중...';
+    icon.className = 'ti ti-volume';
+  }
+}
+
+function toggleListen() {
+  if (voiceState === 'listening') {
+    stopListening();
+  } else if (voiceState === 'idle') {
+    startListening();
+  }
+}
+
+function startListening() {
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { showToast('이 브라우저는 음성을 지원하지 않아요'); return; }
+
+  voiceRecog = new SR();
+  voiceRecog.lang = 'ko-KR';
+  voiceRecog.continuous = false;
+  voiceRecog.interimResults = false; // 최종 결과만 (노인 친화)
+
+  voiceRecog.onresult = function(e) {
+    var cmd = e.results[0][0].transcript.trim();
+    document.getElementById('voice-bar-text').textContent = '"' + cmd + '"';
+    voiceQueue.push(cmd);
+    stopListening();
+    processQueue();
+  };
+
+  voiceRecog.onerror = function(e) {
+    stopListening();
+    if (e.error === 'no-speech') {
+      speak('소리가 들리지 않았어요. 다시 눌러서 말씀해 주세요.');
+    } else if (e.error === 'not-allowed') {
+      showToast('마이크 권한이 필요합니다');
+    }
+  };
+
+  voiceRecog.onend = function() {
+    if (voiceState === 'listening') stopListening();
+  };
+
+  voiceRecog.start();
+  setVoiceState('listening');
+}
+
+function stopListening() {
+  try { voiceRecog && voiceRecog.stop(); } catch(e) {}
+  voiceRecog = null;
+  if (voiceState === 'listening') setVoiceState('idle');
+}
+
+/* ── 큐 처리 ── */
+function processQueue() {
+  if (voiceBusy || !voiceQueue.length) return;
+  voiceBusy = true;
+  var cmd = voiceQueue.shift();
+  setVoiceState('thinking');
+  interpretCommand(cmd).then(function() {
+    voiceBusy = false;
+    setVoiceState('idle');
+    if (voiceQueue.length) processQueue();
+  });
+}
+
+/* ── 명령 해석 (Claude API) ── */
+function interpretCommand(cmd) {
+  var sys = '당신은 노인 건강 앱 "스마트 메타케어"의 음성 비서입니다.\n' +
+    '사용자 명령을 분석해서 아래 JSON 형식으로만 응답하세요. 다른 텍스트는 절대 포함하지 마세요.\n\n' +
+    '{"action":"페이지이동|AI코치|날짜추가|사진촬영|없음","page":"home|upload|excel|rec|chat","message":"사용자에게 말할 내용","query":"AI에게 전달할 질문"}\n\n' +
+    '페이지 이름 매핑:\n홈/처음=home, 기록/사진=upload, 기록장/달력=excel, 추천/식단=rec, 코치/질문/AI=chat\n\n' +
+    '예시:\n"기록장 보여줘" → {"action":"페이지이동","page":"excel","message":"기록장으로 이동합니다","query":""}\n' +
+    '"오늘 뭐 먹을까" → {"action":"AI코치","page":"chat","message":"AI 코치에게 물어볼게요","query":"오늘 케토 식단으로 무엇을 먹으면 좋을까요?"}\n' +
+    '"아침 사진 찍어줘" → {"action":"사진촬영","page":"excel","message":"기록장으로 이동합니다","query":""}';
+
+  return fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 200,
+      system: sys,
+      messages: [{ role: 'user', content: cmd }]
+    })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    var text = (d.content && d.content[0] && d.content[0].text) || '';
+    var result;
+    try { result = JSON.parse(text); } catch(e) { result = { action:'없음', message:'잘 못 들었어요. 다시 말씀해 주세요.' }; }
+    return executeCommand(result);
+  })
+  .catch(function() {
+    speak('오류가 생겼어요. 다시 시도해 주세요.');
+    return Promise.resolve();
+  });
+}
+
+/* ── 명령 실행 ── */
+function executeCommand(result) {
+  var action  = result.action  || '없음';
+  var page    = result.page    || '';
+  var message = result.message || '';
+  var query   = result.query   || '';
+
+  if (action === '페이지이동' || action === '사진촬영') {
+    if (page) goPage(page);
+    return speakPromise(message);
+  }
+
+  if (action === 'AI코치') {
+    goPage('chat');
+    return speakPromise(message).then(function() {
+      if (query) return askAI(query);
+    });
+  }
+
+  if (action === '날짜추가') {
+    goPage('excel');
+    xlAddDay();
+    return speakPromise('오늘 날짜를 기록장에 추가했어요.');
+  }
+
+  // 없음 또는 기타
+  return speakPromise(message || '무슨 말씀인지 잘 몰랐어요. 다시 말씀해 주세요.');
+}
+
+/* ════════════════════════════════════════
+   TTS — ElevenLabs 자연 음성
+   Voice ID: Korean female (Aria) — 필요 시 변경 가능
+════════════════════════════════════════ */
+// ElevenLabs 한국어 음성 ID (기본: Aria — 자연스러운 여성 목소리)
+var EL_VOICE_ID = 'pqHfZKP75CvOlQylNhV4'; // Bill (한국어 지원 자연스러운 목소리)
+var elAudio = null; // 재생 중인 오디오 추적
+
+function speakEl(text) {
+  speakElPromise(text);
+}
+
+function speak(text) {
+  speakElPromise(text);
+}
+
+function speakPromise(text) {
+  return speakElPromise(text);
+}
+
+function speakElPromise(text) {
+  return new Promise(function(resolve) {
+    if (!text) { resolve(); return; }
+    var key = getEL();
+    if (!key) {
+      // ElevenLabs 키 없으면 브라우저 TTS로 폴백
+      if (!('speechSynthesis' in window)) { resolve(); return; }
+      window.speechSynthesis.cancel();
+      setVoiceState('speaking');
+      var u = new SpeechSynthesisUtterance(text);
+      u.lang = 'ko-KR'; u.rate = 0.88;
+      u.onend = function() { resolve(); };
+      u.onerror = function() { resolve(); };
+      window.speechSynthesis.speak(u);
+      setTimeout(resolve, 15000);
+      return;
+    }
+
+    // 이전 재생 중지
+    if (elAudio) { try { elAudio.pause(); elAudio.src = ''; } catch(e) {} elAudio = null; }
+    setVoiceState('speaking');
+
+    fetch('https://api.elevenlabs.io/v1/text-to-speech/' + EL_VOICE_ID, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'xi-api-key': key
+      },
+      body: JSON.stringify({
+        text: text,
+        model_id: 'eleven_multilingual_v2',
+        voice_settings: {
+          stability: 0.55,
+          similarity_boost: 0.80,
+          style: 0.15,
+          use_speaker_boost: true
+        }
+      })
+    })
+    .then(function(r) {
+      if (!r.ok) throw new Error('ElevenLabs 오류: ' + r.status);
+      return r.blob();
+    })
+    .then(function(blob) {
+      var url = URL.createObjectURL(blob);
+      elAudio = new Audio(url);
+      elAudio.onended = function() {
+        URL.revokeObjectURL(url);
+        elAudio = null;
+        resolve();
+      };
+      elAudio.onerror = function() {
+        URL.revokeObjectURL(url);
+        elAudio = null;
+        resolve();
+      };
+      elAudio.play();
+      // 안전장치: 30초 후 강제 종료
+      setTimeout(resolve, 30000);
+    })
+    .catch(function(err) {
+      console.warn('ElevenLabs TTS 실패, 브라우저 TTS로 대체:', err);
+      // 실패 시 브라우저 TTS로 폴백
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        var u = new SpeechSynthesisUtterance(text);
+        u.lang = 'ko-KR'; u.rate = 0.88;
+        u.onend = function() { resolve(); };
+        u.onerror = function() { resolve(); };
+        window.speechSynthesis.speak(u);
+        setTimeout(resolve, 15000);
+      } else {
+        resolve();
+      }
+    });
+  });
+}
+
+/* ════════════════════════════════════════
+   AI 코치 (실제 Claude API)
+════════════════════════════════════════ */
+var chatBusy = false;
+
+function askQ(q) {
+  document.getElementById('chat-input').value = q;
+  sendChat();
+}
+
+function askAI(q) {
+  document.getElementById('chat-input').value = q;
+  return sendChatAsync();
+}
+
+function sendChat() {
+  sendChatAsync();
+}
+
+function sendChatAsync() {
+  if (chatBusy) return Promise.resolve();
+  var inp = document.getElementById('chat-input');
+  var msg = inp.value.trim();
+  if (!msg) return Promise.resolve();
+  inp.value = '';
+
+  var cs = document.getElementById('chat-scroll');
+  var uw = document.createElement('div');
+  uw.className = 'bub-wu';
+  uw.innerHTML = '<div class="bub user">' + escHtml(msg) + '</div>';
+  cs.appendChild(uw);
+
+  var ld = document.createElement('div');
+  ld.innerHTML = '<div class="bub-lbl">AI 코치</div><div class="bub ai"><div class="dots"><span></span><span></span><span></span></div></div>';
+  cs.appendChild(ld);
+  cs.scrollTop = cs.scrollHeight;
+  chatBusy = true;
+
+  var sys = '당신은 케토 식단 전문 건강 코치입니다. 노인 사용자에게 친절하고 쉽게 설명해 주세요. 한국어로 3~5문장 이내로 답변하세요.';
+
+  return fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 400,
+      system: sys,
+      messages: [{ role: 'user', content: msg }]
+    })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    var reply = (d.content && d.content[0] && d.content[0].text) || '답변을 가져오지 못했어요.';
+    ld.querySelector('.bub.ai').textContent = reply;
+    cs.scrollTop = cs.scrollHeight;
+    chatBusy = false;
+    // 음성으로도 읽어주기
+    speak(reply);
+    return Promise.resolve();
+  })
+  .catch(function() {
+    ld.querySelector('.bub.ai').textContent = '오류가 발생했어요. 다시 시도해 주세요.';
+    cs.scrollTop = cs.scrollHeight;
+    chatBusy = false;
+    return Promise.resolve();
+  });
+}
+
+/* ════════════════════════════════════════
+   AI 사진 분석 (Whisper + Claude Vision)
+════════════════════════════════════════ */
+function doAnalyze() {
+  var name   = document.getElementById('upload-name').value.trim();
+  var memo   = document.getElementById('upload-memo').value.trim();
+  var preImg = document.getElementById('preview-img');
+  var hasPic = preImg.src && document.getElementById('preview-area').style.display !== 'none';
+  if (!hasPic && !name) { showToast('사진 또는 메뉴명을 입력하세요'); return; }
+
+  var fb = document.getElementById('fb-box');
+  fb.style.display = 'block';
+  fb.innerHTML = '<div class="dots"><span></span><span></span><span></span></div> AI 분석 중...';
+
+  // 사진이 있으면 Claude Vision으로 분석
+  if (hasPic) {
+    var base64 = preImg.src.split(',')[1];
+    var mtype  = preImg.src.startsWith('data:image/png') ? 'image/png' : 'image/jpeg';
+    var prompt = '이 사진의 음식을 분석해서 케토 식단 관점에서 탄수화물, 단백질, 지방 함량과 케토 적합도를 알려주세요. ' +
+                 '노인이 이해하기 쉽게 3~4문장으로 설명해 주세요.';
+    if (name) prompt += ' 음식 이름: ' + name;
+    if (memo) prompt += ' 메모: ' + memo;
+
+    fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 400,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image', source: { type: 'base64', media_type: mtype, data: base64 } },
+            { type: 'text',  text: prompt }
+          ]
+        }]
+      })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      var reply = (d.content && d.content[0] && d.content[0].text) || '분석 결과를 가져오지 못했어요.';
+      fb.textContent = reply;
+      speak(reply);
+    })
+    .catch(function() { fb.textContent = '분석 오류가 발생했어요. 다시 시도해 주세요.'; });
+  } else {
+    // 사진 없이 이름만으로 분석
+    var prompt2 = '"' + name + '"에 대해 케토 식단 관점에서 설명해 주세요. 노인이 이해하기 쉽게 3~4문장으로.';
+    fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 300,
+        messages: [{ role: 'user', content: prompt2 }]
+      })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      var reply = (d.content && d.content[0] && d.content[0].text) || '분석 결과를 가져오지 못했어요.';
+      fb.textContent = reply;
+      speak(reply);
+    })
+    .catch(function() { fb.textContent = '분석 오류가 발생했어요.'; });
+  }
+}
+
+/* ════════════════════════════════════════
+   이미지 압축
+════════════════════════════════════════ */
+function compressImg(dataUrl, callback) {
+  var img = new Image();
+  img.onload = function() {
+    var canvas = document.getElementById('compress-canvas');
+    var MAX = 700, w = img.width, h = img.height;
+    if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
+    canvas.width = w; canvas.height = h;
+    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+    callback(canvas.toDataURL('image/jpeg', 0.72));
+  };
+  img.src = dataUrl;
+}
+
+/* ════════════════════════════════════════
+   기록 탭 사진 선택
+════════════════════════════════════════ */
+function openUploadSheet()  { document.getElementById('upload-sheet').classList.add('open'); }
+function closeUploadSheet(e){ if (e && e.target !== document.getElementById('upload-sheet')) return; document.getElementById('upload-sheet').classList.remove('open'); }
+function chooseUploadSrc(src) {
+  document.getElementById('upload-sheet').classList.remove('open');
+  document.getElementById(src==='camera' ? 'upload-cam-input' : 'upload-gallery-input').click();
+}
+function onUploadFile(e) {
+  var f = e.target.files[0]; e.target.value = '';
+  if (!f) return;
+  var r = new FileReader();
+  r.onload = function(ev) {
+    compressImg(ev.target.result, function(small) {
+      document.getElementById('preview-img').src = small;
+      document.getElementById('preview-area').style.display = 'block';
+    });
+  };
+  r.readAsDataURL(f);
+}
+
+/* ════════════════════════════════════════
+   기록장 식사 슬롯
+════════════════════════════════════════ */
+var pendingSlot = null;
+
+function openMealSheet(cardId, meal) {
+  pendingSlot = { cardId: cardId, meal: meal };
+  var labels = { morning:'아침', lunch:'점심', dinner:'저녁' };
+  document.getElementById('meal-sheet-title').textContent = (labels[meal]||meal) + ' 사진 선택';
+  document.getElementById('meal-sheet').classList.add('open');
+}
+function closeMealSheet(e) {
+  if (e && e.target !== document.getElementById('meal-sheet')) return;
+  document.getElementById('meal-sheet').classList.remove('open');
+}
+function chooseMealSrc(src) {
+  document.getElementById('meal-sheet').classList.remove('open');
+  document.getElementById(src==='camera' ? 'meal-cam-input' : 'meal-gallery-input').click();
+}
+function onMealFile(e) {
+  var f = e.target.files[0]; e.target.value = '';
+  if (!f || !pendingSlot) return;
+  var slot = pendingSlot; pendingSlot = null;
+  var r = new FileReader();
+  r.onload = function(ev) {
+    compressImg(ev.target.result, function(small) {
+      var card = document.getElementById(slot.cardId);
+      if (!card) return;
+      var slotEl = card.querySelector('.meal-slot[data-meal="'+slot.meal+'"]');
+      if (!slotEl) return;
+      saveRotation(slot.cardId, slot.meal, 0);
+      slotEl.setAttribute('data-photo', small);
+      renderFilled(slotEl, small, 0);
+      schedSave();
+      refreshHomeGrid();
+      showToast('사진이 저장됐어요 ✓');
+      speak('사진이 저장됐어요.');
+    });
+  };
+  r.readAsDataURL(f);
+}
+
+/* ════════════════════════════════════════
+   슬롯 렌더링
+════════════════════════════════════════ */
+function renderEmpty(slot) {
+  var meal   = slot.getAttribute('data-meal');
+  var cardId = slot.closest('.day-card').id;
+  var labels = { morning:'아침', lunch:'점심', dinner:'저녁' };
+  var cls    = meal==='morning'?'am':meal==='lunch'?'pm':'ev';
+  slot.innerHTML =
+    '<span class="meal-slot-lbl '+cls+'">'+labels[meal]+'</span>' +
+    '<div class="meal-photo-empty" onclick="openMealSheet(\''+cardId+'\',\''+meal+'\')">' +
+      '<i class="ti ti-camera-plus"></i><span>탭하여 선택</span></div>';
+}
+function renderFilled(slot, dataUrl, rot) {
+  var meal   = slot.getAttribute('data-meal');
+  var cardId = slot.closest('.day-card').id;
+  var labels = { morning:'아침', lunch:'점심', dinner:'저녁' };
+  var cls    = meal==='morning'?'am':meal==='lunch'?'pm':'ev';
+  slot.setAttribute('data-photo', dataUrl);
+  slot.innerHTML =
+    '<span class="meal-slot-lbl '+cls+'">'+labels[meal]+'</span>' +
+    '<div class="meal-photo-filled" onclick="openViewer(\''+cardId+'\',\''+meal+'\')">' +
+      '<img src="'+dataUrl+'" alt="'+labels[meal]+'" style="transform:rotate('+(rot||0)+'deg)">' +
+      '<div class="meal-photo-retake"><i class="ti ti-eye"></i><span>보기/수정</span></div></div>';
+}
+
+/* ════════════════════════════════════════
+   뷰어
+════════════════════════════════════════ */
+var viewerCtx = null, viewerRot = 0;
+
+function openViewer(cardId, meal) {
+  var card = document.getElementById(cardId); if (!card) return;
+  var slot = card.querySelector('.meal-slot[data-meal="'+meal+'"]'); if (!slot) return;
+  var photo = slot.getAttribute('data-photo'); if (!photo) return;
+  viewerCtx = { cardId:cardId, meal:meal };
+  viewerRot = loadRotation(cardId, meal);
+  var img = document.getElementById('viewer-img');
+  img.src = photo; img.style.transform = 'rotate('+viewerRot+'deg)';
+  document.getElementById('photo-viewer').classList.add('open');
+}
+function closeViewer() { document.getElementById('photo-viewer').classList.remove('open'); viewerCtx = null; }
+function viewerRotate(deg) {
+  if (!viewerCtx) return;
+  viewerRot = (viewerRot + deg + 360) % 360;
+  var img = document.getElementById('viewer-img');
+  img.style.transform = 'rotate('+viewerRot+'deg)';
+  saveRotation(viewerCtx.cardId, viewerCtx.meal, viewerRot);
+  var card = document.getElementById(viewerCtx.cardId);
+  if (card) { var si = card.querySelector('.meal-slot[data-meal="'+viewerCtx.meal+'"] img'); if (si) si.style.transform = 'rotate('+viewerRot+'deg)'; }
+}
+function viewerChange() {
+  if (!viewerCtx) return;
+  pendingSlot = viewerCtx; closeViewer();
+  var labels = { morning:'아침', lunch:'점심', dinner:'저녁' };
+  document.getElementById('meal-sheet-title').textContent = (labels[pendingSlot.meal]||pendingSlot.meal) + ' 사진 교체';
+  document.getElementById('meal-sheet').classList.add('open');
+}
+function viewerDelete() {
+  if (!viewerCtx) return;
+  if (!confirm('이 사진을 삭제할까요?')) return;
+  var card = document.getElementById(viewerCtx.cardId);
+  if (card) { var slot = card.querySelector('.meal-slot[data-meal="'+viewerCtx.meal+'"]'); if (slot) { slot.removeAttribute('data-photo'); renderEmpty(slot); } }
+  deleteRotation(viewerCtx.cardId, viewerCtx.meal);
+  closeViewer(); schedSave(); refreshHomeGrid();
+  showToast('사진이 삭제됐어요');
+}
+function openHomeViewer(url, label) {
+  document.getElementById('home-viewer-img').src = url;
+  var lbl = document.getElementById('home-viewer-lbl'); if (lbl) lbl.textContent = label||'';
+  document.getElementById('home-viewer').classList.add('open');
+}
+function closeHomeViewer() { document.getElementById('home-viewer').classList.remove('open'); }
+
+/* ════════════════════════════════════════
+   회전값 localStorage
+════════════════════════════════════════ */
+function loadAllRotations() { try { return JSON.parse(localStorage.getItem(ROT_KEY))||{}; } catch(e) { return {}; } }
+function loadRotation(cardId, meal) { var all=loadAllRotations(); return (all[cardId]&&all[cardId][meal])||0; }
+function saveRotation(cardId, meal, deg) { var all=loadAllRotations(); if(!all[cardId])all[cardId]={}; all[cardId][meal]=deg; localStorage.setItem(ROT_KEY,JSON.stringify(all)); }
+function deleteRotation(cardId, meal) { var all=loadAllRotations(); if(all[cardId]){delete all[cardId][meal];localStorage.setItem(ROT_KEY,JSON.stringify(all));} }
+
+/* ════════════════════════════════════════
+   기록장
+════════════════════════════════════════ */
+var cardSeq = 0, saveTimer = null;
+
+function makeCard(d) {
+  cardSeq++;
+  var id = 'card-' + cardSeq;
+  var div = document.createElement('div');
+  div.className = 'day-card'; div.id = id;
+
+  var hd = document.createElement('div');
+  hd.className = 'day-hd';
+  hd.innerHTML = '<input class="day-date" type="text" value="'+escAttr(d.date||'')+'" placeholder="26년 05월 25일" oninput="schedSave()">' +
+    '<button class="day-del" onclick="delCard(this)"><i class="ti ti-trash"></i></button>';
+  div.appendChild(hd);
+
+  var grid = document.createElement('div');
+  grid.className = 'meal-grid';
+  ['morning','lunch','dinner'].forEach(function(meal) {
+    var slot = document.createElement('div');
+    slot.className = 'meal-slot';
+    slot.setAttribute('data-meal', meal);
+    if (d.photos && d.photos[meal]) slot.setAttribute('data-photo', d.photos[meal]);
+    grid.appendChild(slot);
+  });
+  div.appendChild(grid);
+
+  var sr = document.createElement('div');
+  sr.className = 'steps-row';
+  sr.innerHTML = '<span class="steps-lbl"><i class="ti ti-walk"></i>만보</span>' +
+    '<input class="steps-in" type="text" value="'+escAttr(d.steps||'')+'" placeholder="오늘 걸음 수" oninput="schedSave()">';
+  div.appendChild(sr);
+  return div;
+}
+
+function initSlots(card, d) {
+  var cardId = card.id;
+  card.querySelectorAll('.meal-slot').forEach(function(slot) {
+    var meal = slot.getAttribute('data-meal');
+    var photo = d.photos ? d.photos[meal] : null;
+    if (photo) renderFilled(slot, photo, loadRotation(cardId, meal));
+    else renderEmpty(slot);
+  });
+}
+
+function xlAddDay() {
+  var d = { date: todayStr(), photos:{}, steps:'' };
+  var card = makeCard(d);
+  document.getElementById('xl-cards').appendChild(card);
+  document.getElementById('xl-empty').style.display = 'none';
+  initSlots(card, d);
+  card.scrollIntoView({ behavior:'smooth', block:'nearest' });
+  schedSave();
+}
+
+function delCard(btn) {
+  btn.closest('.day-card').remove();
+  if (!document.getElementById('xl-cards').children.length)
+    document.getElementById('xl-empty').style.display = 'block';
+  schedSave(); refreshHomeGrid();
+}
+
+function schedSave() {
+  if (saveTimer) clearTimeout(saveTimer);
+  saveTimer = setTimeout(doSave, 800);
+}
+
+function collectData() {
+  var days = [];
+  document.querySelectorAll('.day-card').forEach(function(card) {
+    var photos = {};
+    card.querySelectorAll('.meal-slot').forEach(function(slot) {
+      var meal = slot.getAttribute('data-meal');
+      var photo = slot.getAttribute('data-photo');
+      if (photo) photos[meal] = photo;
+    });
+    var di = card.querySelector('.day-date');
+    var si = card.querySelector('.steps-in');
+    days.push({ date: di?di.value:'', steps: si?si.value:'', photos:photos });
+  });
+  return days;
+}
+
+function doSave() {
+  var data = collectData();
+  try {
+    localStorage.setItem(STORE_KEY, JSON.stringify(data));
+    var badge = document.getElementById('autosave-badge');
+    badge.classList.add('show');
+    setTimeout(function(){ badge.classList.remove('show'); }, 1800);
+  } catch(e) { showToast('저장 공간이 부족합니다'); }
+  refreshHomeGrid();
+}
+
+function xlLoad() {
+  var days = JSON.parse(localStorage.getItem(STORE_KEY)||'[]');
+  var container = document.getElementById('xl-cards');
+  container.innerHTML = ''; cardSeq = 0;
+  document.getElementById('xl-empty').style.display = days.length ? 'none' : 'block';
+  days.forEach(function(d) { var card = makeCard(d); container.appendChild(card); initSlots(card, d); });
+}
+
+function xlExport() {
+  var days = collectData();
+  if (!days.length) { showToast('기록이 없습니다'); return; }
+  var aoa = [['매일 식단 및 걷기 일지'],[],['날짜','아침','점심','저녁','만보(걸음)']];
+  days.forEach(function(d) {
+    aoa.push([d.date, d.photos&&d.photos.morning?'✓':'', d.photos&&d.photos.lunch?'✓':'', d.photos&&d.photos.dinner?'✓':'', d.steps]);
+  });
+  var ws = XLSX.utils.aoa_to_sheet(aoa);
+  ws['!cols'] = [{wch:18},{wch:10},{wch:10},{wch:10},{wch:14}];
+  var wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, '식단일지');
+  XLSX.writeFile(wb, '만보_식단_'+todayStr().replace(/[년월일\s]/g,'')+'.xlsx');
+  showToast('엑셀 저장 완료!');
+}
+
+/* ════════════════════════════════════════
+   홈 그리드
+════════════════════════════════════════ */
+function refreshHomeGrid() {
+  var grid = document.getElementById('home-photo-grid'); if (!grid) return;
+  var days = JSON.parse(localStorage.getItem(STORE_KEY)||'[]');
+  var meals = ['morning','lunch','dinner'];
+  var lbls  = { morning:'아침', lunch:'점심', dinner:'저녁' };
+  var photos = [];
+  for (var i=days.length-1; i>=0&&photos.length<4; i--) {
+    if (!days[i].photos) continue;
+    for (var m=0; m<meals.length&&photos.length<4; m++) {
+      var p = days[i].photos[meals[m]];
+      if (p) photos.push({ url:p, label:lbls[meals[m]] });
+    }
+  }
+  grid.innerHTML = '';
+  photos.forEach(function(ph) {
+    var item = document.createElement('div'); item.className = 'pg-item';
+    item.onclick = (function(u,l){ return function(){ openHomeViewer(u,l); }; })(ph.url, ph.label);
+    var img = document.createElement('img'); img.src = ph.url; img.alt = ph.label;
+    var tag = document.createElement('span'); tag.className = 'ph-tag'; tag.textContent = ph.label;
+    item.appendChild(img); item.appendChild(tag); grid.appendChild(item);
+  });
+  var total = Math.max(4, photos.length);
+  for (var k=photos.length; k<total; k++) {
+    var empty = document.createElement('div'); empty.className = 'pg-empty';
+    empty.innerHTML = '<i class="ti ti-camera-plus"></i><span>추가</span>';
+    empty.addEventListener('click', function(){ goPage('excel'); });
+    grid.appendChild(empty);
+  }
+}
+
+/* ════════════════════════════════════════
+   기록 탭
+════════════════════════════════════════ */
+function setType(t) {
+  document.getElementById('tb-food').className = 'tbtn food'+(t==='food'?' active':'');
+  document.getElementById('tb-ex').className   = 'tbtn ex'  +(t==='ex'  ?' active':'');
+}
+
+/* ════════════════════════════════════════
+   유틸
+════════════════════════════════════════ */
+function todayStr() {
+  var d=new Date();
+  return String(d.getFullYear()).slice(2)+'년 '+pad(d.getMonth()+1)+'월 '+pad(d.getDate())+'일';
+}
+function pad(n){ return n<10?'0'+n:String(n); }
+function escHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function escAttr(s){ return String(s||'').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+function showToast(msg) {
+  var t=document.getElementById('toast-el');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 2800);
+}
+
+/* ════════════════════════════════════════
+   초기화
+════════════════════════════════════════ */
+(function init(){
+  xlLoad();
+  refreshHomeGrid();
+  // FAB 라벨 3초 후 숨김 (원본과 동일)
+  setTimeout(function(){
+    var fab = document.getElementById('voice-fab');
+    if (fab) fab.title = '마이크 버튼';
+  }, 3000);
+})();
+</script>
+</body>
+</html>
