@@ -614,7 +614,7 @@ function execCmd(r){
 /* ════════════════════════════════════════
    TTS — ElevenLabs
 ════════════════════════════════════════ */
-var EL_VOICE = 'XB0fDUnXU5powFXDhCwa'; // Charlotte - 따뜻한 여성 목소리 (한국어 지원)
+var EL_VOICE = '9BWtsMINqrJLrRacOk9x'; // Aria - ElevenLabs 기본 여성 목소리 (한국어 지원)
 
 function tts(text){ ttsPromise(text); }
 
@@ -655,7 +655,7 @@ function ttsPromise(text){
       VA.onended = function(){ clearTimeout(timer); done(); };
       VA.play().catch(done);
     })
-    .catch(function(){ fallbackTTS(text, resolve); });
+    .catch(function(err){ console.warn('ElevenLabs 오류:', err); fallbackTTS(text, resolve); });
   });
 }
 
