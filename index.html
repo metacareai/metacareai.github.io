@@ -222,6 +222,7 @@ body{font-family:'Noto Sans KR',-apple-system,sans-serif;background:var(--navy);
     <div class="tb-sub">케토 식단 관리</div>
   </div>
   <span class="tb-badge">케톤 최적 중</span>
+  <button onclick="resetSetup()" style="background:rgba(255,255,255,.15);border:none;color:rgba(255,255,255,.6);font-size:12px;padding:5px 10px;border-radius:8px;cursor:pointer;margin-left:8px;font-family:inherit;">🔑 키 재설정</button>
 </div>
 
 <!-- ── 음성 상태 바 ── -->
@@ -413,6 +414,13 @@ body{font-family:'Noto Sans KR',-apple-system,sans-serif;background:var(--navy);
 var K = { STORE:'mc_records', ROT:'mc_rot' };
 var MEM = { ant:'', el:'' };
 function getKey(k){ if(k==='mc_ant') return MEM.ant; if(k==='mc_el') return MEM.el; return ''; }
+function resetSetup(){
+  MEM.ant=''; MEM.el='';
+  try{ localStorage.removeItem('mc_ant'); localStorage.removeItem('mc_el'); }catch(e){}
+  document.getElementById('inp-ant').value='';
+  document.getElementById('inp-el').value='';
+  document.getElementById('setup').classList.remove('hidden');
+}
 function saveSetup(){
   var ant = document.getElementById('inp-ant').value.trim();
   if(!ant){ alert('Anthropic API 키를 입력해 주세요.'); return; }
