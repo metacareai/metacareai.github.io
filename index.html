@@ -410,26 +410,23 @@ body{font-family:'Noto Sans KR',-apple-system,sans-serif;background:var(--navy);
 /* ════════════════════════════════════════
    KEYS — localStorage, 한 번만 입력
 ════════════════════════════════════════ */
-var K = { ANT:'mc_ant', EL:'mc_el', STORE:'mc_records', ROT:'mc_rot' };
-
-function getKey(k){ return localStorage.getItem(k)||''; }
+var K = { STORE:'mc_records', ROT:'mc_rot' };
+var MEM = { ant:'', el:'' };
+function getKey(k){ if(k==='mc_ant') return MEM.ant; if(k==='mc_el') return MEM.el; return ''; }
 function saveSetup(){
   var ant = document.getElementById('inp-ant').value.trim();
-  var el  = document.getElementById('inp-el').value.trim();
-  if(!ant||!el){ alert('두 키를 모두 입력해 주세요.'); return; }
-  localStorage.setItem(K.ANT, ant);
-  localStorage.setItem(K.EL,  el);
-  // 저장 확인
-  if(!localStorage.getItem(K.ANT)){ alert('키 저장에 실패했어요. 브라우저 설정에서 쿠키/저장소를 허용해주세요.'); return; }
+  if(!ant){ alert('Anthropic API 키를 입력해 주세요.'); return; }
+  MEM.ant = ant;
+  MEM.el  = document.getElementById('inp-el').value.trim();
+  try{ localStorage.setItem('mc_ant',ant); localStorage.setItem('mc_el',MEM.el); }catch(e){}
   document.getElementById('setup').classList.add('hidden');
   tts('안녕하세요! 메타케어입니다. 마이크 버튼을 누르고 말씀해 주세요.');
 }
-// 이미 키 있으면 설정 화면 건너뜀
 (function(){
-  if(getKey(K.ANT) && getKey(K.EL)){
-    document.getElementById('setup').classList.add('hidden');
-    setTimeout(function(){ tts('안녕하세요! 메타케어입니다. 마이크 버튼을 누르고 말씀해 주세요.'); }, 800);
-  }
+  try{
+    var a=localStorage.getItem('mc_ant')||'';
+    if(a){ MEM.ant=a; MEM.el=localStorage.getItem('mc_el')||''; document.getElementById('setup').classList.add('hidden'); setTimeout(function(){ tts('안녕하세요! 메타케어입니다.'); },600); }
+  }catch(e){}
 })();
 
 /* ════════════════════════════════════════
@@ -452,7 +449,6 @@ function goPage(p){
 var VS = 'idle'; // 현재 상태
 var VQ = [];     // 명령 큐
 var VR = null;   // SpeechRecognition 인스턴스
-var VA = null;   // ElevenLabs Audio 인스턴스
 
 function setVS(s){
   VS = s;
@@ -613,67 +609,21 @@ function execCmd(r){
   return ttsPromise(say||'무슨 말씀인지 잘 몰랐어요. 다시 말씀해 주세요.');
 }
 
-/* ════════════════════════════════════════
-   TTS — ElevenLabs
-════════════════════════════════════════ */
-var EL_VOICE = '21m00Tcm4TlvDq8ikWAM'; // Rachel - 무료 플랜 기본 목소리
-
+/* TTS - 브라우저 기본 (추후 ElevenLabs 교체 예정) */
 function tts(text){ ttsPromise(text); }
-
 function ttsPromise(text){
   return new Promise(function(resolve){
     if(!text){ resolve(); return; }
-    var elKey = getKey(K.EL);
-    if(!elKey){ fallbackTTS(text, resolve); return; }
-
-    // 이전 오디오 정리
-    if(VA){ try{ VA.pause(); VA.src=''; }catch(e){} VA=null; }
+    if(!('speechSynthesis' in window)){ resolve(); return; }
+    window.speechSynthesis.cancel();
     setVS('speaking');
-
-    fetch('https://api.elevenlabs.io/v1/text-to-speech/'+EL_VOICE, {
-      method:'POST',
-      headers:{'Content-Type':'application/json','xi-api-key':elKey},
-      body:JSON.stringify({
-        text:text,
-        model_id:'eleven_multilingual_v2',
-        voice_settings:{stability:0.55,similarity_boost:0.80,style:0.15,use_speaker_boost:true}
-      })
-    })
-    .then(function(r){
-      if(!r.ok){
-        // 402: 결제필요, 401: 키오류 → 브라우저 TTS로 폴백
-        throw new Error(r.status);
-      }
-      return r.blob();
-    })
-    .then(function(blob){
-      var url = URL.createObjectURL(blob);
-      VA = new Audio(url);
-      var done = function(){
-        URL.revokeObjectURL(url); VA=null;
-        setVS('idle'); resolve();
-      };
-      VA.onended = done;
-      VA.onerror = done;
-      // 안전장치: 최대 30초
-      var timer = setTimeout(done, 30000);
-      VA.onended = function(){ clearTimeout(timer); done(); };
-      VA.play().catch(done);
-    })
-    .catch(function(err){ console.warn('ElevenLabs 오류:', err); fallbackTTS(text, resolve); });
+    var u = new SpeechSynthesisUtterance(text);
+    u.lang='ko-KR'; u.rate=0.88;
+    var done = function(){ setVS('idle'); resolve(); };
+    u.onend=done; u.onerror=done;
+    window.speechSynthesis.speak(u);
+    setTimeout(done, 15000);
   });
-}
-
-function fallbackTTS(text, resolve){
-  if(!('speechSynthesis' in window)){ setVS('idle'); resolve(); return; }
-  window.speechSynthesis.cancel();
-  setVS('speaking');
-  var u = new SpeechSynthesisUtterance(text);
-  u.lang='ko-KR'; u.rate=0.88;
-  var done = function(){ setVS('idle'); resolve(); };
-  u.onend=done; u.onerror=done;
-  window.speechSynthesis.speak(u);
-  setTimeout(done, 15000);
 }
 
 /* ════════════════════════════════════════
