@@ -1359,28 +1359,63 @@ function runQ(){
 }
 function interpret(cmd){
   if(!ANT_KEY){tts('API 키가 없어요.');return Promise.resolve();}
-  var sys='음성 명령 분류기. JSON만 출력.\n출력:{"action":"페이지이동|AI코치|PSA기록|증상기록|없음","page":"upload|excel|rec|chat","say":"안내","query":"질문","psa":"숫자","sym":"pain|urine|fatigue","nrs":"숫자"}\n규칙:-기록장→페이지이동,excel\n-사진/카메라→페이지이동,upload\n-PSA+숫자→PSA기록\n-통증/배뇨/피로+숫자→증상기록\n-코치/질문/뭐먹→AI코치,chat\n-추적→페이지이동,rec';
+  var sys='당신은 한국어 음성 명령 분류기입니다. 반드시 JSON만 출력하세요. 설명 금지.\n'
+    +'출력 형식: {"action":"페이지이동|AI코치|PSA기록|증상기록|없음","page":"home|upload|excel|rec|chat","say":"짧은안내말","query":"코치에게전달할질문","psa":"숫자","sym":"pain|urine|fatigue","nrs":"숫자"}\n'
+    +'분류 규칙:\n'
+    +'- 기록장/일지/달력/식단일지 → 페이지이동, excel\n'
+    +'- 홈/처음/메인 → 페이지이동, home\n'
+    +'- 사진/카메라/촬영/식단기록 → 페이지이동, upload\n'
+    +'- 추적/PSA추적/차트 → 페이지이동, rec\n'
+    +'- PSA 숫자 → PSA기록, psa에 숫자값\n'
+    +'- 통증/아파 숫자 → 증상기록, sym=pain, nrs에 숫자\n'
+    +'- 배뇨/소변 숫자 → 증상기록, sym=urine, nrs에 숫자\n'
+    +'- 피로/힘들어 숫자 → 증상기록, sym=fatigue, nrs에 숫자\n'
+    +'- 나머지(식단추천/뭐먹/운동추천/부작용/코치/질문/궁금) → AI코치, chat, query에 원문 그대로';
   return fetch('https://api.anthropic.com/v1/messages',{
     method:'POST',
     headers:{'Content-Type':'application/json','x-api-key':ANT_KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-    body:JSON.stringify({model:'claude-haiku-4-5',max_tokens:120,system:sys,messages:[{role:'user',content:cmd}]})
+    body:JSON.stringify({model:'claude-haiku-4-5',max_tokens:150,system:sys,messages:[{role:'user',content:cmd}]})
   })
   .then(function(r){return r.json();})
   .then(function(d){
     var txt=(d.content&&d.content[0]&&d.content[0].text)||'';
-    var res;try{res=JSON.parse(txt);}catch(e){res={action:'없음',say:'잘 못 들었어요.'};}
-    return execCmd(res);
+    // JSON 파싱 — 마크다운 펜스 제거
+    txt=txt.replace(/```json|```/g,'').trim();
+    var res;try{res=JSON.parse(txt);}catch(e){res={action:'AI코치',page:'chat',say:'',query:cmd};}
+    return execCmd(res,cmd);
   })
   .catch(function(){return ttsP('오류가 생겼어요.');});
 }
-function execCmd(r){
-  var a=r.action||'없음',p=r.page||'',say=r.say||'',q=r.query||'';
-  if(a==='페이지이동'){if(p)goPage(p);return ttsP(say);}
-  if(a==='AI코치'){goPage('chat');return ttsP(say).then(function(){if(q){document.getElementById('chat-in').value=q;return sendChatP();}});}
-  if(a==='PSA기록'){var v=parseFloat(r.psa);if(!isNaN(v)){quickSavePSA(v);return ttsP('PSA '+v+'를 기록했어요.');}openPSASheet();return ttsP('PSA 수치를 입력해 주세요.');}
-  if(a==='증상기록'){var nrs=parseInt(r.nrs||0),sym=r.sym||'pain';if(nrs>=0&&nrs<=10){quickSaveSym(sym,nrs);return ttsP(symLabel(sym)+' '+nrs+'점 기록됐어요.');}openSymSheet(sym);return ttsP(symLabel(sym)+' 강도를 선택해 주세요.');}
-  return ttsP(say||'잘 몰랐어요. 다시 말씀해 주세요.');
+function execCmd(r,originalCmd){
+  var a=r.action||'없음',p=r.page||'',say=r.say||'',q=r.query||originalCmd||'';
+  if(a==='페이지이동'){
+    if(p==='home') goHome();
+    else if(p) goPage(p);
+    return ttsP(say||pageName(p)+'로 이동했어요.');
+  }
+  if(a==='AI코치'){
+    goPage('chat');
+    return ttsP(say).then(function(){
+      if(q){document.getElementById('chat-in').value=q;return sendChatP();}
+    });
+  }
+  if(a==='PSA기록'){
+    var v=parseFloat(r.psa);
+    if(!isNaN(v)){quickSavePSA(v);return ttsP('PSA '+v+'를 기록했어요.');}
+    openPSASheet();return ttsP('PSA 수치를 입력해 주세요.');
+  }
+  if(a==='증상기록'){
+    var nrs=parseInt(r.nrs||0),sym=r.sym||'pain';
+    if(nrs>=0&&nrs<=10){quickSaveSym(sym,nrs);return ttsP(symLabel(sym)+' '+nrs+'점 기록됐어요.');}
+    openSymSheet(sym);return ttsP(symLabel(sym)+' 강도를 선택해 주세요.');
+  }
+  // 분류 실패 시 AI코치로 fallback
+  goPage('chat');
+  return ttsP('').then(function(){
+    document.getElementById('chat-in').value=q||originalCmd;return sendChatP();
+  });
 }
+function pageName(p){return{home:'홈',upload:'식단',excel:'기록장',rec:'추적',chat:'코치'}[p]||p;}
 function symLabel(s){return{pain:'통증',urine:'배뇨 불편',fatigue:'피로'}[s]||s;}
 
 /* ══ TTS ══ */
