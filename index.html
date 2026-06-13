@@ -607,17 +607,20 @@ textarea.fi{resize:none;}
       <div class="card" style="padding:12px;">
         <div class="photo-grid" id="home-photo-grid"></div>
       </div>
-      <div class="sl"><i class="ti ti-chart-bar"></i> 오늘의 영양 현황</div>
+      <div class="sl"><i class="ti ti-chart-bar"></i> 오늘의 식단 현황</div>
       <div class="stat-row">
-        <div class="sc"><div class="slb">탄수화물</div><div class="sv g">18g</div><div style="font-size:11px;color:var(--tld);margin-top:3px;">목표 20g</div></div>
-        <div class="sc"><div class="slb">단백질</div><div class="sv">82g</div><div style="font-size:11px;color:var(--mu);margin-top:3px;">목표 90g</div></div>
+        <div class="sc"><div class="slb">오늘 식사 기록</div><div class="sv g" id="stat-meals">0끼</div><div style="font-size:11px;color:var(--tld);margin-top:3px;">아침·점심·저녁</div></div>
+        <div class="sc"><div class="slb">오늘 만보</div><div class="sv" id="stat-steps">-</div><div style="font-size:11px;color:var(--mu);margin-top:3px;">목표 10,000보</div></div>
       </div>
       <div class="stat-row">
-        <div class="sc"><div class="slb">지방</div><div class="sv">110g</div></div>
-        <div class="sc"><div class="slb">칼로리</div><div class="sv">1,420</div></div>
+        <div class="sc"><div class="slb">총 기록일</div><div class="sv" id="stat-days">0일</div></div>
+        <div class="sc"><div class="slb">최근 기록</div><div class="sv" id="stat-last" style="font-size:16px;">없음</div></div>
       </div>
-      <div class="sl"><i class="ti ti-bulb"></i> 오늘의 케토 팁</div>
-      <div class="tip-box"><div class="tip-lbl">AI 코치의 조언</div>전해질 보충이 중요합니다. 나트륨·칼륨·마그네슘을 충분히 섭취하면 케토 독감 증상을 예방할 수 있습니다.</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <div class="sl"><i class="ti ti-bulb"></i> 오늘의 케토 팁</div>
+        <button onclick="refreshKetoTip()" style="background:none;border:none;color:var(--teal);font-size:13px;cursor:pointer;display:flex;align-items:center;gap:4px;font-family:inherit;padding:4px;"><i class="ti ti-refresh"></i>새 팁</button>
+      </div>
+      <div class="tip-box"><div class="tip-lbl">AI 코치의 조언</div><div id="keto-tip-text">전해질 보충이 중요합니다. 나트륨·칼륨·마그네슘을 충분히 섭취하면 케토 독감 증상을 예방할 수 있습니다.</div></div>
       <div class="vguide">
         <div class="vg-ttl"><i class="ti ti-microphone"></i> 이렇게 말해보세요</div>
         <div class="vg-item"><i class="ti ti-camera"></i>"사진 찍어줘" — 식단 AI 분석</div>
@@ -702,9 +705,20 @@ textarea.fi{resize:none;}
         <button class="tbtn food active" id="tb-food" onclick="setType('food')"><i class="ti ti-salad"></i>식사</button>
         <button class="tbtn ex" id="tb-ex" onclick="setType('ex')"><i class="ti ti-run"></i>운동</button>
       </div>
-      <input class="fi" type="text" id="up-name" placeholder="메뉴명 / 음식 이름 (선택)">
-      <textarea class="fi" rows="2" id="up-memo" placeholder="메모 (선택)"></textarea>
-      <button class="big-btn navy" onclick="doAnalyze()"><i class="ti ti-sparkles"></i>AI 분석 요청</button>
+      <!-- 식사 입력 -->
+      <div id="food-form">
+        <input class="fi" type="text" id="up-name" placeholder="메뉴명 / 음식 이름 (선택)">
+        <textarea class="fi" rows="2" id="up-memo" placeholder="메모 - 재료, 특이사항 등 (선택)"></textarea>
+        <button class="big-btn navy" onclick="doAnalyze()"><i class="ti ti-sparkles"></i>AI 식단 분석</button>
+      </div>
+      <!-- 운동 입력 -->
+      <div id="ex-form" style="display:none;">
+        <input class="fi" type="text" id="ex-type" placeholder="운동 종류 (예: 빠르게 걷기, 자전거)">
+        <input class="fi" type="text" id="ex-duration" placeholder="운동 시간 (예: 30분)" style="margin-top:9px;">
+        <input class="fi" type="text" id="ex-intensity" placeholder="강도 (예: 저강도, 중강도, 고강도)" style="margin-top:9px;">
+        <textarea class="fi" rows="2" id="ex-memo" placeholder="메모 (선택)" style="margin-top:9px;"></textarea>
+        <button class="big-btn navy" style="background:var(--warn);" onclick="doAnalyzeEx()"><i class="ti ti-sparkles"></i>AI 운동 분석</button>
+      </div>
       <!-- 암환자 전용 증상/복약 -->
       <div id="cancer-upload-extra" style="display:none;">
         <div class="section-divider">증상 · 복약 기록</div>
@@ -1267,7 +1281,7 @@ function initApp(){
 
   // 데이터
   xlLoad();
-  if(isHealth) refreshHomeGrid();
+  if(isHealth){ refreshHomeGrid(); refreshHomeStats(); refreshKetoTip(); }
   else { refreshMedHome(); refreshTodaySym(); refreshPSABanner(); }
 
   // 날짜
@@ -1295,7 +1309,7 @@ function goHome(){
 }
 function goPage(p){
   activatePage('pg-'+p,'nb-'+p);
-  if(p==='excel'){xlLoad();if(CUR_USER&&CUR_USER.mode!=='health')loadSymCards();}
+  if(p==='excel'&&CUR_USER&&CUR_USER.mode!=='health') loadSymCards();
   if(p==='rec'&&CUR_USER&&CUR_USER.mode!=='health'){loadPSAHistory();loadSymAvg();}
 }
 function goRec(){
@@ -1557,7 +1571,7 @@ function xlAddDay(){var card=makeCard({date:todayStr(),photos:{},steps:''});docu
 function delCard(card){card.remove();if(!document.getElementById('xl-cards').children.length)document.getElementById('xl-empty').style.display='block';schedSave();refreshHomeGrid();}
 function schedSave(){if(saveTimer)clearTimeout(saveTimer);saveTimer=setTimeout(doSave,800);}
 function collectCards(){var days=[];document.querySelectorAll('#xl-cards .day-card').forEach(function(card){var photos={};card.querySelectorAll('.meal-slot').forEach(function(slot){var p=slot.getAttribute('data-photo');if(p)photos[slot.getAttribute('data-meal')]=p;});var di=card.querySelector('.day-date'),si=card.querySelector('.steps-in');days.push({date:di?di.value:'',steps:si?si.value:'',photos:photos});});return days;}
-function doSave(){setRecords(collectCards());showAutoSave('autosave-badge');refreshHomeGrid();}
+function doSave(){setRecords(collectCards());showAutoSave('autosave-badge');refreshHomeGrid();refreshHomeStats();}
 function xlLoad(){var days=getRecords();var c=document.getElementById('xl-cards');c.innerHTML='';cardSeq=0;document.getElementById('xl-empty').style.display=days.length?'none':'block';days.forEach(function(d){c.appendChild(makeCard(d));});}
 function xlExport(){var days=collectCards();if(!days.length){showToast('기록이 없습니다');return;}var u=CUR_USER,isHealth=u&&u.mode==='health';var aoa=[[isHealth?'케토 식단 일지':'암환자 식단 일지'],[],['날짜','아침','점심','저녁','만보']];days.forEach(function(d){aoa.push([d.date,d.photos&&d.photos.morning?'✓':'',d.photos&&d.photos.lunch?'✓':'',d.photos&&d.photos.dinner?'✓':'',d.steps]);});if(!isHealth){var symData=getSym(),psaData=getPSA(),medData=getMeds();aoa.push([]);aoa.push(['=== 증상 기록 ===']);aoa.push(['날짜','통증','배뇨','피로','메모']);Object.keys(symData).sort().forEach(function(date){var d=symData[date];aoa.push([date,d.pain!==undefined?d.pain:'',d.urine!==undefined?d.urine:'',d.fatigue!==undefined?d.fatigue:'',d.memo||'']);});if(psaData.length){aoa.push([]);aoa.push(['=== PSA 기록 ===']);aoa.push(['날짜','수치(ng/mL)','메모']);psaData.forEach(function(p){aoa.push([p.date,p.v,p.note||'']);});}}var ws=XLSX.utils.aoa_to_sheet(aoa);ws['!cols']=[{wch:16},{wch:10},{wch:10},{wch:10},{wch:12}];var wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'메타케어기록');XLSX.writeFile(wb,'메타케어_'+todayStr().replace(/[년월일\s]/g,'')+'.xlsx');showToast('엑셀 저장 완료!');}
 
@@ -1581,7 +1595,100 @@ function saveRot(c,m,d){var a=allRot();if(!a[c])a[c]={};a[c][m]=d;uSetJ('rot',a)
 function delRot(c,m){var a=allRot();if(a[c]){delete a[c][m];uSetJ('rot',a);}}
 
 /* ══ 기록 탭 ══ */
-function setType(t){document.getElementById('tb-food').className='tbtn food'+(t==='food'?' active':'');document.getElementById('tb-ex').className='tbtn ex'+(t==='ex'?' active':'');}
+function setType(t){
+  document.getElementById('tb-food').className='tbtn food'+(t==='food'?' active':'');
+  document.getElementById('tb-ex').className='tbtn ex'+(t==='ex'?' active':'');
+  document.getElementById('food-form').style.display=t==='food'?'':'none';
+  document.getElementById('ex-form').style.display=t==='ex'?'':'none';
+  // 사진 미리보기와 분석결과 초기화
+  document.getElementById('preview-area').style.display='none';
+  document.getElementById('fb-box').style.display='none';
+}
+
+/* ══ 운동 AI 분석 ══ */
+function doAnalyzeEx(){
+  if(!ANT_KEY){showToast('API 키가 없습니다');return;}
+  var type=document.getElementById('ex-type').value.trim();
+  var duration=document.getElementById('ex-duration').value.trim();
+  var intensity=document.getElementById('ex-intensity').value.trim();
+  var memo=document.getElementById('ex-memo').value.trim();
+  if(!type){showToast('운동 종류를 입력하세요');return;}
+  var fb=document.getElementById('fb-box');fb.style.display='block';
+  fb.innerHTML='<div class="dots"><span></span><span></span><span></span></div>';
+  var u=CUR_USER,isHealth=u&&u.mode==='health';
+  var prompt='"'+type+'" 운동';
+  if(duration) prompt+=' '+duration;
+  if(intensity) prompt+=' ('+intensity+')';
+  if(isHealth) prompt+='을 케토제닉 식단 관점에서 분석해 주세요. 지방 연소 효과, 케톤 생성에 미치는 영향, 운동 후 식사 주의사항을 포함해 3~4문장으로.';
+  else prompt+='을 암 환자 관점에서 분석해 주세요. 면역 기능, 체력 유지, 피로 관리에 미치는 영향을 포함해 3~4문장으로.';
+  if(memo) prompt+=' 메모: '+memo;
+  fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','x-api-key':ANT_KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({model:'claude-haiku-4-5',max_tokens:400,messages:[{role:'user',content:prompt}]})
+  })
+  .then(function(r){return r.json();})
+  .then(function(d){var reply=(d.content&&d.content[0]&&d.content[0].text)||'분석 결과를 가져오지 못했어요.';fb.textContent=reply;tts(reply);})
+  .catch(function(){fb.textContent='분석 오류가 발생했어요.';});
+}
+
+/* ══ 홈 통계 업데이트 ══ */
+function refreshHomeStats(){
+  var days=getRecords(),today=todayStr();
+  // 총 기록일
+  var dEl=document.getElementById('stat-days');if(dEl)dEl.textContent=days.length+'일';
+  // 최근 기록
+  var lEl=document.getElementById('stat-last');
+  if(lEl)lEl.textContent=days.length?days[days.length-1].date.slice(0,8):'없음';
+  // 오늘 식사 기록
+  var todayData=days.find(function(d){return d.date===today;});
+  var mealCount=0;
+  if(todayData&&todayData.photos){['morning','lunch','dinner'].forEach(function(m){if(todayData.photos[m])mealCount++;});}
+  var mEl=document.getElementById('stat-meals');if(mEl)mEl.textContent=mealCount+'끼';
+  // 오늘 만보
+  var sEl=document.getElementById('stat-steps');
+  if(sEl)sEl.textContent=todayData&&todayData.steps?Number(todayData.steps.replace(/[^0-9]/g,'')).toLocaleString()+'보':'-';
+}
+
+/* ══ 케토 팁 ══ */
+var KETO_TIPS=[
+  '전해질 보충이 중요합니다. 나트륨·칼륨·마그네슘을 충분히 섭취하면 케토 독감 증상을 예방할 수 있습니다.',
+  '케토 식단에서 수분 섭취를 늘리세요. 하루 2~3L의 물은 케톤 배출을 돕고 피로를 줄입니다.',
+  '운동 전 MCT 오일 한 스푼은 즉각적인 에너지를 제공하고 케토시스를 유지하는 데 도움이 됩니다.',
+  '탄수화물 20g 이하를 유지하려면 채소 라벨을 꼭 확인하세요. 양파·당근은 의외로 당 함량이 높습니다.',
+  '저강도 유산소 운동(걷기, 자전거)은 케톤 산화를 촉진하여 체지방 연소를 극대화합니다.',
+  '단백질을 과도하게 섭취하면 포도당신생합성(gluconeogenesis)으로 케토시스가 방해받을 수 있습니다.',
+  '아보카도는 케토의 완벽한 음식입니다. 건강한 지방, 칼륨, 섬유질이 풍부합니다.',
+  '케토 식단 초기에는 수면의 질이 일시적으로 떨어질 수 있습니다. 마그네슘 보충이 도움이 됩니다.',
+  '버터 커피(방탄 커피)는 아침 공복에 섭취하면 포만감을 유지하며 케토시스를 강화합니다.',
+  '케토에서 식이섬유 섭취를 소홀히 하지 마세요. 브로콜리, 아스파라거스, 시금치를 충분히 드세요.',
+  '외식 시 샐러드에 올리브오일 드레싱, 고기류, 치즈를 선택하면 케토를 유지할 수 있습니다.',
+  '케토에서 간헐적 단식(16:8)을 병행하면 인슐린 민감성이 더욱 개선됩니다.',
+  '피로감이 심하다면 나트륨 부족일 수 있습니다. 소금을 조금 더 섭취해보세요.',
+  '치즈, 계란, 견과류는 케토 최고의 간식입니다. 항상 가방에 구비해두세요.'
+];
+var lastTipIdx=-1;
+function getKetoTip(){
+  var idx;do{idx=Math.floor(Math.random()*KETO_TIPS.length);}while(idx===lastTipIdx&&KETO_TIPS.length>1);
+  lastTipIdx=idx;return KETO_TIPS[idx];
+}
+function refreshKetoTip(){
+  var el=document.getElementById('keto-tip-text');
+  if(!el)return;
+  if(ANT_KEY){
+    el.innerHTML='<div class="dots"><span></span><span></span><span></span></div>';
+    fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':ANT_KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-haiku-4-5',max_tokens:120,messages:[{role:'user',content:'케토제닉 식단 실천자를 위한 오늘의 팁을 1~2문장으로 알려주세요. 구체적이고 실용적으로.'}]})
+    })
+    .then(function(r){return r.json();})
+    .then(function(d){var t=(d.content&&d.content[0]&&d.content[0].text)||getKetoTip();el.textContent=t;})
+    .catch(function(){el.textContent=getKetoTip();});
+  } else {
+    el.textContent=getKetoTip();
+  }
+}
 
 /* ══ 유틸 ══ */
 function todayStr(){var d=new Date();return String(d.getFullYear()).slice(2)+'년 '+pad(d.getMonth()+1)+'월 '+pad(d.getDate())+'일';}
