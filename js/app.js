@@ -60,6 +60,7 @@ function init(){
   var pw  = $id('inp-pw').value.trim();
   if(!ant){ alert('API 키를 입력해 주세요.'); return; }
   if(!pw){  alert('Admin 비밀번호를 설정해 주세요.'); return; }
+  localStorage.clear();
   S.s('mc_ant', ant);
   S.s('mc_pw', pw);
   KEY = ant;
@@ -70,7 +71,8 @@ function init(){
 /* ── Admin 로그인 ── */
 function checkPw(){
   var pw = $id('admin-pw-input').value;
-  if(pw === S.g('mc_pw')){
+  var stored = S.g('mc_pw')||S.g('mc_admin_pw')||'';
+  if(pw === stored){
     $id('admin-pw-input').value = '';
     goScreen('scr-admin');
   } else {
@@ -938,12 +940,7 @@ function _showAutosave(){ var b=$id('autosave'); if(!b) return; b.classList.add(
 (function(){
   var pw=S.g('mc_pw')||S.g('mc_admin_pw');
   if(!pw){ $id('scr-init').classList.add('active'); }
-  else {
-    // 구버전 키 마이그레이션
-    if(!S.g('mc_pw')&&S.g('mc_admin_pw')) S.s('mc_pw', S.g('mc_admin_pw'));
-    if(!S.g('mc_ant')&&S.g('mc_ant_key')) S.s('mc_ant', S.g('mc_ant_key'));
-    KEY=S.g('mc_ant')||''; _renderProfileList(); $id('scr-profile').classList.add('active');
-  }
+  else { KEY=S.g('mc_ant')||S.g('mc_ant_key')||''; _renderProfileList(); $id('scr-profile').classList.add('active'); }
 })();
 
 /* ── 공개 API ── */
