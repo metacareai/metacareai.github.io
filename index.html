@@ -70,11 +70,11 @@ body{font-family:'Noto Sans KR',-apple-system,sans-serif;background:var(--navy);
 .modal-btn.cancel{background:var(--cream);color:var(--mu);}
 
 /* ══ Admin 대시보드 ══ */
-#admin-screen{background:var(--cream);}
+#admin-screen{background:var(--cream);overflow-y:auto;}
 .admin-topbar{background:var(--red);padding:env(safe-area-inset-top,14px) 20px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
 .admin-topbar-title{color:#fff;font-size:18px;font-weight:700;}
 .admin-back{background:none;border:none;color:rgba(255,255,255,.8);font-size:20px;cursor:pointer;padding:4px;display:flex;align-items:center;}
-.admin-body{padding:18px;display:flex;flex-direction:column;gap:16px;overflow-y:auto;flex:1;}
+.admin-body{padding:18px;display:flex;flex-direction:column;gap:16px;padding-bottom:40px;}
 .admin-section{background:var(--wh);border:1px solid var(--bd);border-radius:var(--r);overflow:hidden;}
 .admin-section-hd{background:var(--navy);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;}
 .admin-section-title{color:#fff;font-size:15px;font-weight:700;}
@@ -173,7 +173,7 @@ body{font-family:'Noto Sans KR',-apple-system,sans-serif;background:var(--navy);
 .tb-icon-btn{background:none;border:none;color:rgba(255,255,255,.48);font-size:19px;cursor:pointer;padding:4px;display:flex;align-items:center;}
 
 /* ══ 음성 FAB ══ */
-.vfab{position:fixed;right:20px;bottom:calc(env(safe-area-inset-bottom,0px) + 84px);width:62px;height:62px;border-radius:50%;border:none;cursor:pointer;z-index:200;display:flex;align-items:center;justify-content:center;background:var(--teal);box-shadow:0 4px 18px rgba(42,123,123,.5);transition:background .2s;}
+.vfab{position:fixed;right:20px;bottom:calc(env(safe-area-inset-bottom,0px) + 84px);width:62px;height:62px;border-radius:50%;border:none;cursor:pointer;z-index:200;display:none;align-items:center;justify-content:center;background:var(--teal);box-shadow:0 4px 18px rgba(42,123,123,.5);transition:background .2s;pointer-events:auto;}
 .vfab i{font-size:28px;color:#fff;}
 .vfab.listening{background:#c0392b;animation:pulse 1s infinite;}
 .vfab.thinking{background:var(--gold);}
@@ -1142,7 +1142,7 @@ function checkAdminPw(){
 /* ══ Admin 대시보드 ══ */
 function enterAdmin(){
   show('admin-screen');
-  // API 키 표시
+  var fab=document.getElementById('vfab');if(fab)fab.style.display='none';
   var antIn = document.getElementById('admin-ant-in');
   var elIn  = document.getElementById('admin-el-in');
   if(antIn) antIn.value = gGet('mc_ant_key')||'';
