@@ -936,9 +936,14 @@ function _showAutosave(){ var b=$id('autosave'); if(!b) return; b.classList.add(
 
 /* ── 초기 진입 ── */
 (function(){
-  var pw=S.g('mc_pw');
+  var pw=S.g('mc_pw')||S.g('mc_admin_pw');
   if(!pw){ $id('scr-init').classList.add('active'); }
-  else { KEY=S.g('mc_ant')||''; _renderProfileList(); $id('scr-profile').classList.add('active'); }
+  else {
+    // 구버전 키 마이그레이션
+    if(!S.g('mc_pw')&&S.g('mc_admin_pw')) S.s('mc_pw', S.g('mc_admin_pw'));
+    if(!S.g('mc_ant')&&S.g('mc_ant_key')) S.s('mc_ant', S.g('mc_ant_key'));
+    KEY=S.g('mc_ant')||''; _renderProfileList(); $id('scr-profile').classList.add('active');
+  }
 })();
 
 /* ── 공개 API ── */
