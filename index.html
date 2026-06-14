@@ -173,7 +173,9 @@ body{font-family:'Noto Sans KR',-apple-system,sans-serif;background:var(--navy);
 .tb-icon-btn{background:none;border:none;color:rgba(255,255,255,.48);font-size:19px;cursor:pointer;padding:4px;display:flex;align-items:center;}
 
 /* ══ 음성 FAB ══ */
-.vfab{position:fixed;right:20px;bottom:calc(env(safe-area-inset-bottom,0px) + 84px);width:62px;height:62px;border-radius:50%;border:none;cursor:pointer;z-index:200;display:none;align-items:center;justify-content:center;background:var(--teal);box-shadow:0 4px 18px rgba(42,123,123,.5);transition:background .2s;pointer-events:auto;}
+.vfab{position:fixed;right:20px;bottom:calc(env(safe-area-inset-bottom,0px) + 84px);width:62px;height:62px;border-radius:50%;border:none;cursor:pointer;z-index:200;display:none;align-items:center;justify-content:center;background:var(--teal);box-shadow:0 4px 18px rgba(42,123,123,.5);transition:background .2s;}
+.vfab[style*="display: none"],.vfab[style*="display:none"]{pointer-events:none!important;}
+.vfab[style*="display: flex"],.vfab[style*="display:flex"]{pointer-events:auto;}
 .vfab i{font-size:28px;color:#fff;}
 .vfab.listening{background:#c0392b;animation:pulse 1s infinite;}
 .vfab.thinking{background:var(--gold);}
@@ -487,20 +489,6 @@ textarea.fi{resize:none;}
     <div style="width:32px;"></div>
   </div>
   <div class="admin-body">
-
-    <!-- API 키 설정 -->
-    <div class="admin-section">
-      <div class="admin-section-hd">
-        <div class="admin-section-title">🔑 API 키 설정</div>
-      </div>
-      <div class="admin-api-row">
-        <div class="admin-api-label">Anthropic API 키</div>
-        <input class="admin-api-in" type="password" id="admin-ant-in" placeholder="sk-ant-...">
-        <div class="admin-api-label">ElevenLabs API 키 (선택)</div>
-        <input class="admin-api-in" type="password" id="admin-el-in" placeholder="선택사항">
-        <button class="admin-save-btn" onclick="saveApiKeys()">저장</button>
-      </div>
-    </div>
 
     <!-- 사용자 관리 -->
     <div class="admin-section">
@@ -1051,20 +1039,22 @@ function show(id){
   });
   var app=document.getElementById('main-app');
   if(app) app.style.display='none';
-  // FAB 숨김
-  var fab=document.getElementById('vfab');if(fab)fab.style.display='none';
+  var fab=document.getElementById('vfab');
+  if(fab){fab.style.display='none';fab.style.visibility='hidden';fab.style.pointerEvents='none';}
 }
 function showApp(){
   ['profile-screen','admin-screen','onboarding','view-user-screen','report-screen'].forEach(function(s){
     var el=document.getElementById(s); if(el) el.classList.add('off');
   });
   document.getElementById('main-app').style.display='flex';
-  // FAB 표시
-  var fab=document.getElementById('vfab');if(fab)fab.style.display='flex';
+  var fab=document.getElementById('vfab');
+  if(fab){fab.style.display='flex';fab.style.visibility='visible';fab.style.pointerEvents='auto';}
 }
 function closeReport(){
   document.getElementById('report-screen').classList.add('off');
   document.getElementById('main-app').style.display='flex';
+  var fab=document.getElementById('vfab');
+  if(fab){fab.style.display='flex';fab.style.visibility='visible';fab.style.pointerEvents='auto';}
 }
 
 /* ══ 최초 설정 ══ */
