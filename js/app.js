@@ -57,12 +57,10 @@ function goScreen(id){
 /* ── 최초 설정 ── */
 function init(){
   var ant = $id('inp-ant').value.trim();
-  var pw  = $id('inp-pw').value.trim();
   if(!ant){ alert('API 키를 입력해 주세요.'); return; }
-  if(!pw){  alert('Admin 비밀번호를 설정해 주세요.'); return; }
   localStorage.clear();
   S.s('mc_ant', ant);
-  S.s('mc_pw', pw);
+  S.s('mc_done', '1');
   KEY = ant;
   goScreen('scr-profile');
   toast('설정 완료!');
@@ -938,8 +936,8 @@ function _showAutosave(){ var b=$id('autosave'); if(!b) return; b.classList.add(
 
 /* ── 초기 진입 ── */
 (function(){
-  var pw=S.g('mc_pw')||S.g('mc_admin_pw');
-  if(!pw){ $id('scr-init').classList.add('active'); }
+  var done = S.g('mc_done')||S.g('mc_pw')||S.g('mc_admin_pw');
+  if(!done){ $id('scr-init').classList.add('active'); }
   else { KEY=S.g('mc_ant')||S.g('mc_ant_key')||''; _renderProfileList(); $id('scr-profile').classList.add('active'); }
 })();
 
