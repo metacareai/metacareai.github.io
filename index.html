@@ -482,13 +482,13 @@ textarea.fi{resize:none;}
 </div>
 
 <!-- ══════════ Admin 대시보드 ══════════ -->
-<div id="admin-screen" class="fullscreen off">
+<div id="admin-screen" style="position:fixed;inset:0;z-index:9999;background:var(--cream);display:none;flex-direction:column;">
   <div class="admin-topbar">
     <button class="admin-back" onclick="exitAdmin()"><i class="ti ti-arrow-left"></i></button>
     <div class="admin-topbar-title">🛡️ Admin 대시보드</div>
     <div style="width:32px;"></div>
   </div>
-  <div class="admin-body">
+  <div style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px;display:flex;flex-direction:column;gap:14px;padding-bottom:40px;">
 
     <!-- 사용자 관리 -->
     <div class="admin-section">
@@ -507,9 +507,8 @@ textarea.fi{resize:none;}
         <div class="admin-section-title">💾 데이터 백업 / 복원</div>
       </div>
       <div class="admin-api-row">
-        <div style="font-size:13px;color:var(--mu);margin-bottom:10px;line-height:1.6;">코드 업데이트 전 반드시 백업하세요. 모든 사용자 데이터가 JSON 파일로 저장됩니다.</div>
-        <button class="admin-save-btn" style="margin-bottom:10px;" onclick="backupData()">📥 전체 데이터 백업 (JSON 다운로드)</button>
-        <div style="font-size:13px;color:var(--mu);margin-bottom:8px;">복원: 백업 파일을 선택하면 데이터가 복구됩니다</div>
+        <div style="font-size:13px;color:var(--mu);margin-bottom:10px;line-height:1.6;">코드 업데이트 전 반드시 백업하세요.</div>
+        <button class="admin-save-btn" style="margin-bottom:10px;" onclick="backupData()">📥 전체 데이터 백업</button>
         <input type="file" id="restore-file" accept=".json" style="display:none;" onchange="restoreData(event)">
         <button class="admin-save-btn" style="background:var(--teal);" onclick="document.getElementById('restore-file').click()">📤 백업 파일로 복원</button>
       </div>
@@ -533,7 +532,7 @@ textarea.fi{resize:none;}
         <div class="admin-section-title">⚠️ 앱 초기화</div>
       </div>
       <div class="admin-api-row">
-        <div style="font-size:13px;color:var(--mu);margin-bottom:10px;line-height:1.6;">API 키, 사용자 목록, 모든 데이터가 삭제됩니다. 신중하게 사용하세요.</div>
+        <div style="font-size:13px;color:var(--mu);margin-bottom:10px;line-height:1.6;">API 키, 사용자 목록, 모든 데이터가 삭제됩니다.</div>
         <button class="admin-save-btn" style="background:var(--red);" onclick="doFullReset()">전체 초기화</button>
       </div>
     </div>
@@ -1033,19 +1032,27 @@ function getAdminPw(){ return gGet('mc_admin_pw')||''; }
 })();
 
 function show(id){
-  ['profile-screen','admin-screen','onboarding','view-user-screen','report-screen'].forEach(function(s){
+  // fullscreen 요소들 처리
+  ['profile-screen','onboarding','view-user-screen','report-screen'].forEach(function(s){
     var el=document.getElementById(s);
     if(el) el.classList.toggle('off', s!==id);
   });
+  // admin-screen은 별도 처리
+  var adminEl=document.getElementById('admin-screen');
+  if(adminEl) adminEl.style.display=(id==='admin-screen'?'flex':'none');
+  // main-app
   var app=document.getElementById('main-app');
   if(app) app.style.display='none';
+  // FAB 완전 숨김
   var fab=document.getElementById('vfab');
   if(fab){fab.style.display='none';fab.style.visibility='hidden';fab.style.pointerEvents='none';}
 }
 function showApp(){
-  ['profile-screen','admin-screen','onboarding','view-user-screen','report-screen'].forEach(function(s){
+  ['profile-screen','onboarding','view-user-screen','report-screen'].forEach(function(s){
     var el=document.getElementById(s); if(el) el.classList.add('off');
   });
+  var adminEl=document.getElementById('admin-screen');
+  if(adminEl) adminEl.style.display='none';
   document.getElementById('main-app').style.display='flex';
   var fab=document.getElementById('vfab');
   if(fab){fab.style.display='flex';fab.style.visibility='visible';fab.style.pointerEvents='auto';}
@@ -1055,6 +1062,19 @@ function closeReport(){
   document.getElementById('main-app').style.display='flex';
   var fab=document.getElementById('vfab');
   if(fab){fab.style.display='flex';fab.style.visibility='visible';fab.style.pointerEvents='auto';}
+}
+function enterAdmin(){
+  // 모든 화면 숨김
+  ['profile-screen','onboarding','view-user-screen','report-screen'].forEach(function(s){
+    var el=document.getElementById(s); if(el) el.classList.add('off');
+  });
+  document.getElementById('main-app').style.display='none';
+  var fab=document.getElementById('vfab');
+  if(fab){fab.style.display='none';fab.style.visibility='hidden';fab.style.pointerEvents='none';}
+  // Admin 화면 표시
+  var adminEl=document.getElementById('admin-screen');
+  if(adminEl) adminEl.style.display='flex';
+  renderAdminUserList();
 }
 
 /* ══ 최초 설정 ══ */
@@ -1143,19 +1163,7 @@ function checkAdminPw(){
 }
 
 /* ══ Admin 대시보드 ══ */
-function enterAdmin(){
-  show('admin-screen');
-  var fab=document.getElementById('vfab');if(fab)fab.style.display='none';
-  var antIn = document.getElementById('admin-ant-in');
-  var elIn  = document.getElementById('admin-el-in');
-  if(antIn) antIn.value = gGet('mc_ant_key')||'';
-  if(elIn)  elIn.value  = gGet('mc_el_key')||'';
-  renderAdminUserList();
-}
-function exitAdmin(){
-  show('profile-screen');
-  renderProfileList();
-}
+function exitAdmin2_unused(){}
 function saveApiKeys(){
   var ant = document.getElementById('admin-ant-in').value.trim();
   var el  = document.getElementById('admin-el-in').value.trim();
