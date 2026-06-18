@@ -177,7 +177,7 @@ h2{font-size:20px;}
 
 /* 홈 */
 .greeting{font-size:20px;font-weight:700;}
-.ai-badge{display:inline-block;font-size:11px;font-weight:700;color:var(--teal);background:var(--tl);padding:3px 9px;border-radius:20px;vertical-align:middle;margin-left:2px;white-space:nowrap;}
+.ai-badge{display:inline-block;font-size:20px;font-weight:700;color:var(--teal);vertical-align:middle;margin-left:2px;}
 .days-count{font-size:24px;font-weight:700;color:var(--tld);}
 .goal-card{border-radius:var(--r);padding:17px 18px;color:#fff;}
 .goal-vals{display:flex;gap:16px;}
