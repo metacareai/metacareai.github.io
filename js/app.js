@@ -78,17 +78,7 @@ function _handlePopState(e){
 }
 window.addEventListener('popstate', _handlePopState);
 
-/* ── 최초 설정 ── */
-function init(){
-  var ant = $id('inp-ant').value.trim();
-  if(!ant){ alert('API 키를 입력해 주세요.'); return; }
-  localStorage.clear();
-  S.s('mc_ant', ant);
-  S.s('mc_done', '1');
-  KEY = ant;
-  goScreen('scr-profile');
-  toast('설정 완료!');
-}
+/* (최초 설정 화면 제거됨 — API 키는 코드에 내장되어 있음) */
 
 /* ── Admin 진입 (로고 5탭) ── */
 function logoTap(){
@@ -178,7 +168,7 @@ function restore(e){
   r.onload = function(ev){
     try{
       var data = JSON.parse(ev.target.result);
-      if(!data['mc_pw']){ toast('올바른 백업 파일이 아닙니다'); return; }
+      if(!data['mc_ant']&&!data['mc_users']){ toast('올바른 백업 파일이 아닙니다'); return; }
       if(!confirm('현재 데이터를 백업으로 덮어쓸까요?\n'+( data['_date']||''))) return;
       localStorage.clear();
       Object.keys(data).forEach(function(k){ if(!k.startsWith('_')) localStorage.setItem(k,data[k]); });
@@ -978,10 +968,10 @@ function _showAutosave(){ var b=$id('autosave'); if(!b) return; b.classList.add(
 
 /* ── 초기 진입 ── */
 (function(){
-  var done = S.g('mc_done')||S.g('mc_pw')||S.g('mc_admin_pw');
-  if(!done){ $id('scr-init').classList.add('active'); _navStack.push({type:'screen',id:'scr-init'}); }
-  else { KEY=S.g('mc_ant')||S.g('mc_ant_key')||''; _renderProfileList(); $id('scr-profile').classList.add('active'); _navStack.push({type:'screen',id:'scr-profile'}); }
-  try{ history.replaceState({navIdx:0}, '', '#'+_navStack[0].id); }catch(e){}
+  _renderProfileList();
+  $id('scr-profile').classList.add('active');
+  _navStack.push({type:'screen',id:'scr-profile'});
+  try{ history.replaceState({navIdx:0}, '', '#scr-profile'); }catch(e){}
 })();
 
 /* ── 공개 API ── */
@@ -989,7 +979,7 @@ return {
   // 화면
   goScreen:goScreen, logoTap:logoTap, filterProfiles:filterProfiles,
   // 설정
-  init:init, checkPw:checkPw,
+  checkPw:checkPw,
   // Admin
   delUser:delUser, changePw:changePw, backup:backup, restore:restore, fullReset:fullReset, filterAdminUsers:filterAdminUsers,
   // 사용자 추가
