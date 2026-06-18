@@ -6,7 +6,7 @@
 var A = (function(){
 
 /* ── 상태 ── */
-var KEY = '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';           // Anthropic API key
+var KEY = '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'; // Anthropic API key
 var USER = null;        // 현재 로그인 사용자
 var _newMode = '';
 var _newCtype = '';
@@ -21,6 +21,8 @@ var _saveTimer = null;
 var _chatBusy = false;
 var _cardSeq = 0;
 var _lastTipIdx = -1;
+var _logoTapCount = 0;
+var _logoTapTimer = null;
 
 /* ── 스토리지 헬퍼 ── */
 var S = {
@@ -45,14 +47,36 @@ function todayStr(){ var d=new Date(); return String(d.getFullYear()).slice(2)+'
 function pad(n){ return n<10?'0'+n:String(n); }
 
 /* ── 화면 전환 ── */
-function goScreen(id){
+var _navStack = [];
+var _suppressPush = false;
+
+function goScreen(id, opts){
   document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
   var el = $id(id);
   if(el) el.classList.add('active');
   if(id==='scr-admin') _renderAdminList();
   if(id==='scr-profile') _renderProfileList();
   if(id==='scr-add-user') _resetAddForm();
+  if(!_suppressPush){
+    _navStack.push({type:'screen', id:id});
+    try{ history.pushState({navIdx:_navStack.length-1}, '', '#'+id); }catch(e){}
+  }
 }
+
+function _handlePopState(e){
+  _suppressPush = true;
+  if(_navStack.length>1){
+    _navStack.pop();
+    var prev = _navStack[_navStack.length-1];
+    if(prev.type==='screen') goScreen(prev.id);
+    else if(prev.type==='page') goPage(prev.p);
+  } else {
+    // 더 갈 곳 없으면 프로필 화면으로 (앱 종료 방지)
+    goScreen('scr-profile');
+  }
+  _suppressPush = false;
+}
+window.addEventListener('popstate', _handlePopState);
 
 /* ── 최초 설정 ── */
 function init(){
@@ -66,10 +90,22 @@ function init(){
   toast('설정 완료!');
 }
 
+/* ── Admin 진입 (로고 5탭) ── */
+function logoTap(){
+  _logoTapCount++;
+  if(_logoTapTimer) clearTimeout(_logoTapTimer);
+  _logoTapTimer = setTimeout(function(){ _logoTapCount=0; }, 1500);
+  if(_logoTapCount>=5){
+    _logoTapCount=0;
+    $id('admin-pw-input').value='';
+    goScreen('scr-admin-pw');
+  }
+}
+
 /* ── Admin 로그인 ── */
 function checkPw(){
   var pw = $id('admin-pw-input').value;
-  var stored = S.g('mc_pw')||S.g('mc_admin_pw')||'';
+  var stored = S.g('mc_admin_pw')||'Kevin';
   if(pw === stored){
     $id('admin-pw-input').value = '';
     goScreen('scr-admin');
@@ -116,7 +152,7 @@ function changePw(){
   var p1=$id('new-pw1').value, p2=$id('new-pw2').value;
   if(!p1){ toast('새 비밀번호를 입력하세요'); return; }
   if(p1!==p2){ toast('비밀번호가 일치하지 않아요'); return; }
-  S.s('mc_pw', p1);
+  S.s('mc_admin_pw', p1);
   $id('new-pw1').value=''; $id('new-pw2').value='';
   toast('비밀번호 변경됐어요 ✓');
 }
@@ -246,10 +282,12 @@ function _renderProfileList(){
   var users = _getUsers();
   var el = $id('profile-list');
   if(!el) return;
+  var q = ($id('profile-search')&&$id('profile-search').value||'').trim().toLowerCase();
+  if(q) users = users.filter(function(u){ return u.name.toLowerCase().indexOf(q)>=0; });
   var ml = {cancer:'암환자', keto:'케토제닉', lchf:'저탄고지', diet:'다이어트 건강식'};
   var mi = {cancer:'🔬', keto:'🥑', lchf:'🥩', diet:'🥗'};
   if(!users.length){
-    el.innerHTML = '<div class="profile-empty"><i class="ti ti-users"></i><br>Admin으로 로그인하여<br>사용자를 추가하세요</div>';
+    el.innerHTML = '<div class="profile-empty"><i class="ti ti-users"></i><br>'+(q?'검색 결과가 없어요':'등록된 사용자가 없습니다')+'</div>';
     return;
   }
   el.innerHTML = '';
@@ -266,6 +304,7 @@ function _renderProfileList(){
     el.appendChild(btn);
   });
 }
+function filterProfiles(){ _renderProfileList(); }
 
 /* ── 로그인 ── */
 function loginUser(u){
@@ -936,16 +975,16 @@ function _showAutosave(){ var b=$id('autosave'); if(!b) return; b.classList.add(
 
 /* ── 초기 진입 ── */
 (function(){
-  var done = true;
-  KEY=S.g('mc_ant')||S.g('mc_ant_key')||'';
-  _renderProfileList();
-  $id('scr-profile').classList.add('active');
+  var done = S.g('mc_done')||S.g('mc_pw')||S.g('mc_admin_pw');
+  if(!done){ $id('scr-init').classList.add('active'); _navStack.push({type:'screen',id:'scr-init'}); }
+  else { KEY=S.g('mc_ant')||S.g('mc_ant_key')||''; _renderProfileList(); $id('scr-profile').classList.add('active'); _navStack.push({type:'screen',id:'scr-profile'}); }
+  try{ history.replaceState({navIdx:0}, '', '#'+_navStack[0].id); }catch(e){}
 })();
 
 /* ── 공개 API ── */
 return {
   // 화면
-  goScreen:goScreen,
+  goScreen:goScreen, logoTap:logoTap, filterProfiles:filterProfiles,
   // 설정
   init:init, checkPw:checkPw,
   // Admin

@@ -26,18 +26,14 @@
   <!-- ── 프로필 선택 ── -->
   <div id="scr-profile" class="screen dark">
     <div class="profile-hd">
-      <div class="logo">🧬</div>
+      <div class="logo" onclick="A.logoTap()" style="cursor:pointer;">🧬</div>
       <h2>스마트 메타케어</h2>
       <p class="sub">사용자를 선택하세요</p>
     </div>
-    <div id="profile-list" class="profile-body"></div>
-    <div class="profile-body" style="padding-top:0;">
-      <button class="admin-entry" onclick="A.goScreen('scr-admin')">
-        <span class="admin-icon"><i class="ti ti-shield-lock"></i></span>
-        <span>🔐 Admin 로그인</span>
-        <i class="ti ti-chevron-right" style="margin-left:auto;opacity:.3;"></i>
-      </button>
+    <div class="profile-body" style="padding-bottom:0;">
+      <input id="profile-search" class="inp" type="text" placeholder="🔍 이름으로 검색" oninput="A.filterProfiles()" style="margin-bottom:4px;">
     </div>
+    <div id="profile-list" class="profile-body"></div>
   </div>
 
   <!-- ── Admin 비밀번호 ── -->
