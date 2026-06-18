@@ -9,9 +9,15 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+<div id="loading-overlay" style="position:fixed;inset:0;background:#1A2F4C;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:99999;">
+  <div style="font-size:48px;">🧬</div>
+  <div style="color:#fff;font-size:14px;">불러오는 중...</div>
+</div>
 <div id="app">
 
   <!-- ── 프로필 선택 ── -->
@@ -191,11 +197,11 @@
       <!-- 홈 -->
       <div id="pg-home" class="page active">
         <div class="row space-between">
-          <div>
+          <div style="flex:1;min-width:0;">
             <div class="greeting">안녕하세요, <span class="uname"></span> 님 <span class="ai-badge">AI로 관리 받으세요</span></div>
             <div class="sub mt4" id="home-mode-sub"></div>
           </div>
-          <div class="text-right">
+          <div class="text-right" style="flex-shrink:0;margin-left:10px;">
             <div class="sub" id="home-days-lbl"></div>
             <div class="days-count" id="home-days"></div>
           </div>

@@ -24,10 +24,34 @@ var _lastTipIdx = -1;
 var _logoTapCount = 0;
 var _logoTapTimer = null;
 
-/* ── 스토리지 헬퍼 ── */
+/* ── Firebase 초기화 ── */
+var firebaseConfig = {
+  apiKey: "AIzaSyCOYX1JyAqM7nZHQGc4QzjiOS6mNvFlEYc",
+  authDomain: "metacare-voice.firebaseapp.com",
+  projectId: "metacare-voice",
+  storageBucket: "metacare-voice.firebasestorage.app",
+  messagingSenderId: "977034749190",
+  appId: "1:977034749190:web:077af2245949e0134b2a87"
+};
+firebase.initializeApp(firebaseConfig);
+var _db = firebase.firestore();
+var _docRef = _db.collection('metacare').doc('data');
+
+/* ── 스토리지 헬퍼 (메모리 캐시 + Firestore 동기화) ── */
+var _cache = {};        // 모든 키-값을 메모리에 보관 (동기 접근용)
+var _cacheReady = false;
+var _saveCloudTimer = null;
+
+function _saveCloud(){
+  if(_saveCloudTimer) clearTimeout(_saveCloudTimer);
+  _saveCloudTimer = setTimeout(function(){
+    _docRef.set(_cache).catch(function(err){ console.error('Firestore 저장 오류', err); });
+  }, 500);
+}
+
 var S = {
-  g: function(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } },
-  s: function(k,v){ try{ localStorage.setItem(k,v); }catch(e){ alert('저장 오류'); } },
+  g: function(k){ return (_cache[k]===undefined||_cache[k]===null) ? null : _cache[k]; },
+  s: function(k,v){ _cache[k]=v; _saveCloud(); },
   gj: function(k,d){ try{ return JSON.parse(S.g(k)||'null')||d; }catch(e){ return d; } },
   sj: function(k,v){ S.s(k, JSON.stringify(v)); }
 };
@@ -38,6 +62,20 @@ function ug(k){ return S.g(uk(k)); }
 function us(k,v){ S.s(uk(k),v); }
 function ugj(k,d){ try{ return JSON.parse(ug(k)||'null')||d; }catch(e){ return d; } }
 function usj(k,v){ us(k,JSON.stringify(v)); }
+
+/* ── 클라우드에서 초기 데이터 로드 ── */
+function _loadCloudData(cb){
+  _docRef.get().then(function(doc){
+    _cache = doc.exists ? (doc.data()||{}) : {};
+    _cacheReady = true;
+    cb();
+  }).catch(function(err){
+    console.error('Firestore 로드 오류', err);
+    _cache = {};
+    _cacheReady = true;
+    cb();
+  });
+}
 
 /* ── DOM 헬퍼 ── */
 function $id(id){ return document.getElementById(id); }
@@ -151,8 +189,7 @@ function changePw(){
 }
 
 function backup(){
-  var bk = {};
-  for(var i=0;i<localStorage.length;i++){ var k=localStorage.key(i); bk[k]=localStorage.getItem(k); }
+  var bk = JSON.parse(JSON.stringify(_cache));
   bk['_date'] = new Date().toLocaleString('ko-KR');
   var blob = new Blob([JSON.stringify(bk,null,2)], {type:'application/json'});
   var url = URL.createObjectURL(blob);
@@ -163,8 +200,7 @@ function backup(){
 }
 
 function backupText(){
-  var bk = {};
-  for(var i=0;i<localStorage.length;i++){ var k=localStorage.key(i); bk[k]=localStorage.getItem(k); }
+  var bk = JSON.parse(JSON.stringify(_cache));
   bk['_date'] = new Date().toLocaleString('ko-KR');
   var json = JSON.stringify(bk);
   var ta = $id('backup-text-area');
@@ -194,10 +230,13 @@ function restore(e){
       var data = JSON.parse(ev.target.result);
       if(!data['mc_ant']&&!data['mc_users']){ toast('올바른 백업 파일이 아닙니다'); return; }
       if(!confirm('현재 데이터를 백업으로 덮어쓸까요?\n'+( data['_date']||''))) return;
-      localStorage.clear();
-      Object.keys(data).forEach(function(k){ if(!k.startsWith('_')) localStorage.setItem(k,data[k]); });
-      toast('복원 완료! 새로고침합니다');
-      setTimeout(function(){ location.reload(); }, 1500);
+      var newCache = {};
+      Object.keys(data).forEach(function(k){ if(!k.startsWith('_')) newCache[k]=data[k]; });
+      _cache = newCache;
+      _docRef.set(_cache).then(function(){
+        toast('복원 완료! 새로고침합니다');
+        setTimeout(function(){ location.reload(); }, 1500);
+      }).catch(function(){ toast('복원 중 오류가 발생했습니다'); });
     }catch(err){ toast('파일을 읽을 수 없습니다'); }
   };
   r.readAsText(file); e.target.value='';
@@ -206,7 +245,8 @@ function restore(e){
 function fullReset(){
   if(!confirm('정말 전체 초기화할까요?\n모든 데이터가 삭제됩니다.')) return;
   if(!confirm('마지막 확인입니다.')) return;
-  localStorage.clear(); location.reload();
+  _cache = {};
+  _docRef.set({}).then(function(){ location.reload(); }).catch(function(){ location.reload(); });
 }
 
 /* ── 사용자 추가 ── */
@@ -326,7 +366,6 @@ function filterProfiles(){ _renderProfileList(); }
 /* ── 로그인 ── */
 function loginUser(u){
   USER = u;
-  KEY = S.g('mc_ant')||'';
   if(!KEY){ toast('API 키가 없습니다. Admin에서 설정해주세요.'); return; }
   _initApp();
   goScreen('scr-app');
@@ -830,10 +869,10 @@ function _refreshMedHome(){
 /* ── 이미지 압축 ── */
 function _compress(dataUrl,cb){
   var img=new Image(); img.onload=function(){
-    var c=$id('cc'),MAX=700,w=img.width,h=img.height;
+    var c=$id('cc'),MAX=480,w=img.width,h=img.height;
     if(w>MAX){h=Math.round(h*MAX/w);w=MAX;}
     c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);
-    cb(c.toDataURL('image/jpeg',0.72));
+    cb(c.toDataURL('image/jpeg',0.55));
   }; img.src=dataUrl;
 }
 
@@ -991,12 +1030,13 @@ function _delRot(c,m){ var a=_allRot(); if(a[c]){ delete a[c][m]; usj('rot',a); 
 function _showAutosave(){ var b=$id('autosave'); if(!b) return; b.classList.add('show'); setTimeout(function(){b.classList.remove('show');},1800); }
 
 /* ── 초기 진입 ── */
-(function(){
+_loadCloudData(function(){
   _renderProfileList();
   $id('scr-profile').classList.add('active');
   _navStack.push({type:'screen',id:'scr-profile'});
   try{ history.replaceState({navIdx:0}, '', '#scr-profile'); }catch(e){}
-})();
+  var lo = $id('loading-overlay'); if(lo) lo.style.display='none';
+});
 
 /* ── 공개 API ── */
 return {
