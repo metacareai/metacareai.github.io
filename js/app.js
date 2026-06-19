@@ -80,6 +80,17 @@ function _loadCloudData(cb){
 /* ── DOM 헬퍼 ── */
 function $id(id){ return document.getElementById(id); }
 function toast(msg){ var t=$id('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(function(){ t.classList.remove('show'); }, 2500); }
+
+function _showGreeting(name){
+  var el = document.createElement('div');
+  el.style.cssText = 'position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(26,47,76,.92);z-index:9999;gap:14px;';
+  el.innerHTML = '<div style="font-size:52px;">🧬</div>'
+    +'<div style="color:#fff;font-size:22px;font-weight:700;">안녕하세요</div>'
+    +'<div style="color:#7DFFC8;font-size:26px;font-weight:700;">'+esc(name)+' 님!</div>'
+    +'<div style="color:rgba(255,255,255,.55);font-size:14px;margin-top:4px;">AI로 관리 받으세요</div>';
+  document.body.appendChild(el);
+  setTimeout(function(){ el.style.transition='opacity .5s'; el.style.opacity='0'; setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); }, 500); }, 2000);
+}
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function todayStr(){ var d=new Date(); return String(d.getFullYear()).slice(2)+'년 '+pad(d.getMonth()+1)+'월 '+pad(d.getDate())+'일'; }
 function pad(n){ return n<10?'0'+n:String(n); }
@@ -472,6 +483,7 @@ function _initApp(){
   _updateDays();
 
   tts('안녕하세요 '+u.name+' 님!');
+  _showGreeting(u.name);
 }
 
 /* ── 건강관리 홈 ── */
@@ -567,11 +579,9 @@ function _setVS(s){
   if(s==='idle'){ bar.classList.remove('on'); icon.className='ti ti-microphone'; }
   else if(s==='listening'){ bar.classList.add('on'); dot.className='vdot L'; txt.textContent='듣고 있어요...'; icon.className='ti ti-microphone-off'; }
   else if(s==='thinking'){ bar.classList.add('on'); dot.className='vdot T'; txt.textContent='처리 중...'; icon.className='ti ti-loader'; }
-  else if(s==='speaking'){ bar.classList.add('on'); dot.className='vdot S'; txt.textContent='답변 중...'; icon.className='ti ti-volume'; }
 }
 function onMic(){
   if(VS==='listening') _stopRec();
-  else if(VS==='speaking'){ window.speechSynthesis&&window.speechSynthesis.cancel(); _setVS('idle'); setTimeout(_startRec,200); }
   else _startRec();
 }
 function _startRec(){
@@ -609,16 +619,8 @@ function _execCmd(r,orig){
 function _symLbl(s){ return{pain:'통증',urine:'배뇨 불편',fatigue:'피로'}[s]||s; }
 
 /* ── TTS ── */
-function tts(t){ _ttsP(t); }
-function _ttsP(text){
-  return new Promise(function(resolve){
-    if(!text||!('speechSynthesis' in window)){ resolve(); return; }
-    window.speechSynthesis.cancel(); _setVS('speaking');
-    var u=new SpeechSynthesisUtterance(text); u.lang='ko-KR'; u.rate=0.88;
-    var done=function(){ _setVS('idle'); resolve(); };
-    u.onend=done; u.onerror=done; window.speechSynthesis.speak(u); setTimeout(done,15000);
-  });
-}
+function tts(t){ if(t) toast(t); }
+function _ttsP(text){ if(text) toast(text); return Promise.resolve(); }
 
 /* ── API 헬퍼 ── */
 function _api(opts, cb){
@@ -678,7 +680,7 @@ function _sendChatP(){
   ld.innerHTML='<div class="bub-lbl">AI 코치</div><div class="bub ai"><div class="dots"><span></span><span></span><span></span></div></div>';
   cs.appendChild(ld); function sd(){ setTimeout(function(){ cs.scrollTop=cs.scrollHeight; },80); } sd(); _chatBusy=true;
   return _api({max_tokens:500,system:_buildSys(),messages:[{role:'user',content:msg}]}, function(reply){
-    ld.querySelector('.bub.ai').textContent=reply||'답변을 가져오지 못했어요.'; sd(); _chatBusy=false; tts(reply);
+    ld.querySelector('.bub.ai').textContent=reply||'답변을 가져오지 못했어요.'; sd(); _chatBusy=false;
   });
 }
 
@@ -695,7 +697,7 @@ function analyze(){
   var msgs;
   if(hasPic){ var b64=pre.src.split(',')[1],mt=pre.src.startsWith('data:image/png')?'image/png':'image/jpeg'; var txt=p; if(name)txt+=' 음식:'+name; if(memo)txt+=' 메모:'+memo; msgs=[{role:'user',content:[{type:'image',source:{type:'base64',media_type:mt,data:b64}},{type:'text',text:txt}]}]; }
   else{ msgs=[{role:'user',content:'"'+name+'"을 '+p}]; }
-  _api({max_tokens:400,messages:msgs}, function(reply){ ar.textContent=reply||'분석 결과를 가져오지 못했어요.'; tts(reply); });
+  _api({max_tokens:400,messages:msgs}, function(reply){ ar.textContent=reply||'분석 결과를 가져오지 못했어요.'; });
 }
 
 function analyzeEx(){
@@ -706,7 +708,7 @@ function analyzeEx(){
   var u=USER, ic=u&&u.mode==='cancer';
   var p='"'+type+'" '+dur+'을 ';
   p+=ic?'암 환자 관점에서(면역 기능, 체력 유지, 피로 관리) 분석해 주세요. 3~4문장.':'케토/저탄고지 식단 관점에서(지방 연소, 케톤 생성, 운동 후 식사 주의사항) 분석해 주세요. 3~4문장.';
-  _api({max_tokens:350,messages:[{role:'user',content:p}]}, function(reply){ ar.textContent=reply||'분석 결과를 가져오지 못했어요.'; tts(reply); });
+  _api({max_tokens:350,messages:[{role:'user',content:p}]}, function(reply){ ar.textContent=reply||'분석 결과를 가져오지 못했어요.'; });
 }
 
 function setDietTab(t){
