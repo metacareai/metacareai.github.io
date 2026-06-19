@@ -158,9 +158,10 @@ function _renderAdminList(){
   }
   var ml = {cancer:'암환자', keto:'케토제닉', carnivore:'카니보어', lchf:'저탄고지', diet:'다이어트 건강식'};
   var mi = {cancer:'🔬', keto:'🥑', carnivore:'🥩', lchf:'🍖', diet:'🥗'};
+  var cn = {thyroid:'갑상선암',colorectal:'대장암',lung:'폐암',stomach:'위암',breast:'유방암',liver:'간암',pancreas:'췌장암',bile:'담낭·담도암',kidney:'신장암',cervical:'자궁경부암',prostate:'전립선암',other:'기타 암'};
   el.innerHTML = users.map(function(u){
     var ic = u.mode==='cancer';
-    var ms = (ic&&u.ctype==='prostate') ? u.stage+'기 전립선암' : (ml[u.mode]||u.mode);
+    var ms = ic ? ((u.ctype==='prostate'&&u.stage) ? u.stage+'기 전립선암' : (cn[u.ctype]||'암환자')) : (ml[u.mode]||u.mode);
     var by = u.birthYear ? ' · '+u.birthYear+'년생' : '';
     return '<div class="admin-user-card">'
       +'<div class="admin-user-av '+(ic?'cancer':'health')+'">'+(mi[u.mode]||'👤')+'</div>'
@@ -257,8 +258,18 @@ var _MODES = [
   {id:'diet',   icon:'🥗', name:'다이어트 건강식', desc:'지중해식 · 칼로리 제한 · 균형 영양'}
 ];
 var _CTYPES = [
-  {id:'prostate', icon:'🔬', name:'전립선암', desc:'PSA 추적 · 병기별 관리'},
-  {id:'other',    icon:'💊', name:'기타 암',  desc:'증상 · 복약 통합 관리'}
+  {id:'thyroid',    icon:'🦋', name:'갑상선암',    desc:'갑상선 종양 · 수술 후 관리'},
+  {id:'colorectal', icon:'🫁', name:'대장암',       desc:'대장·직장암 · 식단 관리'},
+  {id:'lung',       icon:'🫧', name:'폐암',         desc:'폐 종양 · 호흡기 관리'},
+  {id:'stomach',    icon:'🫃', name:'위암',         desc:'위 종양 · 소화기 관리'},
+  {id:'breast',     icon:'🎀', name:'유방암',       desc:'유방 종양 · 호르몬 관리'},
+  {id:'liver',      icon:'🫀', name:'간암',         desc:'간 종양 · 간 기능 관리'},
+  {id:'pancreas',   icon:'💊', name:'췌장암',       desc:'췌장 종양 · 혈당 관리'},
+  {id:'bile',       icon:'💊', name:'담낭·담도암',  desc:'담낭·담도 종양 관리'},
+  {id:'kidney',     icon:'💊', name:'신장암',       desc:'신장 종양 · 신기능 관리'},
+  {id:'cervical',   icon:'💊', name:'자궁경부암',   desc:'자궁경부 종양 관리'},
+  {id:'prostate',   icon:'🔬', name:'전립선암',     desc:'PSA 추적 · 병기별 관리'},
+  {id:'other',      icon:'💊', name:'기타 암',      desc:'증상 · 복약 통합 관리'}
 ];
 var _STAGES = [
   {n:1, name:'국소 저위험',    desc:'적극적 감시·수술·방사선'},
