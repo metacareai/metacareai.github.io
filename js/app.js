@@ -174,7 +174,8 @@ function _renderAdminList(){
 function filterAdminUsers(){ _renderAdminList(); }
 
 function delUser(id){
-  if(!confirm('이 사용자를 삭제할까요?')) return;
+  if(!confirm('이 사용자를 삭제할까요?\n삭제하면 모든 기록이 사라집니다.')) return;
+  if(!confirm('정말 삭제하시겠습니까? 되돌릴 수 없습니다.')) return;
   _setUsers(_getUsers().filter(function(u){ return u.id!==id; }));
   _renderAdminList();
   toast('삭제됐어요');
