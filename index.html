@@ -20,17 +20,16 @@
 </div>
 <div id="app">
 
-  <!-- ── 프로필 선택 ── -->
-  <div id="scr-profile" class="screen dark">
-    <div class="profile-hd">
-      <div class="logo" onclick="A.logoTap()" style="cursor:pointer;">🧬</div>
-      <h2>스마트 메타케어</h2>
-      <p class="sub">사용자를 선택하세요</p>
-    </div>
-    <div class="profile-body" style="padding-bottom:0;">
-      <input id="profile-search" class="inp" type="text" placeholder="🔍 이름으로 검색" oninput="A.filterProfiles()" style="margin-bottom:4px;">
-    </div>
-    <div id="profile-list" class="profile-body"></div>
+  <!-- ── 사용자 입장 (이름+출생년도) ── -->
+  <div id="scr-profile" class="screen dark center">
+    <div class="logo" onclick="A.logoTap()" style="cursor:pointer;">🧬</div>
+    <h2>스마트 메타케어</h2>
+    <p class="sub">이름과 출생년도를 입력해 주세요</p>
+    <input id="login-name" class="inp" type="text" placeholder="이름 (예: 홍길동)">
+    <input id="login-year" class="inp" type="number" placeholder="출생년도 (예: 1964)" maxlength="4"
+           onkeydown="if(event.key==='Enter')A.enterByName()">
+    <button class="btn-primary" onclick="A.enterByName()">입장하기 →</button>
+    <p id="login-error" class="sub" style="color:#FF8A80;display:none;"></p>
   </div>
 
   <!-- ── Admin 비밀번호 ── -->
@@ -157,6 +156,10 @@
       <div>
         <label class="lbl">이름</label>
         <input class="inp-sm" id="new-name" type="text" placeholder="이름 입력" maxlength="20">
+      </div>
+      <div>
+        <label class="lbl">출생년도</label>
+        <input class="inp-sm" id="new-year" type="number" placeholder="예: 1964" maxlength="4">
       </div>
       <div>
         <label class="lbl">모드 선택</label>

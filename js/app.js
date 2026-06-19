@@ -93,7 +93,6 @@ function goScreen(id, opts){
   var el = $id(id);
   if(el) el.classList.add('active');
   if(id==='scr-admin-users') _renderAdminList();
-  if(id==='scr-profile') _renderProfileList();
   if(id==='scr-add-user') _resetAddForm();
   if(!_suppressPush){
     _navStack.push({type:'screen', id:id});
@@ -162,9 +161,10 @@ function _renderAdminList(){
   el.innerHTML = users.map(function(u){
     var ic = u.mode==='cancer';
     var ms = (ic&&u.ctype==='prostate') ? u.stage+'기 전립선암' : (ml[u.mode]||u.mode);
+    var by = u.birthYear ? ' · '+u.birthYear+'년생' : '';
     return '<div class="admin-user-card">'
       +'<div class="admin-user-av '+(ic?'cancer':'health')+'">'+(mi[u.mode]||'👤')+'</div>'
-      +'<div style="flex:1"><div class="admin-user-name">'+esc(u.name)+'</div><div class="admin-user-detail">'+esc(ms)+'</div></div>'
+      +'<div style="flex:1"><div class="admin-user-name">'+esc(u.name)+'</div><div class="admin-user-detail">'+esc(ms)+esc(by)+'</div></div>'
       +'<button class="admin-act del" onclick="A.delUser(\''+u.id+'\')"><i class="ti ti-trash"></i> 삭제</button>'
       +'</div>';
   }).join('');
@@ -175,7 +175,6 @@ function delUser(id){
   if(!confirm('이 사용자를 삭제할까요?')) return;
   _setUsers(_getUsers().filter(function(u){ return u.id!==id; }));
   _renderAdminList();
-  _renderProfileList();
   toast('삭제됐어요');
 }
 
@@ -271,6 +270,7 @@ var _STAGES = [
 function _resetAddForm(){
   _newMode=''; _newCtype=''; _newStage=0;
   $id('new-name').value='';
+  $id('new-year').value='';
   // 모드 버튼 생성
   $id('mode-btns').innerHTML = _MODES.map(function(m){
     return '<button class="mode-btn" id="mb-'+m.id+'" onclick="A._selMode(\''+m.id+'\')">'
@@ -323,46 +323,43 @@ function _selStage(n){
 
 function addUser(){
   var name = $id('new-name').value.trim();
+  var year = $id('new-year').value.trim();
   if(!name){ toast('이름을 입력하세요'); return; }
+  if(!year||year.length!==4||isNaN(parseInt(year))){ toast('출생년도 4자리를 입력하세요'); return; }
   if(!_newMode){ toast('모드를 선택하세요'); return; }
   if(_newMode==='cancer'&&!_newCtype){ toast('암 종류를 선택하세요'); return; }
   if(_newCtype==='prostate'&&!_newStage){ toast('병기를 선택하세요'); return; }
   var users = _getUsers();
-  users.push({id:'u'+Date.now(), name:name, mode:_newMode, ctype:_newCtype, stage:_newStage, treatments:[], createdAt:Date.now()});
+  if(users.some(function(u){ return u.name===name && String(u.birthYear)===String(year); })){
+    toast('이미 같은 이름과 출생년도로 등록된 사용자가 있어요'); return;
+  }
+  users.push({id:'u'+Date.now(), name:name, birthYear:year, mode:_newMode, ctype:_newCtype, stage:_newStage, treatments:[], createdAt:Date.now()});
   _setUsers(users);
-  _renderProfileList();
   toast(name+' 님이 추가됐어요 ✓');
   goScreen('scr-admin-users');
 }
 
 /* ── 프로필 화면 ── */
-function _renderProfileList(){
-  var users = _getUsers();
-  var el = $id('profile-list');
-  if(!el) return;
-  var q = ($id('profile-search')&&$id('profile-search').value||'').trim().toLowerCase();
-  if(q) users = users.filter(function(u){ return u.name.toLowerCase().indexOf(q)>=0; });
-  var ml = {cancer:'암환자', keto:'케토제닉', carnivore:'카니보어', lchf:'저탄고지', diet:'다이어트 건강식'};
-  var mi = {cancer:'🔬', keto:'🥑', carnivore:'🥩', lchf:'🍖', diet:'🥗'};
-  if(!users.length){
-    el.innerHTML = '<div class="profile-empty"><i class="ti ti-users"></i><br>'+(q?'검색 결과가 없어요':'등록된 사용자가 없습니다')+'</div>';
+function enterByName(){
+  var name = ($id('login-name').value||'').trim();
+  var year = ($id('login-year').value||'').trim();
+  var errEl = $id('login-error');
+  errEl.style.display = 'none';
+  if(!name||!year){
+    errEl.textContent = '이름과 출생년도를 모두 입력해 주세요';
+    errEl.style.display = 'block';
     return;
   }
-  el.innerHTML = '';
-  users.forEach(function(u){
-    var ic = u.mode==='cancer';
-    var ml2 = (ic&&u.ctype==='prostate') ? u.stage+'기 전립선암' : (ml[u.mode]||u.mode);
-    var btn = document.createElement('button');
-    btn.className = 'profile-card';
-    btn.innerHTML = '<div class="profile-av '+(ic?'cancer':'health')+'">'+(mi[u.mode]||'👤')+'</div>'
-      +'<div><div class="profile-name">'+esc(u.name)+'</div>'
-      +'<span class="profile-tag '+(ic?'cancer':'health')+'">'+esc(ml2)+'</span></div>'
-      +'<i class="ti ti-chevron-right" style="margin-left:auto;color:rgba(255,255,255,.3);font-size:18px;"></i>';
-    btn.onclick = function(){ loginUser(u); };
-    el.appendChild(btn);
-  });
+  var users = _getUsers();
+  var match = users.find(function(u){ return u.name===name && String(u.birthYear)===String(year); });
+  if(!match){
+    errEl.textContent = '등록된 정보를 찾을 수 없습니다. 관리자에게 문의하세요';
+    errEl.style.display = 'block';
+    return;
+  }
+  $id('login-name').value=''; $id('login-year').value='';
+  loginUser(match);
 }
-function filterProfiles(){ _renderProfileList(); }
 
 /* ── 로그인 ── */
 function loginUser(u){
@@ -1036,7 +1033,6 @@ function _showAutosave(){ var b=$id('autosave'); if(!b) return; b.classList.add(
 
 /* ── 초기 진입 ── */
 _loadCloudData(function(){
-  _renderProfileList();
   $id('scr-profile').classList.add('active');
   _navStack.push({type:'screen',id:'scr-profile'});
   try{ history.replaceState({navIdx:0}, '', '#scr-profile'); }catch(e){}
@@ -1046,7 +1042,7 @@ _loadCloudData(function(){
 /* ── 공개 API ── */
 return {
   // 화면
-  goScreen:goScreen, logoTap:logoTap, filterProfiles:filterProfiles,
+  goScreen:goScreen, logoTap:logoTap, enterByName:enterByName,
   // 설정
   checkPw:checkPw,
   // Admin
