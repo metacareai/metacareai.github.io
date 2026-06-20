@@ -255,24 +255,26 @@
         <button onclick="A.goHelp()" style="width:100%;padding:15px;background:#fff;color:var(--navy);border:2px solid var(--navy);border-radius:var(--r);font-size:17px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:10px;">
           <i class="ti ti-book" style="font-size:22px;color:var(--teal);"></i> 📖 사용 방법 보기
         </button>
-        <div id="home-goal-card" style="width:100%;padding:15px;border-radius:var(--r);font-size:17px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:10px;color:#fff;">
-          <i class="ti ti-target" style="font-size:22px;"></i>
-          <span id="home-goal-lbl">목표</span>
-          <span id="home-goal-items" style="font-weight:400;font-size:15px;opacity:.9;"></span>
+        <div id="home-goal-card" style="width:100%;padding:15px;border-radius:var(--r);display:flex;align-items:center;gap:12px;color:#fff;">
+          <i class="ti ti-target" style="font-size:24px;flex-shrink:0;"></i>
+          <div>
+            <div style="font-size:15px;font-weight:700;white-space:nowrap;" id="home-goal-lbl">목표</div>
+            <div style="font-size:13px;opacity:.85;margin-top:2px;" id="home-goal-items"></div>
+          </div>
         </div>
         <div class="section-title"><i class="ti ti-sun"></i> 오늘의 식사 <span style="font-size:11px;color:var(--mu);font-weight:400;">탭하면 사진 찍기</span></div>
         <div class="meal-slots" id="home-meal-slots">
           <div class="meal-slot" id="ms-breakfast" onclick="A.openMealSlot('breakfast')">
             <div class="meal-slot-lbl">🌅 아침</div>
-            <div class="meal-slot-img" id="ms-img-breakfast"><i class="ti ti-camera" style="font-size:24px;color:var(--mu);"></i></div>
+            <div class="meal-slot-img" id="ms-img-breakfast"><i class="ti ti-camera" style="font-size:36px;color:rgba(255,255,255,.8);"></i></div>
           </div>
           <div class="meal-slot" id="ms-lunch" onclick="A.openMealSlot('lunch')">
             <div class="meal-slot-lbl">☀️ 점심</div>
-            <div class="meal-slot-img" id="ms-img-lunch"><i class="ti ti-camera" style="font-size:24px;color:var(--mu);"></i></div>
+            <div class="meal-slot-img" id="ms-img-lunch"><i class="ti ti-camera" style="font-size:36px;color:rgba(255,255,255,.8);"></i></div>
           </div>
           <div class="meal-slot" id="ms-dinner" onclick="A.openMealSlot('dinner')">
             <div class="meal-slot-lbl">🌙 저녁</div>
-            <div class="meal-slot-img" id="ms-img-dinner"><i class="ti ti-camera" style="font-size:24px;color:var(--mu);"></i></div>
+            <div class="meal-slot-img" id="ms-img-dinner"><i class="ti ti-camera" style="font-size:36px;color:rgba(255,255,255,.8);"></i></div>
           </div>
         </div>
         <div class="row space-between align-center">

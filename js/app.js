@@ -668,7 +668,7 @@ function _initHealthHome(mode){
   var txt = vals.map(function(v,i){
     var val=v.replace(/<[^>]+>/g,'');
     var lbl=lbls[i]?(lbls[i].replace(/<[^>]+>/g,'')):'';
-    return val+(lbl?' '+lbl:'');
+    return lbl+(lbl?' ':'')+val;
   }).join(' · ');
   if(g('home-goal-items')) g('home-goal-items').textContent=txt;
   if(g('home-banner-sub')) g('home-banner-sub').textContent=c.bannerSub;
@@ -1338,7 +1338,7 @@ function _refreshPhotos(){
     if(photo){
       el.innerHTML = '<img src="'+photo+'" alt="'+meal+'" style="width:100%;height:100%;object-fit:cover;">';
     } else {
-      el.innerHTML = '<i class="ti ti-plus" style="font-size:22px;color:var(--mu);"></i>';
+      el.innerHTML = '<i class="ti ti-camera" style="font-size:36px;color:rgba(255,255,255,.8);"></i>';
     }
   });
 }
