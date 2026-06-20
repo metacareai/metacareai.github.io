@@ -1290,7 +1290,10 @@ function onFile(e,src){
 function _autoSavePhotoToLog(imgData, forceMeal){
   var today = todayStr();
   var hour = new Date().getHours();
-  var meal = forceMeal || (hour < 10 ? 'breakfast' : hour < 15 ? 'lunch' : 'dinner');
+  // 기록장과 키 통일: morning/lunch/dinner
+  var mealMap = {breakfast:'morning', lunch:'lunch', dinner:'dinner'};
+  var rawMeal = forceMeal || (hour < 10 ? 'breakfast' : hour < 15 ? 'lunch' : 'dinner');
+  var meal = mealMap[rawMeal] || rawMeal;
 
   var recs = _getRecs();
   var dayRec = recs.find(function(r){ return r.date === today; });
@@ -1434,9 +1437,11 @@ function exportExcel(){
 function _refreshPhotos(){
   var days=_getRecs(), today=todayStr();
   var todayRec = days.find(function(d){ return d.date===today; });
-  var meals = ['breakfast','lunch','dinner'];
+  var meals = ['morning','lunch','dinner'];
+  var slotMap = {morning:'breakfast', lunch:'lunch', dinner:'dinner'};
   meals.forEach(function(meal){
-    var el = $id('ms-img-'+meal); if(!el) return;
+    var slotId = 'ms-img-'+slotMap[meal];
+    var el = $id(slotId); if(!el) return;
     var photo = todayRec && todayRec.photos && todayRec.photos[meal];
     if(photo){
       el.innerHTML = '<img src="'+photo+'" alt="'+meal+'" style="width:100%;height:100%;object-fit:cover;">';
@@ -1571,11 +1576,11 @@ function _refreshCondSummary(){
 var _homeMealSlot = null;
 var _pendingMeal = null; // 홈 식사 슬롯에서 넘어올 때 시간대 기억
 function openMealSlot(meal){
-  // 식단 탭으로 이동해서 사진 찍기
-  _pendingMeal = meal; // 어떤 시간대인지 기억
+  // breakfast → morning 으로 변환 (기록장 키와 통일)
+  var mealMap = {breakfast:'morning', lunch:'lunch', dinner:'dinner'};
+  _pendingMeal = mealMap[meal] || meal;
   goPage('diet');
   setDietTab('food');
-  // 바로 사진 선택 시트 열기
   setTimeout(function(){ openSheet('sh-photo'); }, 200);
 }
 function pickHomeMeal(src){
