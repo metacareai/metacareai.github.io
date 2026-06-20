@@ -1020,11 +1020,17 @@ function analyzeEx(){
   if(!KEY){ toast('API 키가 없습니다'); return; }
   var type=$id('ex-type').value.trim(); if(!type){ toast('운동 종류를 입력하세요'); return; }
   var dur=$id('ex-dur').value.trim();
-  var ar=$id('ai-result'); ar.style.display='block'; ar.innerHTML='<div class="dots"><span></span><span></span><span></span></div>';
+  var memo=$id('ex-memo')?$id('ex-memo').value.trim():'';
+  var ar=$id('ex-result')||$id('ai-result');
+  ar.style.display='block';
+  ar.innerHTML='<div class="tip-lbl">AI 운동 분석</div><div class="dots"><span></span><span></span><span></span></div>';
   var u=USER, ic=u&&u.mode==='cancer';
-  var p='"'+type+'" '+dur+'을 ';
-  p+=ic?'암 환자 관점에서(면역 기능, 체력 유지, 피로 관리) 분석해 주세요. 3~4문장.':'케토/저탄고지 식단 관점에서(지방 연소, 케톤 생성, 운동 후 식사 주의사항) 분석해 주세요. 3~4문장.';
-  _api({max_tokens:350,messages:[{role:'user',content:p}]}, function(reply){ ar.textContent=reply||'분석 결과를 가져오지 못했어요.'; });
+  var p='"'+type+'"'+(dur?' '+dur:'')+(memo?' ('+memo+')':'')+'을 ';
+  p+=ic?'암 환자 관점에서(면역 기능, 체력 유지, 피로 관리) 분석해 주세요. 3~4문장.':
+    (u&&u.mode?({keto:'케토제닉',carnivore:'카니보어',lchf:'저탄고지',diet:'다이어트'}[u.mode]||''):'')+' 식단 관점에서(지방 연소, 체력, 운동 후 식사 주의사항) 분석해 주세요. 3~4문장.';
+  _api({max_tokens:350,messages:[{role:'user',content:p}]}, function(reply){
+    ar.innerHTML='<div class="tip-lbl">AI 운동 분석</div>'+esc(reply||'분석 결과를 가져오지 못했어요.');
+  });
 }
 
 function setDietTab(t){
@@ -1541,7 +1547,11 @@ function pickHomeMeal(src){
 function onHomeMealFile(e,src){
   var f=e.target.files[0]; e.target.value=''; if(!f||!_homeMealSlot) return;
   var s=_homeMealSlot; _homeMealSlot=null;
+  var mealName={breakfast:'아침',lunch:'점심',dinner:'저녁'}[s.meal]||s.meal;
   var r=new FileReader(); r.onload=function(ev){ _compress(ev.target.result,function(small){
+    // 1. 식단 탭 미리보기에도 표시
+    $id('preview-img').src=small; $id('preview-wrap').style.display='';
+    // 2. Storage 업로드
     var path='photos/'+USER.id+'/'+s.today+'_'+s.meal+'_'+Date.now()+'.jpg';
     var ref=_storage.ref(path);
     var byteStr=atob(small.split(',')[1]);
@@ -1551,11 +1561,37 @@ function onHomeMealFile(e,src){
     var blob=new Blob([ab],{type:'image/jpeg'});
     toast('저장 중...');
     ref.put(blob).then(function(){return ref.getDownloadURL();}).then(function(url){
-      s.todayRec.photos[s.meal]=url; _setRecs(s.days); _refreshPhotos(); toast('저장됐어요 ✓');
+      s.todayRec.photos[s.meal]=url; _setRecs(s.days); _refreshPhotos(); 
+      toast(mealName+' 사진 저장됐어요 ✓');
+      // 3. AI 분석 실행
+      _analyzeHomeMeal(small, mealName);
     }).catch(function(){
-      s.todayRec.photos[s.meal]=small; _setRecs(s.days); _refreshPhotos(); toast('저장됐어요 ✓');
+      s.todayRec.photos[s.meal]=small; _setRecs(s.days); _refreshPhotos();
+      toast(mealName+' 사진 저장됐어요 ✓');
+      _analyzeHomeMeal(small, mealName);
     });
   }); }; r.readAsDataURL(f);
+}
+
+function _analyzeHomeMeal(imgData, mealName){
+  if(!KEY) return;
+  // 결과를 홈 화면에 표시
+  var resultEl = $id('home-ai-result');
+  if(!resultEl) return;
+  resultEl.style.display='block';
+  resultEl.innerHTML='<div class="tip-lbl">AI 식단 분석 · '+mealName+'</div><div class="dots"><span></span><span></span><span></span></div>';
+  var mode=USER?USER.mode:'lchf';
+  var modeDesc={keto:'케토제닉(탄수화물 20g 이하)',carnivore:'카니보어(동물성 식품)',lchf:'저탄고지(탄수화물 100g 이하)',diet:'균형 건강식',cancer:'암 환자 항산화 식단'}[mode]||mode;
+  var prompt='['+mealName+' 식사 사진] '+modeDesc+' 관점에서 분석해주세요. 주요 음식명, 적합도, 개선 제안을 3~4문장으로 간결하게.';
+  _api({
+    max_tokens:300,
+    messages:[{role:'user',content:[
+      {type:'image',source:{type:'base64',media_type:'image/jpeg',data:imgData.split(',')[1]}},
+      {type:'text',text:prompt}
+    ]}]
+  }, function(reply){
+    resultEl.innerHTML='<div class="tip-lbl">AI 식단 분석 · '+mealName+'</div>'+esc(reply||'분석 결과를 가져오지 못했어요');
+  });
 }
 
 /* ── 공개 API ── */
