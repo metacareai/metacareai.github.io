@@ -629,8 +629,9 @@ function _initApp(){
 
   // 데이터 로드
   _xlLoad();
+  _refreshPhotos();
   if(ic){ _refreshMedHome(); _refreshTodaySym(); }
-  else{ _refreshPhotos(); _refreshStats(); _refreshTip(); }
+  else{ _refreshStats(); _refreshTip(); }
 
   // 날짜
   var pdi=$id('psa-date'); if(pdi) pdi.value=todayStr();
@@ -782,7 +783,8 @@ function goPage(p){
   if(p==='track'&&USER&&USER.mode==='cancer'){ _loadPSAHistory(); _loadSymAvg(); }
   if(p==='chat'){ setTimeout(function(){ var cs=$id('chat-scroll'); if(cs) cs.scrollTop=cs.scrollHeight; },100); }
   if(p==='home'){
-    if(USER&&USER.mode!=='cancer'){ _refreshPhotos(); _refreshStats(); }
+    _refreshPhotos();
+    if(USER&&USER.mode!=='cancer'){ _refreshStats(); }
     else{ _refreshMedHome(); _refreshTodaySym(); if(USER.ctype==='prostate') _refreshPSABanner(); }
   }
 }
