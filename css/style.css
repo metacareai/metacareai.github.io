@@ -381,3 +381,10 @@ h2{font-size:20px;}
 /* 토스트 */
 .toast{position:absolute;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(26,47,76,.93);color:#fff;padding:10px 18px;border-radius:20px;font-size:12px;font-weight:600;z-index:500;opacity:0;transition:opacity .3s;white-space:nowrap;pointer-events:none;}
 .toast.show{opacity:1;}
+
+/* 컨디션 기록 버튼 */
+.condition-btn{width:100%;background:var(--wh);border:1px solid var(--bd);border-radius:var(--r);padding:14px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.condition-btn:active{background:var(--cream);}
+.condition-btn-left{display:flex;align-items:center;gap:12px;color:var(--navy);}
+.cond-state-btn{flex:1;padding:10px;border:2px solid var(--bd);border-radius:var(--rs);background:var(--wh);font-size:13px;font-weight:700;cursor:pointer;}
+.cond-state-btn.sel{border-color:var(--teal);background:var(--tl);color:var(--tld);}

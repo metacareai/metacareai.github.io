@@ -630,6 +630,7 @@ function _initApp(){
   // 데이터 로드
   _xlLoad();
   _refreshPhotos();
+  _refreshCondSummary();
   if(ic){ _refreshMedHome(); _refreshTodaySym(); }
   else{ _refreshStats(); _refreshTip(); }
 
@@ -858,6 +859,7 @@ function goPage(p){
   if(p==='chat'){ setTimeout(function(){ var cs=$id('chat-scroll'); if(cs) cs.scrollTop=cs.scrollHeight; },100); }
   if(p==='home'){
     _refreshPhotos();
+    _refreshCondSummary();
     if(USER&&USER.mode!=='cancer'){ _refreshStats(); }
     else{ _refreshMedHome(); _refreshTodaySym(); if(USER.ctype==='prostate') _refreshPSABanner(); }
   }
@@ -1451,6 +1453,76 @@ _loadCloudData(function(){
   var lo = $id('loading-overlay'); if(lo) lo.style.display='none';
 });
 
+/* ── 컨디션 기록 ── */
+var _condState = '';
+
+function openConditionSheet(){
+  // 오늘 기록이 있으면 불러오기
+  var today = todayStr();
+  var recs = _getCondRecs();
+  var todayRec = recs.find(function(r){ return r.date===today; });
+  _condState = todayRec ? (todayRec.state||'') : '';
+  // UI 초기화
+  ['good','normal','bad'].forEach(function(s){
+    var el=$id('cs-'+s); if(el) el.classList.toggle('sel', _condState===s);
+  });
+  $id('cond-weight').value = todayRec ? (todayRec.weight||'') : '';
+  $id('cond-glucose').value = todayRec ? (todayRec.glucose||'') : '';
+  $id('cond-bp-sys').value = todayRec ? (todayRec.bpSys||'') : '';
+  $id('cond-bp-dia').value = todayRec ? (todayRec.bpDia||'') : '';
+  $id('cond-sleep').value = todayRec ? (todayRec.sleep||'') : '';
+  $id('cond-memo').value = todayRec ? (todayRec.memo||'') : '';
+  openSheet('sh-condition');
+}
+
+function selectCondState(s){
+  _condState = s;
+  ['good','normal','bad'].forEach(function(st){
+    var el=$id('cs-'+st); if(el) el.classList.toggle('sel', st===s);
+  });
+}
+
+function saveCondition(){
+  var today = todayStr();
+  var rec = {
+    date: today,
+    state: _condState,
+    weight: $id('cond-weight').value ? parseFloat($id('cond-weight').value) : null,
+    glucose: $id('cond-glucose').value ? parseFloat($id('cond-glucose').value) : null,
+    bpSys: $id('cond-bp-sys').value ? parseInt($id('cond-bp-sys').value) : null,
+    bpDia: $id('cond-bp-dia').value ? parseInt($id('cond-bp-dia').value) : null,
+    sleep: $id('cond-sleep').value ? parseFloat($id('cond-sleep').value) : null,
+    memo: $id('cond-memo').value || '',
+    ts: Date.now()
+  };
+  var recs = _getCondRecs();
+  var idx = recs.findIndex(function(r){ return r.date===today; });
+  if(idx>=0) recs[idx]=rec; else recs.push(rec);
+  _setCondRecs(recs);
+  closeSheet('sh-condition');
+  _refreshCondSummary();
+  toast('컨디션이 저장됐어요 ✓');
+}
+
+function _getCondRecs(){ return ugj('condRecs',[]); }
+function _setCondRecs(d){ usj('condRecs',d); _schedSave(); }
+
+function _refreshCondSummary(){
+  var el=$id('condition-summary'); if(!el) return;
+  var today=todayStr();
+  var recs=_getCondRecs();
+  var rec=recs.find(function(r){return r.date===today;});
+  if(!rec){ el.textContent='탭해서 기록하세요'; return; }
+  var parts=[];
+  var stateMap={good:'😊 좋음',normal:'😐 보통',bad:'😔 나쁨'};
+  if(rec.state) parts.push(stateMap[rec.state]||rec.state);
+  if(rec.weight) parts.push(rec.weight+'kg');
+  if(rec.glucose) parts.push('혈당 '+rec.glucose);
+  if(rec.bpSys&&rec.bpDia) parts.push(rec.bpSys+'/'+rec.bpDia);
+  if(rec.sleep) parts.push('수면 '+rec.sleep+'h');
+  el.textContent = parts.length ? parts.join(' · ') : '탭해서 기록하세요';
+}
+
 /* ── 홈 식사 슬롯 바텀시트 ── */
 var _homeMealSlot = null;
 function openMealSlot(meal){
@@ -1506,6 +1578,8 @@ return {
   analyze:analyze, analyzeEx:analyzeEx, setDietTab:setDietTab, setCancerTab:setCancerTab,
   // PSA
   openSheet:openSheet, closeSheet:closeSheet, savePSA:savePSA, openMarkerSheet:openMarkerSheet,
+  // 컨디션 기록
+  openConditionSheet:openConditionSheet, selectCondState:selectCondState, saveCondition:saveCondition,
   // 증상
   openSymSheet:openSymSheet, saveSymQuick:saveSymQuick, saveSym:saveSym,
   // 복약

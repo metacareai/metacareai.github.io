@@ -262,6 +262,16 @@
             <div style="font-size:13px;opacity:.85;margin-top:2px;" id="home-goal-items"></div>
           </div>
         </div>
+        <button class="condition-btn" onclick="A.openConditionSheet()">
+          <div class="condition-btn-left">
+            <i class="ti ti-activity-heartbeat" style="font-size:22px;"></i>
+            <div>
+              <div style="font-size:15px;font-weight:700;">오늘의 컨디션 기록</div>
+              <div class="condition-summary" id="condition-summary" style="font-size:12px;opacity:.8;margin-top:2px;">탭해서 기록하세요</div>
+            </div>
+          </div>
+          <i class="ti ti-chevron-right" style="opacity:.5;font-size:20px;"></i>
+        </button>
         <div class="section-title"><i class="ti ti-sun"></i> 오늘의 식사 <span style="font-size:11px;color:var(--mu);font-weight:400;">탭하면 사진 찍기</span></div>
         <div class="meal-slots" id="home-meal-slots">
           <div class="home-meal-slot" id="ms-breakfast" onclick="A.openMealSlot('breakfast')">
@@ -510,6 +520,46 @@
     <button class="sh-btn" onclick="A.pickHomeMeal('cam')"><i class="ti ti-camera"></i> 촬영하기</button>
     <button class="sh-btn" onclick="A.pickHomeMeal('gal')"><i class="ti ti-photo"></i> 갤러리에서 가져오기</button>
     <button class="sh-cancel" onclick="A.closeSheet('sh-home-meal')">취소</button>
+  </div>
+</div>
+<!-- 컨디션 기록 바텀시트 -->
+<div class="overlay" id="sh-condition" onclick="if(event.target.id==='sh-condition')A.closeSheet('sh-condition')">
+  <div class="sheet" style="max-height:85vh;overflow-y:auto;">
+    <div class="sh-title">📋 오늘의 컨디션 기록</div>
+    <div style="margin-bottom:14px;">
+      <div class="lbl">몸 상태</div>
+      <div style="display:flex;gap:8px;">
+        <button class="cond-state-btn" id="cs-good" onclick="A.selectCondState('good')">😊 좋음</button>
+        <button class="cond-state-btn" id="cs-normal" onclick="A.selectCondState('normal')">😐 보통</button>
+        <button class="cond-state-btn" id="cs-bad" onclick="A.selectCondState('bad')">😔 나쁨</button>
+      </div>
+    </div>
+    <div style="margin-bottom:10px;">
+      <div class="lbl">체중 (kg)</div>
+      <input class="inp-sm" id="cond-weight" type="number" placeholder="예: 72.5" step="0.1" min="0">
+    </div>
+    <div style="margin-bottom:10px;">
+      <div class="lbl">혈당 (mg/dL)</div>
+      <input class="inp-sm" id="cond-glucose" type="number" placeholder="예: 95" step="1" min="0">
+    </div>
+    <div style="margin-bottom:10px;">
+      <div class="lbl">혈압 (mmHg)</div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input class="inp-sm" id="cond-bp-sys" type="number" placeholder="수축기 (예: 120)" step="1" min="0" style="flex:1;">
+        <span style="color:var(--mu);font-weight:700;">/</span>
+        <input class="inp-sm" id="cond-bp-dia" type="number" placeholder="이완기 (예: 80)" step="1" min="0" style="flex:1;">
+      </div>
+    </div>
+    <div style="margin-bottom:10px;">
+      <div class="lbl">수면 시간 (시간)</div>
+      <input class="inp-sm" id="cond-sleep" type="number" placeholder="예: 7.5" step="0.5" min="0" max="24">
+    </div>
+    <div style="margin-bottom:14px;">
+      <div class="lbl">기타 메모</div>
+      <textarea class="inp-sm" id="cond-memo" rows="2" placeholder="자유롭게 기록하세요" style="resize:none;"></textarea>
+    </div>
+    <button class="btn-full teal" onclick="A.saveCondition()"><i class="ti ti-check"></i> 저장</button>
+    <button class="sh-cancel" onclick="A.closeSheet('sh-condition')">취소</button>
   </div>
 </div>
 <input type="file" id="f-home-meal-cam" accept="image/*" capture="environment" style="display:none" onchange="A.onHomeMealFile(event,'cam')">
