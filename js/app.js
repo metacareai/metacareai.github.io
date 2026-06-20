@@ -129,22 +129,8 @@ function goScreen(id, opts){
 }
 
 function _handlePopState(e){
-  _suppressPush = true;
-  if(_navStack.length>1){
-    _navStack.pop();
-    var prev = _navStack[_navStack.length-1];
-    if(prev.type==='screen') goScreen(prev.id);
-    else if(prev.type==='page') goPage(prev.p);
-    try{ history.pushState({navIdx:_navStack.length}, '', '#'+((_navStack[_navStack.length-1]||{id:''}).id)); }catch(e2){}
-  } else {
-    // 스택이 비면 프로필(로그인) 화면으로 이동하고 히스토리 다시 쌓기
-    goScreen('scr-profile');
-    try{
-      history.pushState({navIdx:-1}, '', location.href);
-      history.pushState({navIdx:0}, '', '#scr-profile');
-    }catch(e2){}
-  }
-  _suppressPush = false;
+  goBack();
+  try{ history.pushState({navIdx:0}, '', location.href); }catch(e2){}
 }
 window.addEventListener('popstate', _handlePopState);
 
@@ -818,26 +804,23 @@ function onMic(){
 function goBack(){
   var activeScreen = document.querySelector('.screen.active');
   if(!activeScreen) return;
+  var id = activeScreen.id;
 
-  // 로그인 화면에서는 동작 안 함
-  if(activeScreen.id==='scr-profile') return;
+  if(id==='scr-profile') return; // 로그인 화면에서는 동작 안 함
 
-  // 앱 메인 화면 안에서는 홈으로
-  if(activeScreen.id==='scr-app'){
-    if(_currentPage !== 'home'){
-      goPage('home');
-    }
+  if(id==='scr-app'){
+    if(_currentPage!=='home'){ goPage('home'); }
+    else { goScreen('scr-profile'); }
     return;
   }
 
-  // 다른 화면(Admin 등)에서는 이전 화면으로
-  if(_navStack.length>1){
-    _suppressPush=true;
-    _navStack.pop();
-    var prev=_navStack[_navStack.length-1];
-    if(prev.type==='screen') goScreen(prev.id);
-    _suppressPush=false;
-  }
+  // Admin 하위 화면
+  var adminSubs = ['scr-admin-users','scr-admin-backup','scr-admin-password','scr-admin-reset','scr-admin-monitor','scr-admin-patient','scr-add-user'];
+  if(adminSubs.indexOf(id)>=0){ goScreen('scr-admin'); return; }
+  if(id==='scr-admin'||id==='scr-admin-pw'){ goScreen('scr-profile'); return; }
+  if(id==='scr-help'){ goScreen('scr-app'); return; }
+
+  goScreen('scr-profile');
 }
 function _startRec(){
   var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
