@@ -661,9 +661,9 @@ function _initHealthHome(mode){
   var g=function(id){ return $id(id); };
   if(g('home-mode-sub')) g('home-mode-sub').textContent=c.sub;
   if(g('home-days-lbl')) g('home-days-lbl').textContent=c.daysLbl;
-  if(g('home-goal-card')){ g('home-goal-card').style.background=c.goalBg; g('home-goal-card').style.color='#fff'; }
-  if(g('home-goal-lbl')) g('home-goal-lbl').textContent=c.goalLbl+':';
-  // 수치만 간단하게 표시
+  if(g('home-goal-card')){ g('home-goal-card').style.background=c.goalBg; }
+  if(g('home-goal-lbl')) g('home-goal-lbl').textContent=c.goalLbl;
+  // 수치를 부제목으로 표시
   var vals = c.goalHtml.match(/<div class="val">([^<]+)<\/div>/g)||[];
   var lbls = c.goalHtml.match(/<div class="lbl-s">([^<]+)<\/div>/g)||[];
   var txt = vals.map(function(v,i){
@@ -682,8 +682,8 @@ function _initCancerHome(u){
   var sl={1:'1기 국소 저위험',2:'2기 국소 중·고위험',3:'3기 국소 진행성',4:'4기 전이성'};
   var sub=$id('home-mode-sub'); if(sub) sub.textContent=ip?(sl[u.stage]||'전립선암')+' 관리 중':'암 치유 관리 중';
   var dl=$id('home-days-lbl'); if(dl) dl.textContent='관리';
-  var gc=$id('home-goal-card'); if(gc){ gc.style.background='linear-gradient(135deg,#4a1d96,#6B3FA0)'; gc.style.color='#fff'; }
-  var gl=$id('home-goal-lbl'); if(gl) gl.textContent='최근 PSA:';
+  var gc=$id('home-goal-card'); if(gc){ gc.style.background='linear-gradient(135deg,#4a1d96,#6B3FA0)'; }
+  var gl=$id('home-goal-lbl'); if(gl) gl.textContent='최근 PSA 수치';
   var gi=$id('home-goal-items'); if(gi) gi.textContent='-- ng/mL';
   var bs=$id('home-banner-sub'); if(bs) bs.textContent='항산화·저당 관점의 암 환자 맞춤 식단 분석';
   var tt=$id('tip-title'); if(tt) tt.style.display='none';

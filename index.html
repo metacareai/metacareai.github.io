@@ -255,9 +255,12 @@
         <button onclick="A.goHelp()" style="width:100%;padding:15px;background:#fff;color:var(--navy);border:2px solid var(--navy);border-radius:var(--r);font-size:17px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:10px;">
           <i class="ti ti-book" style="font-size:22px;color:var(--teal);"></i> 📖 사용 방법 보기
         </button>
-        <div id="home-goal-card" style="font-size:12px;font-weight:600;padding:5px 12px;border-radius:20px;display:inline-flex;align-items:center;gap:6px;margin-bottom:2px;">
-          <span id="home-goal-lbl" style="opacity:.75;"></span>
-          <span id="home-goal-items"></span>
+        <div id="home-goal-card" class="cam-banner" style="margin-bottom:0;">
+          <div class="cam-icon" id="home-goal-icon"><i class="ti ti-target"></i></div>
+          <div>
+            <div class="banner-ttl" id="home-goal-lbl">목표</div>
+            <div class="banner-sub" id="home-goal-items"></div>
+          </div>
         </div>
         <div class="section-title"><i class="ti ti-sun"></i> 오늘의 식사 <span style="font-size:11px;color:var(--mu);font-weight:400;">탭하면 사진 찍기</span></div>
         <div class="meal-slots" id="home-meal-slots">
