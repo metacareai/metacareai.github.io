@@ -1108,12 +1108,10 @@ function _refreshComprehensiveBtn(){
   var btn=$id('home-comprehensive-btn');
   var resEl=$id('home-comprehensive-result');
   if(!btn||!resEl) return;
+  btn.style.display='block';
   var today=todayStr();
   var days=_getRecs();
   var dayRec=days.find(function(d){return d.date===today;});
-  var hasDiet=dayRec&&dayRec.analysis&&dayRec.analysis.latest;
-  var hasExercise=dayRec&&dayRec.exercise&&dayRec.exercise.length;
-  btn.style.display=(hasDiet&&hasExercise)?'block':'none';
   if(dayRec&&dayRec.comprehensive&&dayRec.comprehensive.result){
     resEl.style.display='block';
     resEl.innerHTML='<div class="tip-lbl">오늘 종합 평가</div>'+esc(dayRec.comprehensive.result);
@@ -1127,26 +1125,27 @@ function comprehensiveEval(){
   var today=todayStr();
   var days=_getRecs();
   var dayRec=days.find(function(d){return d.date===today;});
-  if(!dayRec||!dayRec.analysis||!dayRec.analysis.latest){ toast('식단 분석 결과가 없습니다'); return; }
-  if(!dayRec.exercise||!dayRec.exercise.length){ toast('운동 분석 결과가 없습니다'); return; }
+  var dietText=dayRec&&dayRec.analysis&&dayRec.analysis.latest;
+  var latestEx=dayRec&&dayRec.exercise&&dayRec.exercise.length&&dayRec.exercise[dayRec.exercise.length-1];
+  var exText=latestEx?'['+latestEx.type+(latestEx.dur?' · '+latestEx.dur:'')+'] '+latestEx.analysis:'';
+  if(!dietText&&!exText){ toast('오늘 식단이나 운동 기록이 없습니다'); return; }
   var resEl=$id('home-comprehensive-result');
   resEl.style.display='block';
   resEl.innerHTML='<div class="tip-lbl">오늘 종합 평가</div><div class="dots"><span></span><span></span><span></span></div>';
-  var dietText=dayRec.analysis.latest;
-  var latest=dayRec.exercise[dayRec.exercise.length-1];
-  var exText='['+latest.type+(latest.dur?' · '+latest.dur:'')+'] '+latest.analysis;
   var u=USER, mode=u?u.mode:'lchf';
   var modeDesc={keto:'케토제닉',carnivore:'카니보어',lchf:'저탄고지',diet:'균형 건강식',cancer:'암 환자 항산화 식단'}[mode]||mode;
-  var prompt='오늘의 식단 분석과 운동 분석을 바탕으로 '+modeDesc+' 관점의 종합 평가를 해주세요.\n\n[식단 분석]\n'+dietText+'\n\n[운동 분석]\n'+exText+'\n\n두 결과를 연계하여 오늘 하루 건강 관리 전반에 대한 종합 평가와 내일을 위한 핵심 조언을 4~5문장으로 작성해주세요.';
+  var parts=[];
+  if(dietText) parts.push('[식단 분석]\n'+dietText);
+  if(exText) parts.push('[운동 분석]\n'+exText);
+  var prompt='오늘의 건강 기록을 바탕으로 '+modeDesc+' 관점의 종합 평가를 해주세요.\n\n'+parts.join('\n\n')+'\n\n오늘 하루 건강 관리 전반에 대한 종합 평가와 내일을 위한 핵심 조언을 4~5문장으로 작성해주세요.';
   _api({max_tokens:500,messages:[{role:'user',content:prompt}]}, function(reply){
     var result=reply||'종합 평가를 가져오지 못했어요.';
     resEl.innerHTML='<div class="tip-lbl">오늘 종합 평가</div>'+esc(result);
     var days2=_getRecs();
     var dayRec2=days2.find(function(d){return d.date===today;});
-    if(dayRec2){
-      dayRec2.comprehensive={result:result,ts:Date.now()};
-      _setRecs(days2);
-    }
+    if(!dayRec2){ dayRec2={date:today,photos:{},steps:''}; days2.push(dayRec2); }
+    dayRec2.comprehensive={result:result,ts:Date.now()};
+    _setRecs(days2);
   });
 }
 
