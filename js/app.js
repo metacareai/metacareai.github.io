@@ -6,7 +6,11 @@
 var A = (function(){
 
 /* ── 상태 ── */
-var KEY = 'sk-ant-api03-bcd4aSE74SFzO71OHBwcBRMTSLmk3mflxcXrme2c92hIiZVr70mJ_kkzqVguweBH6F44ETwxxnnh2sqUit-XUg-a8Y9UwAA';var _newStage = 0;
+var KEY = ''; // Anthropic API key - Firebase에서 로드
+var USER = null;        // 현재 로그인 사용자
+var _newMode = '';
+var _newCtype = '';
+var _newStage = 0;
 var _pendMeal = null;   // 기록장 식사 슬롯
 var _vCtx = null;       // 뷰어 컨텍스트
 var _vRot = 0;
@@ -32,6 +36,7 @@ var firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 var _db = firebase.firestore();
 var _docRef = _db.collection('metacare').doc('data');
+var _storage = firebase.storage();
 
 /* ── 스토리지 헬퍼 (메모리 캐시 + Firestore 동기화) ── */
 var _cache = {};        // 모든 키-값을 메모리에 보관 (동기 접근용)
@@ -61,15 +66,30 @@ function usj(k,v){ us(k,JSON.stringify(v)); }
 
 /* ── 클라우드에서 초기 데이터 로드 ── */
 function _loadCloudData(cb){
+  // API 키와 앱 데이터를 병렬로 로드
+  var keyLoaded = false, dataLoaded = false;
+  var tryDone = function(){
+    if(keyLoaded && dataLoaded) cb();
+  };
+
+  // API 키 로드
+  _db.collection('config').doc('api').get().then(function(doc){
+    if(doc.exists && doc.data().Key) KEY = doc.data().Key;
+    else if(doc.exists && doc.data().key) KEY = doc.data().key;
+    console.log('KEY 로드:', KEY ? '성공 ('+KEY.slice(0,20)+'...)' : '실패 - doc.exists:'+doc.exists);
+    keyLoaded = true; tryDone();
+  }).catch(function(err){ console.error('KEY 로드 오류:', err); keyLoaded = true; tryDone(); });
+
+  // 앱 데이터 로드
   _docRef.get().then(function(doc){
     _cache = doc.exists ? (doc.data()||{}) : {};
     _cacheReady = true;
-    cb();
+    dataLoaded = true; tryDone();
   }).catch(function(err){
     console.error('Firestore 로드 오류', err);
     _cache = {};
     _cacheReady = true;
-    cb();
+    dataLoaded = true; tryDone();
   });
 }
 
@@ -1125,8 +1145,25 @@ function onMealFile(e,src){
     var p=_pendMeal; _pendMeal=null;
     var card=$id(p.cardId); if(!card) return;
     var slot=card.querySelector('[data-meal="'+p.meal+'"]'); if(!slot) return;
-    _saveRot(p.cardId,p.meal,0); _renderFilled(slot,small,0); _schedSave(); _refreshPhotos(); _refreshStats();
-    toast('사진이 저장됐어요 ✓');
+    // Storage에 업로드
+    var path = 'photos/'+USER.id+'/'+p.cardId+'_'+p.meal+'_'+Date.now()+'.jpg';
+    var ref = _storage.ref(path);
+    // base64 → blob 변환
+    var byteStr = atob(small.split(',')[1]);
+    var ab = new ArrayBuffer(byteStr.length);
+    var ia = new Uint8Array(ab);
+    for(var i=0;i<byteStr.length;i++) ia[i]=byteStr.charCodeAt(i);
+    var blob = new Blob([ab],{type:'image/jpeg'});
+    toast('사진 업로드 중...');
+    ref.put(blob).then(function(){ return ref.getDownloadURL(); }).then(function(url){
+      _saveRot(p.cardId,p.meal,0); _renderFilled(slot,url,0); _schedSave(); _refreshPhotos(); _refreshStats();
+      toast('사진이 저장됐어요 ✓');
+    }).catch(function(err){
+      console.error('Storage 업로드 실패', err);
+      // 실패 시 base64로 폴백
+      _saveRot(p.cardId,p.meal,0); _renderFilled(slot,small,0); _schedSave(); _refreshPhotos(); _refreshStats();
+      toast('사진이 저장됐어요 ✓');
+    });
   }); }; r.readAsDataURL(f);
 }
 
