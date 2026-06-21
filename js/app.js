@@ -931,16 +931,21 @@ function goHelp(){
   var modeName = ic ? (u.ctype==='prostate' ? u.stage+'기 전립선암' : '암환자') : (modeNames[u.mode]||'건강관리');
 
   var commonHelp = [
-    {icon:'ti-camera', title:'식사 사진 찍기', desc:'화면 가운데 초록색 배너를 누르면 사진을 찍을 수 있어요.\nAI가 사진을 보고 바로 분석해 드립니다.'},
-    {icon:'ti-table', title:'기록장', desc:'아래 메뉴에서 "기록장"을 누르면 날짜별로 식사 사진과 만보를 기록할 수 있어요.\n"엑셀" 버튼을 누르면 파일로 저장됩니다.'},
-    {icon:'ti-message-circle', title:'AI 코치', desc:'아래 메뉴에서 "코치"를 누르면 AI에게 무엇이든 물어볼 수 있어요.\n식단 추천, 운동 방법, 건강 궁금증 모두 물어보세요.'},
-    {icon:'ti-microphone', title:'음성 명령', desc:'화면 오른쪽 아래 초록 동그라미 버튼을 누르고 말하면 됩니다.\n"사진 찍어줘", "기록장 보여줘" 이렇게 말해보세요.'},
+    {icon:'ti-home', title:'홈 화면', desc:'오늘의 목표, 컨디션 기록, 식사 사진(아침/점심/저녁), 식단·운동 분석 결과가 한눈에 보입니다.\n아침/점심/저녁 칸을 누르면 사진을 찍고 AI가 바로 분석해 드립니다.'},
+    {icon:'ti-activity-heartbeat', title:'컨디션 기록', desc:'홈 화면 상단 "오늘의 컨디션 기록" 버튼을 누르세요.\n몸 상태, 체중, 혈당, 혈압, 수면 시간, 기타 메모를 기록할 수 있습니다.'},
+    {icon:'ti-camera', title:'식단 분석', desc:'하단 메뉴 "식단" 탭에서 사진을 찍으면 AI가 즉시 분석해 드립니다.\n분석 결과는 홈 화면에도 저장됩니다.'},
+    {icon:'ti-run', title:'운동 분석', desc:'"식단" 탭에서 상단의 "운동" 버튼을 누르세요.\n운동 종류와 시간을 입력하면 AI가 분석해 드립니다.'},
+    {icon:'ti-sparkles', title:'오늘 종합 평가', desc:'식단 분석과 운동 분석이 모두 완료되면 홈 화면에 "오늘 종합 평가 받기" 버튼이 나타납니다.\nAI가 오늘 하루 전체를 종합 평가해 드립니다.'},
+    {icon:'ti-table', title:'기록장', desc:'하단 메뉴 "기록장" 탭에서 날짜별 식사 사진을 확인할 수 있어요.\n홈에서 찍은 사진이 자동으로 기록장에도 저장됩니다.'},
+    {icon:'ti-message-circle', title:'AI 코치', desc:'하단 메뉴 "코치" 탭에서 AI에게 무엇이든 물어볼 수 있어요.\n식단 추천, 운동 방법, 건강 궁금증 모두 물어보세요.'},
+    {icon:'ti-microphone', title:'음성 명령', desc:'상단 오른쪽 마이크 아이콘을 누르고 말하면 됩니다.\n"사진 찍어줘", "기록장 보여줘" 이렇게 말해보세요.'},
+    {icon:'ti-arrow-left', title:'뒤로가기', desc:'하단 메뉴 맨 왼쪽 "뒤로" 버튼을 누르면 이전 화면으로 돌아갑니다.\n폰의 뒤로가기 버튼도 사용할 수 있어요.'},
   ];
 
   var modeHelp = {
     keto:[
       {icon:'ti-salad', title:'케토제닉이란?', desc:'탄수화물을 하루 20g 이하로 줄이는 식단이에요.\n밥, 빵, 면, 과자를 피하고 고기, 계란, 아보카도, 견과류를 드세요.'},
-      {icon:'ti-chart-bar', title:'목표', desc:'탄수화물 20g 이하, 지방 75%, 단백질 20%\n이 비율을 맞추면 몸이 지방을 태우기 시작합니다.'},
+      {icon:'ti-chart-bar', title:'오늘의 목표', desc:'탄수화물 20g 이하, 지방 75%, 단백질 20%\n홈 화면 상단 초록 박스에서 오늘의 목표를 확인하세요.'},
     ],
     carnivore:[
       {icon:'ti-flame', title:'카니보어란?', desc:'고기, 생선, 달걀, 유제품만 드시는 식단이에요.\n채소, 과일, 곡물은 드시지 않습니다.'},
@@ -957,11 +962,11 @@ function goHelp(){
     cancer:[
       {icon:'ti-activity', title:'증상 기록', desc:'홈 화면에서 통증, 배뇨, 피로를 매일 기록하세요.\n0점(없음)부터 10점(매우 심함)으로 표시합니다.'},
       {icon:'ti-pill', title:'복약 체크', desc:'홈 화면에서 오늘 드신 약에 체크 표시를 하세요.\n약을 빠뜨리지 않도록 도와드립니다.'},
-      {icon:'ti-chart-line', title:'PSA 기록', desc:'"추적" 메뉴에서 PSA 수치를 날짜별로 기록하세요.\n검사 후 바로 입력해두면 변화를 쉽게 확인할 수 있어요.'},
+      {icon:'ti-chart-line', title:'종양 마커 기록', desc:'"추적" 메뉴에서 PSA 등 종양 마커 수치를 날짜별로 기록하세요.\n검사 후 바로 입력해두면 변화를 쉽게 확인할 수 있어요.'},
     ],
   };
 
-  var items = (modeHelp[u?u.mode:'keto']||[]).concat(commonHelp);
+  var items = (modeHelp[u?u.mode:'lchf']||[]).concat(commonHelp);
 
   var el = $id('help-body');
   if(!el) return;
