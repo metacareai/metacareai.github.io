@@ -881,10 +881,34 @@ function refreshTip(){
   var tips=_TIPS[mode]||_TIPS.keto;
   var idx; do{ idx=Math.floor(Math.random()*tips.length); }while(idx===_lastTipIdx&&tips.length>1);
   _lastTipIdx=idx;
-  var prompts={keto:'케토제닉 식단 실천자를 위한 오늘의 팁을 1~2문장으로.',carnivore:'카니보어(육식) 식단 실천자를 위한 오늘의 팁을 1~2문장으로.',lchf:'저탄고지 식단 실천자를 위한 혈당 관리 팁을 1~2문장으로.',diet:'건강 다이어트 실천자를 위한 오늘의 식단 팁을 1~2문장으로.'};
+  
+  // 다양한 팁 주제 목록
+  var topics = {
+    keto:['지방 섭취','케톤 생성','전해질 관리','케토 식품 선택','운동과 케토','케토 부작용 예방','간헐적 단식','케토 외식 방법'],
+    carnivore:['육류 선택','지방 비율','전해질 보충','카니보어 적응기','장 건강','단백질 소화','카니보어 외식'],
+    lchf:['혈당 안정','탄수화물 선택','저탄고지 간식','혈당 측정','인슐린 저항성','저탄고지 외식','수면과 혈당'],
+    diet:['칼로리 조절','영양 균형','채소 섭취','수분 섭취','건강한 간식','식사 타이밍','포만감 관리'],
+    cancer:['항산화 식품','항염 식단','면역 강화','체중 유지','소화 개선','수분 섭취','항암 식품']
+  };
+  
+  var topicList = topics[mode]||topics.lchf;
+  var randomTopic = topicList[Math.floor(Math.random()*topicList.length)];
+  var hour = new Date().getHours();
+  var timeStr = hour < 12 ? '아침' : hour < 18 ? '점심' : '저녁';
+  
+  var prompts={
+    keto:'케토제닉 식단 실천자를 위한 ['+randomTopic+'] 관련 '+timeStr+' 팁을 오늘 날짜('+todayStr()+') 기준으로 새롭고 구체적으로 1~2문장으로.',
+    carnivore:'카니보어(육식) 식단 실천자를 위한 ['+randomTopic+'] 관련 팁을 새롭고 구체적으로 1~2문장으로.',
+    lchf:'저탄고지 식단 실천자를 위한 ['+randomTopic+'] 관련 혈당 관리 팁을 오늘('+todayStr()+') 기준으로 새롭고 구체적으로 1~2문장으로.',
+    diet:'건강 다이어트 실천자를 위한 ['+randomTopic+'] 관련 '+timeStr+' 팁을 새롭고 구체적으로 1~2문장으로.',
+    cancer:'암 환자를 위한 ['+randomTopic+'] 관련 식단 팁을 새롭고 구체적으로 1~2문장으로.'
+  };
+  
   if(KEY){
     el.innerHTML='<div class="dots"><span></span><span></span><span></span></div>';
-    _api({max_tokens:120, messages:[{role:'user',content:prompts[mode]||prompts.keto}]}, function(reply){ el.textContent=reply||tips[idx]; });
+    _api({max_tokens:150, messages:[{role:'user',content:prompts[mode]||prompts.lchf}]}, function(reply){ 
+      el.textContent=reply||tips[idx]; 
+    });
   } else { el.textContent=tips[idx]; }
 }
 var _refreshTip = refreshTip;
