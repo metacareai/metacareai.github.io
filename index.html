@@ -416,6 +416,13 @@
 </div><!-- /app -->
 
 <!-- 바텀시트들 -->
+<!-- 식단 분석용 숨김 요소 (홈 화면 사진 분석에 사용) -->
+<div style="display:none">
+  <div id="preview-wrap"><img id="preview-img" src="" alt=""></div>
+  <input id="food-name" type="text">
+  <div id="ai-result"></div>
+</div>
+
 <div class="overlay" id="sh-photo" onclick="if(event.target.id==='sh-photo')A.closeSheet('sh-photo')">
   <div class="sheet">
     <div class="sh-title">사진 선택</div>
@@ -479,15 +486,6 @@
   <div class="viewer-wrap"><img id="hv-img" src="" alt=""></div>
 </div>
 
-<!-- 홈 식사 사진 바텀시트 -->
-<div class="overlay" id="sh-home-meal" onclick="if(event.target.id==='sh-home-meal')A.closeSheet('sh-home-meal')">
-  <div class="sheet">
-    <div class="sh-title" id="sh-home-meal-title">사진 선택</div>
-    <button class="sh-btn" onclick="A.pickHomeMeal('cam')"><i class="ti ti-camera"></i> 촬영하기</button>
-    <button class="sh-btn" onclick="A.pickHomeMeal('gal')"><i class="ti ti-photo"></i> 갤러리에서 가져오기</button>
-    <button class="sh-cancel" onclick="A.closeSheet('sh-home-meal')">취소</button>
-  </div>
-</div>
 <!-- 컨디션 기록 바텀시트 -->
 <div class="overlay" id="sh-condition" onclick="if(event.target.id==='sh-condition')A.closeSheet('sh-condition')">
   <div class="sheet" style="max-height:85vh;overflow-y:auto;">
