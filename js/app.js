@@ -33,7 +33,7 @@ var _quickNRS = 0;
 var _saveTimer = null;
 var _chatBusy = false;
 var _cardSeq = 0;
-var _lastTipIdx = -1;
+
 var _logoTapCount = 0;
 var _logoTapTimer = null;
 
@@ -776,7 +776,7 @@ function _initApp(){
   _refreshHomeExercise();
   _refreshComprehensiveBtn();
   if(ic){ _refreshMedHome(); _refreshTodaySym(); }
-  else{ _refreshStats(); _refreshTip(); }
+  else{ _refreshStats(); }
 
   // 날짜
   var pdi=$id('psa-date'); if(pdi) pdi.value=todayStr();
@@ -787,13 +787,6 @@ function _initApp(){
 }
 
 /* ── 건강관리 홈 ── */
-var _TIPS = {
-  keto:['전해질 보충이 중요합니다. 나트륨·칼륨·마그네슘을 충분히 섭취하면 케토 독감 증상을 예방할 수 있습니다.','아보카도는 케토의 완벽한 음식입니다. 건강한 지방, 칼륨, 섬유질이 풍부합니다.','저강도 유산소 운동은 케톤 산화를 촉진하여 체지방 연소를 극대화합니다.','버터 커피는 아침 공복에 섭취하면 포만감을 유지하며 케토시스를 강화합니다.'],
-  carnivore:['붉은 고기, 생선, 달걀, 일부 유제품만 섭취합니다. 식물성 식품(채소, 과일, 곡물)은 완전히 배제합니다.','내장육(간, 심장)은 영양 밀도가 매우 높아 비타민과 미네랄 보충에 좋습니다.','뼈 국물(본브로스)은 관절 건강과 소화에 도움이 됩니다.','적응 기간(2~4주) 동안 피로감이 있을 수 있으니 충분한 염분과 수분을 섭취하세요.'],
-  lchf:['정제 탄수화물(흰쌀, 설탕)을 피하고 채소로 대체하면 혈당이 안정됩니다.','식사 순서를 채소 → 단백질 → 탄수화물 순으로 하면 혈당 상승을 크게 줄일 수 있습니다.','식사 후 10~15분 가볍게 걸으면 혈당 스파이크를 효과적으로 낮출 수 있습니다.'],
-  diet:['지중해식 식단의 핵심은 올리브오일, 채소, 생선, 견과류입니다. 매 식사 채소를 절반 이상 채우세요.','물을 식사 30분 전에 마시면 포만감이 높아져 칼로리 섭취를 줄일 수 있습니다.','천천히 씹어 먹는 것만으로도 포만감이 향상됩니다.']
-};
-
 var _HEALTH_CFG = {
   keto:{sub:'인슐린 통제 대사 모드',daysLbl:'연속 케토',goalBg:'linear-gradient(135deg,#2A7B7B,#1A5C5C)',goalLbl:'케토 목표',goalHtml:'<div class="goal-vals"><div class="goal-val-item"><div class="val">20g</div><div class="lbl-s">탄수화물</div></div><div class="goal-val-item"><div class="val">75%</div><div class="lbl-s">지방</div></div><div class="goal-val-item"><div class="val">20%</div><div class="lbl-s">단백질</div></div></div>',bannerSub:'케토 적합도와 영양 분석을 즉시 알려드려요',tipTitle:'오늘의 케토 팁',vg2:'"오늘 뭐 먹을까" — 케토 식단 추천'},
   carnivore:{sub:'동물성 식품 전용 극단적 저탄수 모드',daysLbl:'연속 카니보어',goalBg:'linear-gradient(135deg,#7A2E2E,#4A1818)',goalLbl:'카니보어 목표',goalHtml:'<div class="goal-vals"><div class="goal-val-item"><div class="val">0g</div><div class="lbl-s">탄수화물</div></div><div class="goal-val-item"><div class="val">동물성</div><div class="lbl-s">식품만</div></div><div class="goal-val-item"><div class="val">고단백</div><div class="lbl-s">고지방</div></div></div>',bannerSub:'동물성 식품 적합도를 즉시 분석해 드려요',tipTitle:'오늘의 카니보어 팁',vg2:'"오늘 뭐 먹을까" — 카니보어 식단 추천'},
@@ -817,8 +810,6 @@ function _initHealthHome(mode){
   }).join(' · ');
   if(g('home-goal-items')) g('home-goal-items').textContent=txt;
   if(g('home-banner-sub')) g('home-banner-sub').textContent=c.bannerSub;
-  if(g('tip-title')) g('tip-title').textContent=c.tipTitle;
-  if(g('vg2')) g('vg2').innerHTML='<i class="ti ti-salad"></i>'+c.vg2;
   // 식사 슬롯 색상 동기화
   var goalBg = c.goalBg;
   setTimeout(function(){
@@ -846,9 +837,6 @@ function _initCancerHome(u){
     el.style.color='#fff'; el.classList.add('colored');
   });
   var bs=$id('home-banner-sub'); if(bs) bs.textContent='항산화·저당 관점의 암 환자 맞춤 식단 분석';
-  var tt=$id('tip-title'); if(tt) tt.style.display='none';
-  var tb=document.querySelector('.tip-box'); if(tb) tb.style.display='none';
-  var vg2=$id('vg2'); if(vg2) vg2.innerHTML='<i class="ti ti-chart-line"></i>"마커 기록해줘"';
   if(ip) _refreshPSABanner();
 }
 
@@ -903,44 +891,6 @@ function _initMarkerTrack(){
   if(!USER||USER.mode!=='cancer') return;
   var t=$id('marker-title'); if(t) t.textContent=_getMarkerLabel();
 }
-
-function refreshTip(){
-  var el=$id('tip-text'); if(!el) return;
-  var mode=USER?USER.mode:'keto';
-  var tips=_TIPS[mode]||_TIPS.keto;
-  var idx; do{ idx=Math.floor(Math.random()*tips.length); }while(idx===_lastTipIdx&&tips.length>1);
-  _lastTipIdx=idx;
-  
-  // 다양한 팁 주제 목록
-  var topics = {
-    keto:['지방 섭취','케톤 생성','전해질 관리','케토 식품 선택','운동과 케토','케토 부작용 예방','간헐적 단식','케토 외식 방법'],
-    carnivore:['육류 선택','지방 비율','전해질 보충','카니보어 적응기','장 건강','단백질 소화','카니보어 외식'],
-    lchf:['혈당 안정','탄수화물 선택','저탄고지 간식','혈당 측정','인슐린 저항성','저탄고지 외식','수면과 혈당'],
-    diet:['칼로리 조절','영양 균형','채소 섭취','수분 섭취','건강한 간식','식사 타이밍','포만감 관리'],
-    cancer:['항산화 식품','항염 식단','면역 강화','체중 유지','소화 개선','수분 섭취','항암 식품']
-  };
-  
-  var topicList = topics[mode]||topics.lchf;
-  var randomTopic = topicList[Math.floor(Math.random()*topicList.length)];
-  var hour = new Date().getHours();
-  var timeStr = hour < 12 ? '아침' : hour < 18 ? '점심' : '저녁';
-  
-  var prompts={
-    keto:'케토제닉 식단 실천자를 위한 ['+randomTopic+'] 관련 '+timeStr+' 팁을 오늘 날짜('+todayStr()+') 기준으로 새롭고 구체적으로 1~2문장으로.',
-    carnivore:'카니보어(육식) 식단 실천자를 위한 ['+randomTopic+'] 관련 팁을 새롭고 구체적으로 1~2문장으로.',
-    lchf:'저탄고지 식단 실천자를 위한 ['+randomTopic+'] 관련 혈당 관리 팁을 오늘('+todayStr()+') 기준으로 새롭고 구체적으로 1~2문장으로.',
-    diet:'건강 다이어트 실천자를 위한 ['+randomTopic+'] 관련 '+timeStr+' 팁을 새롭고 구체적으로 1~2문장으로.',
-    cancer:'암 환자를 위한 ['+randomTopic+'] 관련 식단 팁을 새롭고 구체적으로 1~2문장으로.'
-  };
-  
-  if(KEY){
-    el.innerHTML='<div class="dots"><span></span><span></span><span></span></div>';
-    _api({max_tokens:150, messages:[{role:'user',content:prompts[mode]||prompts.lchf}]}, function(reply){ 
-      el.textContent=reply||tips[idx]; 
-    });
-  } else { el.textContent=tips[idx]; }
-}
-var _refreshTip = refreshTip;
 
 function _updateDays(){
   var ic=USER&&USER.mode==='cancer';
@@ -1284,14 +1234,6 @@ function _refreshHomeExercise(){
   } else {
     el.style.display='none';
   }
-}
-
-function setDietTab(t){
-  ['food','ex'].forEach(function(x){ $id('tb-'+x).className='tbtn '+x+(t===x?' active':''); });
-  $id('food-form').style.display=t==='food'?'':'none';
-  $id('ex-form').style.display=t==='ex'?'':'none';
-  $id('preview-wrap').style.display='none';
-  $id('ai-result').style.display='none';
 }
 
 function setCancerTab(t){
@@ -1968,7 +1910,6 @@ function openMealSlot(meal){
   // 사진 없으면 식단 탭으로 이동
   _pendingMeal = mealKey;
   goPage('diet');
-  setDietTab('food');
   setTimeout(function(){ openSheet('sh-photo'); }, 200);
 }
 
@@ -2012,7 +1953,6 @@ function replaceHomeMealPhoto(meal){
   var mealMap={breakfast:'morning',lunch:'lunch',dinner:'dinner'};
   _pendingMeal=mealMap[meal]||meal;
   goPage('diet');
-  setDietTab('food');
   setTimeout(function(){ openSheet('sh-photo'); },200);
 }
 function pickHomeMeal(src){
@@ -2083,11 +2023,10 @@ return {
   // 앱
   goPage:goPage, onMic:onMic,
   // 팁
-  refreshTip:refreshTip,
+
   // 코치
   askQ:askQ, sendChat:sendChat,
   // 식단 분석
-  analyze:analyze, analyzeEx:analyzeEx, setDietTab:setDietTab, setCancerTab:setCancerTab,
   // PSA
   openSheet:openSheet, closeSheet:closeSheet, savePSA:savePSA, openMarkerSheet:openMarkerSheet,
   // 컨디션 기록
