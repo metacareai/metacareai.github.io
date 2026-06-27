@@ -510,10 +510,11 @@
 <!-- 뷰어 -->
 <div class="viewer" id="viewer">
   <div class="viewer-wrap"><img id="viewer-img" src="" alt=""></div>
-  <div id="viewer-analysis" style="display:none;padding:10px 16px;max-height:25vh;overflow-y:auto;width:100%;"></div>
+  <div id="viewer-analysis" style="padding:10px 16px;max-height:28vh;overflow-y:auto;width:100%;min-height:40px;"></div>
   <div class="viewer-btns">
     <button class="vbtn" onclick="A.vRot(-90)"><i class="ti ti-rotate-counterclockwise"></i> 왼쪽</button>
     <button class="vbtn" onclick="A.vRot(90)"><i class="ti ti-rotate-clockwise"></i> 오른쪽</button>
+    <button class="vbtn teal" onclick="A.vAnalyze()"><i class="ti ti-sparkles"></i> AI분석</button>
     <button class="vbtn teal" onclick="A.vChg()"><i class="ti ti-replace"></i> 교체</button>
     <button class="vbtn red" onclick="A.vDel()"><i class="ti ti-trash"></i> 삭제</button>
     <button class="vbtn" onclick="A.closeViewer()"><i class="ti ti-x"></i> 닫기</button>
@@ -521,7 +522,7 @@
 </div>
 <div class="viewer" id="home-viewer">
   <div class="viewer-wrap"><img id="hv-img" src="" alt=""></div>
-  <div id="home-viewer-analysis" style="display:none;padding:10px 16px;max-height:22vh;overflow-y:auto;width:100%;"></div>
+  <div id="home-viewer-analysis" style="padding:10px 16px;max-height:24vh;overflow-y:auto;width:100%;min-height:40px;"></div>
   <div class="viewer-btns">
     <button class="vbtn teal" id="hv-reanalyze-btn"><i class="ti ti-sparkles"></i> 재분석</button>
     <button class="vbtn teal" id="hv-replace-btn"><i class="ti ti-replace"></i> 교체</button>
