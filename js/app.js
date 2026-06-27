@@ -1224,13 +1224,17 @@ function _refreshHomeAnalysis(){
   var today=todayStr();
   var days=_getRecs();
   var dayRec=days.find(function(d){return d.date===today;});
-  if(dayRec&&dayRec.analysis&&dayRec.analysis.latest){
-    el.style.display='block';
-    el.innerHTML='<div class="tip-lbl"><i class="ti ti-camera" style="font-size:10px;"></i> 식단 분석</div>'+esc(dayRec.analysis.latest);
-    var row=$id('home-analysis-row'); if(row) row.style.display='grid';
-  } else {
-    el.style.display='none';
-  }
+  if(!dayRec||!dayRec.analysis){ el.style.display='none'; return; }
+  var ana=dayRec.analysis;
+  var parts=[];
+  var labels={breakfast:'🌅 아침',morning:'🌅 아침',lunch:'☀️ 점심',dinner:'🌙 저녁'};
+  ['breakfast','morning','lunch','dinner'].forEach(function(k){
+    if(ana[k]) parts.push('<div style="margin-bottom:8px;"><span style="font-size:11px;font-weight:700;color:var(--teal);">'+labels[k]+'</span><div style="margin-top:3px;">'+esc(ana[k])+'</div></div>');
+  });
+  if(!parts.length && ana.latest) parts.push('<div>'+esc(ana.latest)+'</div>');
+  if(!parts.length){ el.style.display='none'; return; }
+  el.style.display='block';
+  el.innerHTML='<div class="tip-lbl"><i class="ti ti-salad" style="font-size:10px;"></i> 오늘의 식단 분석</div>'+parts.join('');
 }
 
 function analyzeEx(){
@@ -1282,7 +1286,7 @@ function _refreshHomeExercise(){
     var latest=dayRec.exercise[dayRec.exercise.length-1];
     el.style.display='block';
     el.innerHTML='<div class="tip-lbl"><i class="ti ti-run" style="font-size:10px;"></i> 운동 분석</div><div style="font-size:11px;font-weight:700;margin-bottom:4px;">🏃 '+esc(latest.type)+(latest.dur?' · '+esc(latest.dur):'')+'</div>'+esc(latest.analysis);
-    var row=$id('home-analysis-row'); if(row) row.style.display='grid';
+
   } else {
     el.style.display='none';
   }
@@ -2157,23 +2161,39 @@ function onHomeMealFile(e,src){
 
 function _analyzeHomeMeal(imgData, mealName, note){
   if(!KEY) return;
+  // 분석 중 표시
   var resultEl = $id('home-ai-result');
-  if(!resultEl) return;
-  resultEl.style.display='block';
-  resultEl.innerHTML='<div class="tip-lbl">AI 식단 분석 · '+mealName+'</div><div class="dots"><span></span><span></span><span></span></div>';
+  if(resultEl){
+    resultEl.style.display='block';
+    var cur=resultEl.innerHTML;
+    resultEl.innerHTML=cur+'<div id="meal-analyzing" style="color:var(--mu);font-size:12px;display:flex;align-items:center;gap:6px;margin-top:6px;"><div class="dots"><span></span><span></span><span></span></div>'+mealName+' 분석 중...</div>';
+  }
   var mode=USER?USER.mode:'lchf';
   var modeDesc={keto:'케토제닉(탄수화물 20g 이하)',carnivore:'카니보어(동물성 식품)',lchf:'저탄고지(탄수화물 100g 이하)',diet:'균형 건강식',cancer:'암 환자 항산화 식단'}[mode]||mode;
   var prompt='['+mealName+' 식사 사진] '+modeDesc+' 관점에서 분석해주세요.';
   if(note) prompt += ' 사용자 메모: "'+note+'"';
-  prompt += ' 주요 음식명, 적합도, 개선 제안을 3~4문장으로 간결하게.';
+  prompt += ' 주요 음식명, 적합도, 개선 제안을 2~3문장으로 간결하게.';
   _api({
-    max_tokens:350,
+    max_tokens:300,
     messages:[{role:'user',content:[
       {type:'image',source:{type:'base64',media_type:'image/jpeg',data:imgData.split(',')[1]}},
       {type:'text',text:prompt}
     ]}]
   }, function(reply){
-    resultEl.innerHTML='<div class="tip-lbl">AI 식단 분석 · '+mealName+'</div>'+esc(reply||'분석 결과를 가져오지 못했어요');
+    if(!reply) return;
+    // 끼니 키로 저장
+    var mealKey={아침:'breakfast',점심:'lunch',저녁:'dinner'};
+    var rawKey=null;
+    Object.keys(mealKey).forEach(function(k){ if(mealName.indexOf(k)>-1) rawKey=mealKey[k]; });
+    var today=todayStr(); var days=_getRecs();
+    var dayRec=days.find(function(d){return d.date===today;});
+    if(!dayRec){ dayRec={date:today,photos:{},steps:''}; days.push(dayRec); }
+    if(!dayRec.analysis) dayRec.analysis={};
+    if(rawKey) dayRec.analysis[rawKey]=reply;
+    dayRec.analysis.latest=reply;
+    dayRec.analysis.ts=Date.now();
+    _setRecs(days);
+    _refreshHomeAnalysis();
   });
 }
 
