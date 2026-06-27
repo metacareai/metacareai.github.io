@@ -2259,6 +2259,7 @@ return {
   // 컨디션 기록
   openConditionSheet:openConditionSheet, selectCondState:selectCondState, saveCondition:saveCondition,
   // 종합 분석
+  analyzeEx:analyzeEx,
   analyzeComprehensive:analyzeComprehensive,
   // 증상
   openSymSheet:openSymSheet, saveSymQuick:saveSymQuick, saveSym:saveSym,
