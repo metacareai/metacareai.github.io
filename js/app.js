@@ -1772,7 +1772,7 @@ function _doSave(){
 function _xlLoad(){
   var days=_getRecs(); var c=$id('log-cards'); c.innerHTML=''; _cardSeq=0;
   $id('log-empty').style.display=days.length?'none':'block';
-  days.forEach(function(d){ c.appendChild(_makeCard(d)); });
+  days.slice().reverse().forEach(function(d){ c.appendChild(_makeCard(d)); });
 }
 
 function exportExcel(){
