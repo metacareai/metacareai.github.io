@@ -2145,14 +2145,15 @@ function _openHomeMealViewer(photoUrl, mealName, analysis, meal){
     + '<button onclick="A.deleteMealPhoto(\"' + meal + '\")" style="padding:12px;background:var(--red);color:#fff;border:none;border-radius:var(--r-sm);font-size:13px;font-weight:700;">삭제</button>'
     + '</div>';
 
+  var panelStyle='position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:#fff;border-radius:22px 22px 0 0;padding:20px 18px calc(env(safe-area-inset-bottom,0px)+16px);z-index:9000;max-height:75vh;overflow-y:auto;box-shadow:0 -4px 32px rgba(15,30,49,.25);';
   if(!analysisEl){
     var div=document.createElement('div');
     div.id='home-meal-analysis';
-    div.style.cssText='position:absolute;bottom:0;left:0;right:0;background:#fff;border-radius:22px 22px 0 0;padding:20px 18px calc(env(safe-area-inset-bottom,0px)+16px);z-index:300;max-height:70vh;overflow-y:auto;box-shadow:0 -4px 24px rgba(15,30,49,.18);';
+    div.style.cssText=panelStyle;
     div.innerHTML=html;
-    var appEl=$id('app')||document.body;
-    appEl.appendChild(div);
+    document.body.appendChild(div);
   } else {
+    analysisEl.style.cssText=panelStyle;
     analysisEl.style.display='block';
     analysisEl.innerHTML=html;
   }
