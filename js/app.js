@@ -207,102 +207,32 @@ function _verifyDataIntegrity(){
     if(users.length > 0 && recs.length === 0){
       console.warn('⚠️ 사용자는 있는데 기록이 없습니다. 백업 복원을 확인하세요.');
     }
-    // base64 데이터 정리 (Firestore 용량 초과 방지)
-    _cleanBase64FromRecs();
+    // base64 정리는 저장 시점에만 처리 (데이터 손실 방지)
   }catch(e){ console.error('무결성 검사 오류:', e); }
 }
 
 function _cleanBase64FromRecs(){
+  // 안전 버전: records의 base64만 제거, 백업/users 절대 건드리지 않음
   try{
-    var totalCleaned = 0;
-
-    // 1. records에서 base64 제거
     var recs = ugj('records',[]);
+    var cleaned = false;
     recs.forEach(function(rec){
       if(!rec.photos) return;
       Object.keys(rec.photos).forEach(function(meal){
         if(rec.photos[meal] && rec.photos[meal].startsWith('data:image')){
-          console.warn('🧹 records base64 제거:', rec.date, meal);
+          console.warn('🧹 base64 제거:', rec.date, meal);
           delete rec.photos[meal];
-          totalCleaned++;
+          cleaned = true;
         }
       });
     });
-    if(totalCleaned > 0) usj('records', recs);
-
-    // 2. 기존 백업 스냅샷 자체를 삭제 (base64 포함된 크기 큰 것)
-    Object.keys(_cache).forEach(function(k){
-      if(k.startsWith('mc_backup_')){
-        var v = _cache[k];
-        if(typeof v === 'string' && v.includes('data:image')){
-          console.warn('🧹 base64 포함 백업 스냅샷 삭제:', k);
-          delete _cache[k];
-          totalCleaned++;
-        }
-      }
-    });
-
-    // 3. 백업 데이터(_cache 전체)에서 base64 제거
-    Object.keys(_cache).forEach(function(cacheKey){
-      var val = _cache[cacheKey];
-      // 백업 스냅샷(JSON 문자열)에서 base64 제거
-      if(typeof val === 'string' && val.includes('data:image')){
-        try{
-          var parsed = JSON.parse(val);
-          var backupCleaned = false;
-          // parsed가 객체면 records 키 탐색
-          Object.keys(parsed).forEach(function(k){
-            if(typeof parsed[k] === 'string' && parsed[k].startsWith('[')) {
-              try {
-                var arr = JSON.parse(parsed[k]);
-                if(Array.isArray(arr)){
-                  arr.forEach(function(rec){
-                    if(rec && rec.photos) Object.keys(rec.photos).forEach(function(m){
-                      if(rec.photos[m] && rec.photos[m].startsWith('data:image')){
-                        delete rec.photos[m]; backupCleaned=true; totalCleaned++;
-                      }
-                    });
-                  });
-                  if(backupCleaned) parsed[k] = JSON.stringify(arr);
-                }
-              }catch(e){}
-            }
-          });
-          if(backupCleaned){
-            _cache[cacheKey] = JSON.stringify(parsed);
-            console.warn('🧹 백업 base64 제거:', cacheKey);
-          }
-        }catch(e){}
-      }
-      // 직접 배열 형태로 저장된 경우
-      if(typeof val === 'string' && val.startsWith('[') && val.includes('data:image')){
-        try{
-          var arr = JSON.parse(val);
-          var arrCleaned = false;
-          arr.forEach(function(rec){
-            if(rec && rec.photos) Object.keys(rec.photos).forEach(function(m){
-              if(rec.photos[m] && rec.photos[m].startsWith('data:image')){
-                delete rec.photos[m]; arrCleaned=true; totalCleaned++;
-              }
-            });
-          });
-          if(arrCleaned){
-            _cache[cacheKey] = JSON.stringify(arr);
-            console.warn('🧹 캐시 배열 base64 제거:', cacheKey);
-          }
-        }catch(e){}
-      }
-    });
-
-    if(totalCleaned > 0){
-      _saveCloud();
-      console.log('✅ base64 정리 완료 - 총', totalCleaned, '개 제거');
-      toast('📦 저장 공간 최적화 완료 ('+totalCleaned+'개 정리)');
-    } else {
-      console.log('✅ base64 없음 - 정리 불필요');
+    if(cleaned){
+      usj('records', recs);
+      console.log('✅ base64 정리 완료');
     }
   }catch(e){ console.error('base64 정리 오류:', e); }
 }
+
 
 function _listBackups(){
   return Object.keys(_cache)
