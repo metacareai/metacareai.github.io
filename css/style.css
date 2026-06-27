@@ -901,9 +901,9 @@ h2 { font-size:21px; font-weight:700; }
    이미지 뷰어
 ════════════════════════════════════════ */
 .viewer {
-  position:absolute; inset:0;
+  position:fixed; inset:0;
   background:rgba(0,0,0,.94);
-  z-index:250; display:none; flex-direction:column;
+  z-index:8000; display:none; flex-direction:column;
   align-items:center; justify-content:center;
 }
 .viewer.on { display:flex; }
