@@ -302,8 +302,11 @@
           </button>
         </div>
         <div id="home-comprehensive-result" style="display:none;" class="tip-box"></div>
-        <div id="home-ai-result" style="display:none;" class="tip-box"></div>
-        <div id="home-exercise-result" style="display:none;" class="tip-box"></div>
+        <!-- 식단+운동 나란히 -->
+        <div id="home-analysis-row" style="display:none;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div id="home-ai-result" class="tip-box" style="display:none;font-size:12px;"></div>
+          <div id="home-exercise-result" class="tip-box" style="display:none;font-size:12px;"></div>
+        </div>
 
         <!-- 전날 AI 피드백 카드 -->
         <div id="home-yesterday-wrap" style="display:none;">

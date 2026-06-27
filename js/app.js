@@ -1127,7 +1127,11 @@ function _api(opts, cb){
   })
   .then(function(r){ return r.json(); })
   .then(function(d){ var txt=(d.content&&d.content[0]&&d.content[0].text)||''; return cb?cb(txt):txt; })
-  .catch(function(){ return cb?cb(''):null; });
+  .catch(function(err){
+    console.error('API 오류:', err);
+    toast('네트워크 오류 - 잠시 후 다시 시도하세요');
+    return cb?cb(''):null;
+  });
 }
 
 /* ── AI 코치 ── */
@@ -1222,7 +1226,8 @@ function _refreshHomeAnalysis(){
   var dayRec=days.find(function(d){return d.date===today;});
   if(dayRec&&dayRec.analysis&&dayRec.analysis.latest){
     el.style.display='block';
-    el.innerHTML='<div class="tip-lbl">오늘의 식단 분석</div>'+esc(dayRec.analysis.latest);
+    el.innerHTML='<div class="tip-lbl"><i class="ti ti-camera" style="font-size:10px;"></i> 식단 분석</div>'+esc(dayRec.analysis.latest);
+    var row=$id('home-analysis-row'); if(row) row.style.display='grid';
   } else {
     el.style.display='none';
   }
@@ -1235,6 +1240,7 @@ function analyzeEx(){
   var steps=$id('ex-steps')?$id('ex-steps').value.trim():'';
   var memo=$id('ex-memo')?$id('ex-memo').value.trim():'';
   var ar=$id('ex-result')||$id('ai-result');
+  if(!ar){ toast('운동 결과 표시 영역을 찾을 수 없습니다'); return; }
   ar.style.display='block';
   ar.innerHTML='<div class="tip-lbl">AI 운동 분석</div><div class="dots"><span></span><span></span><span></span></div>';
   var u=USER, ic=u&&u.mode==='cancer';
@@ -1275,7 +1281,8 @@ function _refreshHomeExercise(){
   if(dayRec&&dayRec.exercise&&dayRec.exercise.length){
     var latest=dayRec.exercise[dayRec.exercise.length-1];
     el.style.display='block';
-    el.innerHTML='<div class="tip-lbl">오늘의 운동 분석</div><div style="font-size:12px;font-weight:700;margin-bottom:4px;">🏃 '+esc(latest.type)+(latest.dur?' · '+esc(latest.dur):'')+'</div>'+esc(latest.analysis);
+    el.innerHTML='<div class="tip-lbl"><i class="ti ti-run" style="font-size:10px;"></i> 운동 분석</div><div style="font-size:11px;font-weight:700;margin-bottom:4px;">🏃 '+esc(latest.type)+(latest.dur?' · '+esc(latest.dur):'')+'</div>'+esc(latest.analysis);
+    var row=$id('home-analysis-row'); if(row) row.style.display='grid';
   } else {
     el.style.display='none';
   }
