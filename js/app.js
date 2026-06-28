@@ -1626,6 +1626,26 @@ function _refreshMedHome(){
 }
 
 /* ── 이미지 압축 ── */
+// Storage URL → base64 변환 (CORS 우회)
+function _urlToBase64(url, cb){
+  var img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.onload = function(){
+    var c = document.createElement('canvas');
+    c.width = img.naturalWidth; c.height = img.naturalHeight;
+    c.getContext('2d').drawImage(img, 0, 0);
+    try{
+      cb(c.toDataURL('image/jpeg', 0.8));
+    }catch(e){
+      // CORS 여전히 막히면 img src 직접 전달
+      console.warn('canvas CORS 실패, img 직접 사용');
+      cb(null);
+    }
+  };
+  img.onerror = function(){ cb(null); };
+  img.src = url + (url.includes('?') ? '&' : '?') + 't=' + Date.now();
+}
+
 function _compress(dataUrl,cb){
   var img=new Image(); img.onload=function(){
     var c=$id('cc'),MAX=480,w=img.width,h=img.height;
@@ -2151,7 +2171,8 @@ function _openViewer(cid,meal){
   var altMeal = {morning:'breakfast',breakfast:'morning',lunch:'lunch',dinner:'dinner'}[meal]||meal;
   var ana = '';
   if(dayRec&&dayRec.analysis){
-    ana = dayRec.analysis[meal]||dayRec.analysis[altMeal]||dayRec.analysis.latest||'';
+    // 해당 끼니 분석만 표시 (latest는 폴백 안 함 - 다른 끼니 내용 섞임 방지)
+    ana = dayRec.analysis[meal]||dayRec.analysis[altMeal]||'';
   }
   var note = dayRec&&dayRec.mealNotes ? (dayRec.mealNotes[meal]||dayRec.mealNotes[altMeal]||'') : '';
   var infoEl=$id('viewer-analysis');
@@ -2193,41 +2214,34 @@ function vAnalyze(){
   var infoEl=$id('viewer-analysis');
   if(infoEl) infoEl.innerHTML='<div class="dots"><span></span><span></span><span></span></div>';
   toast('분석 중...');
-  fetch(photoUrl)
-    .then(function(r){ return r.blob(); })
-    .then(function(blob){
-      var reader=new FileReader();
-      reader.onload=function(ev){
-        var base64=ev.target.result.split(',')[1];
-        var mode=USER?USER.mode:'lchf';
-        var modeDesc={keto:'케토제닉(탄수화물 20g 이하)',carnivore:'카니보어(동물성 식품)',lchf:'저탄고지(탄수화물 100g 이하)',diet:'균형 건강식',cancer:'암 환자 항산화 식단'}[mode]||mode;
-        var days=_getRecs();
-        var dayRec=days.find(function(d){return d.date===dateVal;});
-        var note=dayRec&&dayRec.mealNotes?(dayRec.mealNotes[meal]||''):'';
-        var prompt='['+mealName+' 식사 사진] '+modeDesc+' 관점에서 분석해주세요.';
-        if(note) prompt+=' 사용자 메모: "'+note+'"';
-        prompt+=' 주요 음식명, 적합도, 개선 제안을 2~3문장으로.';
-        _api({max_tokens:300,messages:[{role:'user',content:[
-          {type:'image',source:{type:'base64',media_type:'image/jpeg',data:base64}},
-          {type:'text',text:prompt}
-        ]}]},function(reply){
-          if(!reply){ if(infoEl) infoEl.innerHTML='<div style="color:rgba(255,255,255,.45);">분석 실패 - 다시 시도하세요</div>'; return; }
-          // 결과 저장
-          if(!dayRec) { dayRec={date:dateVal,photos:{},steps:''}; days.push(dayRec); }
-          if(!dayRec.analysis) dayRec.analysis={};
-          dayRec.analysis[meal]=reply;
-          dayRec.analysis.latest=reply;
-          _setRecs(days);
-          // 뷰어에 표시
-          if(infoEl) infoEl.innerHTML='<div style="font-size:12px;color:rgba(255,255,255,.85);line-height:1.7;">'+md(reply)+'</div>';
-          toast('분석 완료 ✓');
-          // 홈 식단 분석도 갱신
-          _refreshHomeAnalysis();
-        });
-      };
-      reader.readAsDataURL(blob);
-    })
-    .catch(function(){ toast('사진을 불러올 수 없습니다'); });
+  _urlToBase64(photoUrl, function(dataUrl){
+    if(!dataUrl){ toast('사진을 분석할 수 없습니다 (CORS). Firebase Storage CORS 설정이 필요합니다'); return; }
+    (function(){
+      var base64=dataUrl.split(',')[1];
+      var mode=USER?USER.mode:'lchf';
+      var modeDesc={keto:'케토제닉(탄수화물 20g 이하)',carnivore:'카니보어(동물성 식품)',lchf:'저탄고지(탄수화물 100g 이하)',diet:'균형 건강식',cancer:'암 환자 항산화 식단'}[mode]||mode;
+      var days=_getRecs();
+      var dayRec=days.find(function(d){return d.date===dateVal;});
+      var note=dayRec&&dayRec.mealNotes?(dayRec.mealNotes[meal]||''):'';
+      var prompt='['+mealName+' 식사 사진] '+modeDesc+' 관점에서 분석해주세요.';
+      if(note) prompt+=' 사용자 메모: "'+note+'"';
+      prompt+=' 주요 음식명, 적합도, 개선 제안을 2~3문장으로.';
+      _api({max_tokens:300,messages:[{role:'user',content:[
+        {type:'image',source:{type:'base64',media_type:'image/jpeg',data:base64}},
+        {type:'text',text:prompt}
+      ]}]},function(reply){
+        if(!reply){ if(infoEl) infoEl.innerHTML='<div style="font-size:12px;color:rgba(255,255,255,.45);">분석 실패 - 다시 시도하세요</div>'; return; }
+        if(!dayRec) { dayRec={date:dateVal,photos:{},steps:''}; days.push(dayRec); }
+        if(!dayRec.analysis) dayRec.analysis={};
+        dayRec.analysis[meal]=reply;
+        dayRec.analysis.latest=reply;
+        _setRecs(days);
+        if(infoEl) infoEl.innerHTML='<div style="font-size:12px;color:rgba(255,255,255,.85);line-height:1.7;">'+md(reply)+'</div>';
+        toast('분석 완료 ✓');
+        _refreshHomeAnalysis();
+      });
+    })();
+  });
 }
 
 function _openHomeViewer(url,lbl){ $id('hv-img').src=url; $id('home-viewer').classList.add('on'); }
@@ -2461,6 +2475,8 @@ function _openHomeMealViewer(photoUrl, mealName, analysis, meal){
   var today=todayStr(); var days=_getRecs();
   var dayRec=days.find(function(d){return d.date===today;});
   var note = dayRec&&dayRec.mealNotes ? (dayRec.mealNotes[mealKey]||'') : '';
+  // 해당 끼니 분석만 (latest 폴백 제거)
+  var mealAna = dayRec&&dayRec.analysis ? (dayRec.analysis[mealKey]||'') : '';
 
   // 뷰어 이미지
   var img=$id('hv-img'); if(img) img.src=photoUrl;
@@ -2470,7 +2486,7 @@ function _openHomeMealViewer(photoUrl, mealName, analysis, meal){
   if(infoEl){
     var txt='';
     if(note) txt+='<div style="font-size:12px;color:rgba(255,255,255,.6);margin-bottom:4px;">📝 '+esc(note)+'</div>';
-    if(analysis) txt+='<div style="font-size:12px;color:rgba(255,255,255,.85);line-height:1.7;">'+md(analysis)+'</div>';
+    if(mealAna) txt+='<div style="font-size:12px;color:rgba(255,255,255,.85);line-height:1.7;">'+md(mealAna)+'</div>';
     infoEl.style.display=txt?'block':'none';
     infoEl.innerHTML=txt;
   }
@@ -2518,40 +2534,30 @@ function reanalyzeMealPhoto(){
   toast('분석 중...');
 
   // Firebase Storage URL → fetch → base64 변환 후 API 전송
-  fetch(photoUrl)
-    .then(function(r){ return r.blob(); })
-    .then(function(blob){
-      var reader=new FileReader();
-      reader.onload=function(ev){
-        var base64=ev.target.result.split(',')[1];
-        var mode=USER?USER.mode:'lchf';
-        var modeDesc={keto:'케토제닉(탄수화물 20g 이하)',carnivore:'카니보어(동물성 식품)',lchf:'저탄고지(탄수화물 100g 이하)',diet:'균형 건강식',cancer:'암 환자 항산화 식단'}[mode]||mode;
-        var prompt='['+mealName+' 식사 사진] '+modeDesc+' 관점에서 분석해주세요.';
-        if(note) prompt+=' 사용자 메모: "'+note+'"';
-        prompt+=' 주요 음식명, 적합도, 개선 제안을 2~3문장으로 간결하게.';
-        _api({
-          max_tokens:300,
-          messages:[{role:'user',content:[
-            {type:'image',source:{type:'base64',media_type:'image/jpeg',data:base64}},
-            {type:'text',text:prompt}
-          ]}]
-        }, function(reply){
-          if(!reply){ toast('분석 실패 - 다시 시도하세요'); return; }
-          // 결과 저장
-          if(!dayRec.analysis) dayRec.analysis={};
-          dayRec.analysis[mealKey]=reply;
-          dayRec.analysis.latest=reply;
-          _setRecs(days);
-          _refreshHomeAnalysis();
-          // 뷰어 패널 갱신
-          var analysis=dayRec.analysis&&(dayRec.analysis[mealKey]||dayRec.analysis.latest);
-          _openHomeMealViewer(photoUrl, mealName, reply, meal);
-          toast('분석 완료 ✓');
-        });
-      };
-      reader.readAsDataURL(blob);
-    })
-    .catch(function(){ toast('사진을 불러올 수 없습니다'); });
+  _urlToBase64(photoUrl, function(dataUrl){
+    if(!dataUrl){ toast('사진을 분석할 수 없습니다 (CORS)'); return; }
+    (function(){
+      var base64=dataUrl.split(',')[1];
+      var mode=USER?USER.mode:'lchf';
+      var modeDesc={keto:'케토제닉(탄수화물 20g 이하)',carnivore:'카니보어(동물성 식품)',lchf:'저탄고지(탄수화물 100g 이하)',diet:'균형 건강식',cancer:'암 환자 항산화 식단'}[mode]||mode;
+      var prompt='['+mealName+' 식사 사진] '+modeDesc+' 관점에서 분석해주세요.';
+      if(note) prompt+=' 사용자 메모: "'+note+'"';
+      prompt+=' 주요 음식명, 적합도, 개선 제안을 2~3문장으로 간결하게.';
+      _api({max_tokens:300,messages:[{role:'user',content:[
+        {type:'image',source:{type:'base64',media_type:'image/jpeg',data:base64}},
+        {type:'text',text:prompt}
+      ]}]}, function(reply){
+        if(!reply){ toast('분석 실패 - 다시 시도하세요'); return; }
+        if(!dayRec.analysis) dayRec.analysis={};
+        dayRec.analysis[mealKey]=reply;
+        dayRec.analysis.latest=reply;
+        _setRecs(days);
+        _refreshHomeAnalysis();
+        _openHomeMealViewer(photoUrl, mealName, reply, meal);
+        toast('분석 완료 ✓');
+      });
+    })();
+  });
 }
 
 function deleteMealPhoto(meal){
@@ -2647,7 +2653,7 @@ function _analyzeHomeMeal(imgData, mealName, note){
     if(!dayRec){ dayRec={date:today,photos:{},steps:''}; days.push(dayRec); }
     if(!dayRec.analysis) dayRec.analysis={};
     if(rawKey) dayRec.analysis[rawKey]=reply;
-    dayRec.analysis.latest=reply;
+    // latest는 종합 분석용으로만 사용 - 끼니별 분석이 섞이지 않도록
     dayRec.analysis.ts=Date.now();
     _setRecs(days);
     _refreshHomeAnalysis();
