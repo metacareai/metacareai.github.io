@@ -59,28 +59,38 @@ var _saveCloudTimer = null;
 function _saveCloud(){
   if(_saveCloudTimer) clearTimeout(_saveCloudTimer);
   _saveCloudTimer = setTimeout(function(){
-    // 핵심 데이터만 저장 (base64, 백업 스냅샷 제외)
+    // 핵심 데이터만 저장 - base64와 백업 스냅샷 절대 포함 안 함
     var slim = {};
     Object.keys(_cache).forEach(function(k){
       var v = _cache[k];
-      // base64 이미지 직접 포함된 키 제외
-      if(typeof v === 'string' && v.includes('data:image')) return;
-      // 백업 스냅샷은 별도 저장하므로 제외
-      if(k.startsWith('mc_backup_')) return;
+      if(typeof v === 'string' && v.includes('data:image')) return; // base64 제외
+      if(k.startsWith('mc_backup_')) return; // 백업 스냅샷 제외
+      // records 안의 base64도 제거
+      if(k.endsWith('_records') && typeof v === 'string'){
+        try{
+          var recs = JSON.parse(v);
+          var changed = false;
+          recs.forEach(function(r){
+            if(r&&r.photos) Object.keys(r.photos).forEach(function(m){
+              if(r.photos[m]&&r.photos[m].startsWith('data:image')){ delete r.photos[m]; changed=true; }
+            });
+          });
+          slim[k] = changed ? JSON.stringify(recs) : v;
+          return;
+        }catch(e){}
+      }
       slim[k] = v;
     });
+    // 크기 체크 후 저장
+    var size = JSON.stringify(slim).length;
+    if(size > 900000){
+      console.error('🚨 저장 데이터 크기 초과:', size, 'bytes');
+      toast('⚠️ 데이터 크기 초과 - 관리자에게 문의하세요');
+      return;
+    }
     _docRef.set(slim).catch(function(err){
       console.error('Firestore 저장 오류', err);
     });
-    // 백업은 별도 문서에 저장
-    var backupKeys = Object.keys(_cache).filter(function(k){ return k.startsWith('mc_backup_'); });
-    if(backupKeys.length){
-      var backupObj = {};
-      backupKeys.forEach(function(k){ backupObj[k] = _cache[k]; });
-      _db.collection('metacare').doc('backups').set(backupObj).catch(function(e){
-        console.warn('백업 저장 실패(용량 초과 가능):', e.message);
-      });
-    }
   }, 500);
 }
 
@@ -191,8 +201,10 @@ function _autoBackup(){
       }
     });
     
-    // Firestore에 저장
-    _saveCloud();
+    // 백업은 별도 backups 컬렉션에만 저장 (메인 문서에 포함 안 함)
+    _db.collection('metacare').doc('backups').set(
+      _cache[backupKey] ? {[backupKey]: _cache[backupKey]} : {}
+    , {merge: true}).catch(function(e){ console.warn('백업 저장 실패:', e.message); });
     console.log('✅ 자동 백업 완료:', dateKey);
   } catch(e) {
     console.error('백업 오류:', e);
@@ -1725,20 +1737,29 @@ function onMealFile(e,src){
 /* ── 식단 기록장 ── */
 function _getRecs(){ return ugj('records',[]); }
 function _setRecs(d){
-  // 안전장치: 기존 데이터보다 현저히 적으면 저장 거부
-  if(Array.isArray(d)){
-    var existing = ugj('records',[]);
-    if(existing.length > 3 && d.length === 0){
-      console.error('🚨 _setRecs: 빈 배열 저장 차단 (기존:', existing.length, '개)');
-      toast('⚠️ 데이터 저장 오류 - 관리자에게 문의하세요');
-      return;
-    }
-    if(existing.length > 10 && d.length < existing.length * 0.5){
-      console.warn('⚠️ _setRecs: 데이터 급감 감지 ('+existing.length+'→'+d.length+')');
-    }
+  if(!Array.isArray(d)){ console.error('🚨 _setRecs: 배열이 아닌 값 저장 차단'); return; }
+  var existing = ugj('records',[]);
+  // 빈 배열 저장 차단 (기존 데이터가 3개 이상일 때)
+  if(existing.length > 3 && d.length === 0){
+    console.error('🚨 _setRecs: 빈 배열 저장 차단 (기존:', existing.length, '개)');
+    toast('⚠️ 데이터 저장 오류 - 관리자에게 문의하세요');
+    return;
   }
+  // 데이터 급감 감지
+  if(existing.length > 5 && d.length < existing.length * 0.5){
+    console.warn('⚠️ _setRecs: 데이터 급감 감지 ('+existing.length+'→'+d.length+')');
+  }
+  // records 안의 base64 자동 제거
+  d.forEach(function(rec){
+    if(!rec||!rec.photos) return;
+    Object.keys(rec.photos).forEach(function(meal){
+      if(rec.photos[meal]&&rec.photos[meal].startsWith('data:image')){
+        console.warn('🧹 _setRecs: base64 자동 제거', rec.date, meal);
+        delete rec.photos[meal];
+      }
+    });
+  });
   usj('records',d);
-  // 별도 컬렉션에 30분마다 안전 백업
   _schedSafetyBackup();
 }
 
@@ -2500,10 +2521,10 @@ function onHomeMealFile(e,src){
       s.todayRec.photos[s.meal]=url; _setRecs(s.days); _refreshPhotos();
       toast(mealName+' 사진 저장됐어요 ✓');
       _analyzeHomeMeal(small, mealName, note);
-    }).catch(function(){
-      s.todayRec.photos[s.meal]=small; _setRecs(s.days); _refreshPhotos();
-      toast(mealName+' 사진 저장됐어요 ✓');
-      _analyzeHomeMeal(small, mealName, note);
+    }).catch(function(err){
+      console.error('Storage 업로드 실패:', err);
+      toast('사진 업로드 실패 - 네트워크를 확인하고 다시 시도하세요');
+      // base64를 절대 Firestore에 저장하지 않음
     });
   }); }; r.readAsDataURL(f);
 }
