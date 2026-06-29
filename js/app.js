@@ -1410,15 +1410,23 @@ function _saveExerciseResult(type, dur, steps, memo, analysis, targetDate){
   var days=_getRecs();
   var dayRec=days.find(function(d){return d.date===today;});
   if(!dayRec){ dayRec={date:today,photos:{},steps:''}; days.push(dayRec); days.sort(function(a,b){return a.date<b.date?-1:1;}); }
-  // 하루 1회만 - 기존 기록 덮어쓰기
-  dayRec.exercise=[{type:type,dur:dur,steps:steps,memo:memo,analysis:analysis,ts:Date.now()}];
-  // 걸음 수를 steps 필드에도 저장
+  // 기존 배열에 추가 (여러 운동 지원)
+  if(!dayRec.exercise) dayRec.exercise=[];
+  dayRec.exercise.push({type:type,dur:dur,steps:steps,memo:memo,analysis:analysis,ts:Date.now()});
+  // 걸음 수를 steps 필드에도 저장 (마지막 입력값 우선)
   if(steps) dayRec.steps=steps;
   _setRecs(days);
   _refreshHomeExercise();
   _refreshComprehensiveBtn();
   // 기록장 카드 업데이트
   _xlLoad();
+  // 폼 초기화 (다음 운동 바로 입력 가능)
+  if($id('ex-type')) $id('ex-type').value='';
+  if($id('ex-dur')) $id('ex-dur').value='';
+  if($id('ex-steps')) $id('ex-steps').value='';
+  if($id('ex-memo')) $id('ex-memo').value='';
+  var ar=$id('ex-result'); if(ar) ar.style.display='none';
+  _refreshExPage();
   // 기록장에서 왔으면 기록장으로 돌아가기
   if(_exFromLog){ _exFromLog=null; setTimeout(function(){ goPage('log'); },300); }
   toast('운동 기록이 저장됐어요 ✓');
@@ -1430,9 +1438,15 @@ function _refreshHomeExercise(){
   var days=_getRecs();
   var dayRec=days.find(function(d){return d.date===today;});
   if(dayRec&&dayRec.exercise&&dayRec.exercise.length){
-    var latest=dayRec.exercise[dayRec.exercise.length-1];
+    var exList=dayRec.exercise;
     el.style.display='block';
-    el.innerHTML='<div class="tip-lbl"><i class="ti ti-run" style="font-size:10px;"></i> 운동 분석</div><div style="font-size:11px;font-weight:700;margin-bottom:4px;">🏃 '+esc(latest.type)+(latest.dur?' · '+esc(latest.dur):'')+'</div>'+esc(latest.analysis);
+    var html='<div class="tip-lbl"><i class="ti ti-run" style="font-size:10px;"></i> 운동 분석 ('+exList.length+'개)</div>';
+    exList.forEach(function(ex,i){
+      html+=(i>0?'<div style="border-top:1px solid var(--bd);margin:6px 0;"></div>':'')
+        +'<div style="font-size:11px;font-weight:700;margin-bottom:2px;">🏃 '+esc(ex.type)+(ex.dur?' · '+esc(ex.dur):'')+'</div>'
+        +(ex.analysis?'<div style="font-size:11px;">'+esc(ex.analysis)+'</div>':'');
+    });
+    el.innerHTML=html;
 
   } else {
     el.style.display='none';
@@ -2385,25 +2399,44 @@ function restoreCloudBackup(){
 }
 
 function _refreshExPage(){
-  var today=todayStr();
+  var exDateEl=$id('ex-date');
+  var targetDate=(exDateEl&&exDateEl.value.trim())||todayStr();
   var days=_getRecs();
-  var dayRec=days.find(function(d){return d.date===today;});
-  var ex=dayRec&&dayRec.exercise&&dayRec.exercise.length?dayRec.exercise[dayRec.exercise.length-1]:null;
+  var dayRec=days.find(function(d){return d.date===targetDate;});
+  var exList=dayRec&&dayRec.exercise&&dayRec.exercise.length?dayRec.exercise:[];
   var statusEl=$id('today-ex-status');
-  if(ex&&statusEl){
+  if(!statusEl) return;
+  if(exList.length){
     statusEl.style.display='block';
-    statusEl.innerHTML='<div class="tip-lbl">오늘 기록된 운동</div>'
-      +'<div style="font-size:14px;font-weight:700;">🏃 '+esc(ex.type)+(ex.dur?' · '+esc(ex.dur):'')+'</div>'
-      +(ex.steps?'<div style="font-size:12px;color:var(--mu);margin-top:2px;">👣 '+ex.steps+'보</div>':'')
-      +'<div style="font-size:12px;color:var(--mu);margin-top:4px;">수정하려면 아래에 새로 입력하고 분석하세요</div>';
-    // 기존 값 채우기
-    if($id('ex-type')) $id('ex-type').value=ex.type||'';
-    if($id('ex-dur')) $id('ex-dur').value=ex.dur||'';
-    if($id('ex-steps')) $id('ex-steps').value=ex.steps||'';
-    if($id('ex-memo')) $id('ex-memo').value=ex.memo||'';
-  } else if(statusEl){
+    var html='<div class="tip-lbl">오늘 기록된 운동 ('+exList.length+'개)</div>';
+    exList.forEach(function(ex,i){
+      html+='<div style="display:flex;align-items:flex-start;justify-content:space-between;padding:8px 0;'+(i>0?'border-top:1px solid var(--bd);':'')+'">'
+        +'<div style="flex:1;">'
+        +'<div style="font-size:13px;font-weight:700;">🏃 '+esc(ex.type)+(ex.dur?' · '+esc(ex.dur):'')+'</div>'
+        +(ex.steps?'<div style="font-size:11px;color:var(--mu);margin-top:2px;">👣 '+esc(ex.steps)+'보</div>':'')
+        +(ex.memo?'<div style="font-size:11px;color:var(--mu);margin-top:2px;">'+esc(ex.memo)+'</div>':'')
+        +'</div>'
+        +'<button onclick="A.deleteExItem('+i+')" style="background:none;border:none;cursor:pointer;color:var(--mu);font-size:16px;padding:0 0 0 8px;line-height:1;" title="삭제">✕</button>'
+        +'</div>';
+    });
+    statusEl.innerHTML=html;
+  } else {
     statusEl.style.display='none';
   }
+}
+
+function deleteExItem(idx){
+  var exDateEl=$id('ex-date');
+  var targetDate=(exDateEl&&exDateEl.value.trim())||todayStr();
+  var days=_getRecs();
+  var dayRec=days.find(function(d){return d.date===targetDate;});
+  if(!dayRec||!dayRec.exercise) return;
+  dayRec.exercise.splice(idx,1);
+  _setRecs(days);
+  _refreshExPage();
+  _refreshHomeExercise();
+  _refreshComprehensiveBtn();
+  toast('운동 기록을 삭제했어요');
 }
 
 function _refreshExPage_dummy(){} // placeholder
@@ -2834,7 +2867,7 @@ return {
   // 컨디션 기록
   openConditionSheet:openConditionSheet, selectCondState:selectCondState, saveCondition:saveCondition,
   // 종합 분석
-  analyzeEx:analyzeEx,
+  analyzeEx:analyzeEx, deleteExItem:deleteExItem,
   analyzeComprehensive:analyzeComprehensive,
   // 증상
   openSymSheet:openSymSheet, saveSymQuick:saveSymQuick, saveSym:saveSym,
