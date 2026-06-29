@@ -1094,62 +1094,183 @@ function goHelp(){
   var ic = u && u.mode==='cancer';
   var modeNames = {keto:'케토제닉', carnivore:'카니보어', lchf:'저탄고지', diet:'다이어트 건강식', cancer:'암환자'};
   var modeName = ic ? (u.ctype==='prostate' ? u.stage+'기 전립선암' : '암환자') : (modeNames[u.mode]||'건강관리');
+  var modeColor = {keto:'#2A7B7B', carnivore:'#7A2E2E', lchf:'#1a6b4a', diet:'#1565C0', cancer:'#6B21A8'}[u?u.mode:'lchf'] || 'var(--navy)';
 
-  var commonHelp = [
-    {icon:'ti-home', title:'홈 화면', desc:'오늘의 목표, 컨디션 기록, 식사 사진(아침/점심/저녁), 식단·운동 분석 결과가 한눈에 보입니다.\n아침/점심/저녁 칸을 누르면 사진을 찍고 AI가 바로 분석해 드립니다.'},
-    {icon:'ti-activity-heartbeat', title:'컨디션 기록', desc:'홈 화면 상단 "오늘의 컨디션 기록" 버튼을 누르세요.\n몸 상태, 체중, 혈당, 혈압, 수면 시간, 기타 메모를 기록할 수 있습니다.'},
-    {icon:'ti-camera', title:'식단 분석', desc:'하단 메뉴 "식단" 탭에서 사진을 찍으면 AI가 즉시 분석해 드립니다.\n분석 결과는 홈 화면에도 저장됩니다.'},
-    {icon:'ti-run', title:'운동 분석', desc:'"식단" 탭에서 상단의 "운동" 버튼을 누르세요.\n운동 종류와 시간을 입력하면 AI가 분석해 드립니다.'},
-    {icon:'ti-sparkles', title:'오늘 종합 평가', desc:'식단 분석과 운동 분석이 모두 완료되면 홈 화면에 "오늘 종합 평가 받기" 버튼이 나타납니다.\nAI가 오늘 하루 전체를 종합 평가해 드립니다.'},
-    {icon:'ti-table', title:'기록장', desc:'하단 메뉴 "기록장" 탭에서 날짜별 식사 사진을 확인할 수 있어요.\n홈에서 찍은 사진이 자동으로 기록장에도 저장됩니다.'},
-    {icon:'ti-message-circle', title:'AI 코치', desc:'하단 메뉴 "코치" 탭에서 AI에게 무엇이든 물어볼 수 있어요.\n식단 추천, 운동 방법, 건강 궁금증 모두 물어보세요.'},
-    {icon:'ti-microphone', title:'음성 명령', desc:'상단 오른쪽 마이크 아이콘을 누르고 말하면 됩니다.\n"사진 찍어줘", "기록장 보여줘" 이렇게 말해보세요.'},
-    {icon:'ti-arrow-left', title:'뒤로가기', desc:'하단 메뉴 맨 왼쪽 "뒤로" 버튼을 누르면 이전 화면으로 돌아갑니다.\n폰의 뒤로가기 버튼도 사용할 수 있어요.'},
+  // ── 빠른 시작 3단계 ──
+  var quickStart = ic ? [
+    {num:'1', emoji:'📋', title:'매일 아침 증상 기록', desc:'홈에서 통증·배뇨·피로 점수를 입력하세요'},
+    {num:'2', emoji:'📸', title:'식사 사진 찍기', desc:'아침·점심·저녁 칸을 탭 → 사진 촬영 → AI가 암환자 식단으로 분석'},
+    {num:'3', emoji:'💊', title:'복약 체크', desc:'드신 약마다 체크 표시 → 하루 복약률 자동 계산'},
+  ] : [
+    {num:'1', emoji:'📸', title:'식사 사진 찍기', desc:'홈 화면 아침·점심·저녁 칸을 탭 → 사진 촬영 or 갤러리 선택'},
+    {num:'2', emoji:'🤖', title:'AI 분석 확인', desc:'몇 초 후 식단 분석 결과가 홈 화면에 자동으로 나타나요'},
+    {num:'3', emoji:'🏃', title:'운동 기록', desc:'하단 "운동" 탭 → 종류·시간 입력 → 여러 운동 연속 기록 가능'},
   ];
 
-  var modeHelp = {
-    keto:[
-      {icon:'ti-salad', title:'케토제닉이란?', desc:'탄수화물을 하루 20g 이하로 줄이는 식단이에요.\n밥, 빵, 면, 과자를 피하고 고기, 계란, 아보카도, 견과류를 드세요.'},
-      {icon:'ti-chart-bar', title:'오늘의 목표', desc:'탄수화물 20g 이하, 지방 75%, 단백질 20%\n홈 화면 상단 초록 박스에서 오늘의 목표를 확인하세요.'},
-    ],
-    carnivore:[
-      {icon:'ti-flame', title:'카니보어란?', desc:'고기, 생선, 달걀, 유제품만 드시는 식단이에요.\n채소, 과일, 곡물은 드시지 않습니다.'},
-      {icon:'ti-heart-rate-monitor', title:'적응 기간', desc:'처음 2~4주는 피로감이 있을 수 있어요.\n물을 충분히 드시고 소금을 적당히 섭취하세요.'},
-    ],
-    lchf:[
-      {icon:'ti-salad', title:'저탄고지란?', desc:'탄수화물을 하루 50~100g으로 줄이는 식단이에요.\n케토제닉보다 유연해서 현미, 고구마는 조금 드실 수 있어요.'},
-      {icon:'ti-clock', title:'식사 순서', desc:'채소 먼저 → 고기/생선 → 밥/면 순서로 드세요.\n혈당이 천천히 올라서 몸에 좋습니다.'},
-    ],
-    diet:[
-      {icon:'ti-salad', title:'건강식이란?', desc:'하루 1,600칼로리를 목표로 채소를 절반 이상 드세요.\n올리브오일, 생선, 견과류가 중심인 지중해식 식단입니다.'},
-      {icon:'ti-droplet', title:'물 마시기', desc:'식사 30분 전에 물 한 잔을 마시면 덜 드시게 됩니다.\n하루 1.5~2리터를 목표로 하세요.'},
-    ],
-    cancer:[
-      {icon:'ti-activity', title:'증상 기록', desc:'홈 화면에서 통증, 배뇨, 피로를 매일 기록하세요.\n0점(없음)부터 10점(매우 심함)으로 표시합니다.'},
-      {icon:'ti-pill', title:'복약 체크', desc:'홈 화면에서 오늘 드신 약에 체크 표시를 하세요.\n약을 빠뜨리지 않도록 도와드립니다.'},
-      {icon:'ti-chart-line', title:'종양 마커 기록', desc:'"추적" 메뉴에서 PSA 등 종양 마커 수치를 날짜별로 기록하세요.\n검사 후 바로 입력해두면 변화를 쉽게 확인할 수 있어요.'},
-    ],
+  // ── 기능별 상세 안내 ──
+  var sections = [];
+
+  // 모드별 식단 팁
+  var modeTips = {
+    keto:{
+      color:'#2A7B7B', icon:'🥑', title:'케토제닉 식단 핵심',
+      items:[
+        '탄수화물 하루 <b>20g 이하</b> — 밥·빵·면·과자 제외',
+        '지방 75% · 단백질 20% · 탄수화물 5% 비율 목표',
+        '<b>먹어도 되는 것</b>: 소고기, 삼겹살, 계란, 아보카도, 버터, 치즈, 견과류',
+        '<b>피해야 할 것</b>: 쌀밥, 고구마, 과일, 과자, 음료수, 빵',
+        '처음 1~2주 두통·피로(케토 플루) → 소금물, 물 충분히 섭취',
+      ]
+    },
+    carnivore:{
+      color:'#7A2E2E', icon:'🥩', title:'카니보어 식단 핵심',
+      items:[
+        '동물성 식품만 — 고기, 생선, 달걀, 유제품(버터·치즈)',
+        '채소·과일·곡물·견과류 <b>완전 제외</b>',
+        '소금은 적당히 섭취 (전해질 보충)',
+        '처음 2~4주 적응 기간: 피로감, 소화 변화 정상',
+        '물 하루 <b>2리터 이상</b> 필수',
+      ]
+    },
+    lchf:{
+      color:'#1a6b4a', icon:'🥗', title:'저탄고지 식단 핵심',
+      items:[
+        '탄수화물 하루 <b>50~100g</b> — 케토보다 유연',
+        '현미밥 반 공기, 고구마 조금은 허용',
+        '<b>식사 순서</b>: 채소 → 단백질(고기·생선) → 밥·면',
+        '<b>좋은 지방</b>: 올리브오일, 아보카도, 견과류, 등 푸른 생선',
+        '혈당 스파이크 방지 → 식후 10~15분 가벼운 걷기 추천',
+      ]
+    },
+    diet:{
+      color:'#1565C0', icon:'🥦', title:'균형 건강식 핵심',
+      items:[
+        '하루 <b>1,600kcal</b> 목표 — 식사 사진으로 AI가 추정',
+        '채소·과일 <b>절반 이상</b>, 단백질 30%, 탄수화물 40%',
+        '올리브오일·생선·견과류 중심의 지중해식',
+        '<b>식사 30분 전</b> 물 한 잔 → 포만감↑ 과식 방지',
+        '하루 <b>1.5~2리터</b> 물 섭취 목표',
+      ]
+    },
+    cancer:{
+      color:'#6B21A8', icon:'🛡️', title:'암환자 식단 핵심',
+      items:[
+        '항염 식품 위주 — 연어·고등어, 강황, 블루베리, 브로콜리',
+        '설탕·정제 탄수화물 최소화 (암세포 먹이)',
+        '단백질 충분히 — 근육 유지·면역력 강화',
+        '항암 치료 중: 메스꺼움 시 소량 자주, 부드러운 음식',
+        '식욕 없을 땐 고열량 스무디(바나나+아몬드버터+우유)',
+      ]
+    }
   };
+  if(modeTips[u?u.mode:'lchf']) sections.push({type:'tips', data:modeTips[u.mode], color:modeColor});
 
-  var items = (modeHelp[u?u.mode:'lchf']||[]).concat(commonHelp);
+  // 공통 기능 섹션
+  sections.push({type:'features', title:'📱 주요 기능 안내', items:[
+    {icon:'ti-home', color:'#19B89B', title:'홈 화면',
+     steps:['오늘의 목표(상단 초록 박스)에서 식단 목표 확인','아침·점심·저녁 칸 탭 → 사진 촬영 or 갤러리 선택','PC에서는 사진을 슬롯으로 드래그 앤 드롭도 가능','AI 분석 결과가 자동으로 홈에 표시']},
+    {icon:'ti-run', color:'#F0A500', title:'운동 탭 (하단 메뉴)',
+     steps:['운동 종류·시간 입력 후 "AI 운동 분석" 버튼','분석 완료 후 폼이 초기화 → 바로 다음 운동 추가 가능','여러 운동을 연속으로 기록할 수 있어요 (조깅 후 수영 등)','목록의 ✕ 버튼으로 개별 운동 삭제']},
+    {icon:'ti-sparkles', color:'#9B59B6', title:'오늘 종합 평가',
+     steps:['식단 분석 + 운동 분석이 모두 있을 때 홈에 버튼 표시','AI가 식단·운동을 종합해 오늘 하루 총평 제공','내일을 위한 맞춤 조언도 함께']},
+    {icon:'ti-table', color:'#1565C0', title:'기록장 탭',
+     steps:['날짜별 식사 사진·분석·운동 기록 확인','홈에서 찍은 사진이 기록장에 자동 저장','엑셀 다운로드 버튼으로 전체 기록 내보내기']},
+    {icon:'ti-activity-heartbeat', color:'#E74C3C', title:'컨디션 기록',
+     steps:['홈 화면 "오늘의 컨디션 기록" 버튼 탭','체중·혈당·혈압·수면시간 입력 가능','기록 후 홈 화면에 오늘 컨디션 요약 표시']},
+    {icon:'ti-message-circle', color:'#2ECC71', title:'AI 코치 탭',
+     steps:['"코치" 탭에서 AI에게 자유롭게 질문','식단 추천, 운동 방법, 건강 궁금증 모두 OK','하단 빠른 질문 버튼으로 자주 쓰는 질문 1탭']},
+    {icon:'ti-microphone', color:'#E67E22', title:'음성 명령',
+     steps:['상단 오른쪽 🎤 마이크 탭 후 말하기','"아침 사진 찍어줘", "기록장 보여줘", "운동 탭 열어줘"','손이 불편할 때 음성으로 모든 기능 제어 가능']},
+  ]});
 
+  // 암환자 전용 추가 섹션
+  if(ic){
+    sections.push({type:'features', title:'🏥 암환자 전용 기능', items:[
+      {icon:'ti-activity', color:'#9B59B6', title:'증상 기록 (홈 화면)',
+       steps:['통증·배뇨·피로 각각 0~10점 슬라이더','매일 기록하면 변화 추이 파악 가능','10점: 매우 심함, 0점: 전혀 없음']},
+      {icon:'ti-pill', color:'#E74C3C', title:'복약 체크 (홈 화면)',
+       steps:['등록된 약 목록에서 드신 약 체크','하루 복약률 자동 계산','빠뜨린 약 한눈에 확인']},
+      {icon:'ti-chart-line', color:'#1565C0', title:'종양 마커 추적 탭',
+       steps:['PSA 등 마커 수치를 날짜별로 기록','추적 탭에서 수치 변화 그래프 확인','검사 직후 바로 입력하는 습관 추천']},
+    ]});
+  }
+
+  // 팁 섹션
+  sections.push({type:'tips-plain', title:'💡 알아두면 좋은 팁', color:'#F59E0B', items:[
+    '📶 오프라인에서도 기록 가능 — 연결 복구 시 자동 동기화',
+    '🔄 기록은 클라우드(Firestore)에 자동 저장 — 폰을 바꿔도 유지',
+    '📊 기록장 → 엑셀 내보내기로 주치의에게 리포트 제출 가능',
+    '🖼️ PC 사용 시 식사 사진을 홈 슬롯에 드래그 앤 드롭으로 업로드',
+    '🏃 운동은 하루에 여러 개 기록 가능 (조깅 30분 + 수영 40분 등)',
+    '🧬 로그인 화면에서 로고를 5번 탭하면 관리자 화면 진입',
+  ]});
+
+  // ── 렌더링 ──
   var el = $id('help-body');
   if(!el) return;
-  el.innerHTML = '<div style="background:var(--navy);border-radius:var(--r-md);padding:16px 18px;margin-bottom:4px;">'
-    +'<div style="color:rgba(255,255,255,.6);font-size:13px;margin-bottom:4px;">'+esc(modeName)+' 모드</div>'
-    +'<div style="color:#fff;font-size:18px;font-weight:700;">'+esc(u?u.name:'')+'님을 위한 사용 방법</div>'
-    +'</div>'
-    + items.map(function(item){
-      return '<div style="background:#fff;border:1px solid var(--bd);border-radius:var(--r-md);padding:18px;margin-bottom:10px;">'
-        +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">'
-        +'<div style="width:40px;height:40px;border-radius:50%;background:var(--tl);display:flex;align-items:center;justify-content:center;flex-shrink:0;">'
-        +'<i class="ti '+item.icon+'" style="font-size:20px;color:var(--teal);"></i></div>'
-        +'<div style="font-size:17px;font-weight:700;color:var(--navy);">'+esc(item.title)+'</div>'
-        +'</div>'
-        +'<div style="font-size:15px;color:#374151;line-height:1.9;white-space:pre-line;">'+esc(item.desc)+'</div>'
-        +'</div>';
-    }).join('');
 
+  var html = '';
+
+  // 헤더 배너
+  html += '<div style="background:linear-gradient(135deg,'+modeColor+','+modeColor+'dd);border-radius:var(--r-md);padding:20px 18px;margin-bottom:12px;">'
+    +'<div style="color:rgba(255,255,255,.7);font-size:12px;font-weight:600;letter-spacing:.5px;margin-bottom:4px;">'+esc(modeName)+' 모드</div>'
+    +'<div style="color:#fff;font-size:20px;font-weight:800;margin-bottom:2px;">'+esc(u?u.name:'')+'님 가이드</div>'
+    +'<div style="color:rgba(255,255,255,.75);font-size:13px;">스마트 메타케어 완전 정복</div>'
+    +'</div>';
+
+  // 빠른 시작 3단계
+  html += '<div style="background:#fff;border:1px solid var(--bd);border-radius:var(--r-md);padding:16px 18px;margin-bottom:12px;">'
+    +'<div style="font-size:14px;font-weight:800;color:var(--navy);margin-bottom:12px;">🚀 빠른 시작 — 오늘 당장 해보세요</div>'
+    +'<div style="display:flex;flex-direction:column;gap:10px;">'
+    +quickStart.map(function(s){
+      return '<div style="display:flex;align-items:flex-start;gap:12px;">'
+        +'<div style="width:28px;height:28px;border-radius:50%;background:'+modeColor+';color:#fff;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;">'+s.num+'</div>'
+        +'<div><div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:2px;">'+s.emoji+' '+esc(s.title)+'</div>'
+        +'<div style="font-size:13px;color:#6B7280;line-height:1.6;">'+esc(s.desc)+'</div></div>'
+        +'</div>';
+    }).join('')
+    +'</div></div>';
+
+  // 섹션 렌더링
+  sections.forEach(function(sec){
+    if(sec.type==='tips'){
+      html += '<div style="background:'+sec.data.color+'12;border:1px solid '+sec.data.color+'33;border-radius:var(--r-md);padding:16px 18px;margin-bottom:12px;">'
+        +'<div style="font-size:14px;font-weight:800;color:'+sec.data.color+';margin-bottom:10px;">'+sec.data.icon+' '+esc(sec.data.title)+'</div>'
+        +'<ul style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:8px;">'
+        +sec.data.items.map(function(t){
+          return '<li style="font-size:13px;color:#374151;line-height:1.7;">'+t+'</li>';
+        }).join('')
+        +'</ul></div>';
+    } else if(sec.type==='features'){
+      html += '<div style="font-size:14px;font-weight:800;color:var(--navy);margin:16px 0 8px;">'+esc(sec.title)+'</div>';
+      sec.items.forEach(function(item){
+        html += '<div style="background:#fff;border:1px solid var(--bd);border-radius:var(--r-md);padding:14px 16px;margin-bottom:8px;">'
+          +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">'
+          +'<div style="width:36px;height:36px;border-radius:10px;background:'+item.color+'1a;display:flex;align-items:center;justify-content:center;flex-shrink:0;">'
+          +'<i class="ti '+item.icon+'" style="font-size:18px;color:'+item.color+';"></i></div>'
+          +'<div style="font-size:15px;font-weight:700;color:var(--navy);">'+esc(item.title)+'</div>'
+          +'</div>'
+          +'<div style="display:flex;flex-direction:column;gap:6px;">'
+          +item.steps.map(function(s,i){
+            return '<div style="display:flex;align-items:flex-start;gap:8px;">'
+              +'<span style="font-size:11px;font-weight:700;color:'+item.color+';background:'+item.color+'18;border-radius:4px;padding:1px 6px;flex-shrink:0;margin-top:1px;">'+(i+1)+'</span>'
+              +'<span style="font-size:13px;color:#374151;line-height:1.6;">'+esc(s)+'</span>'
+              +'</div>';
+          }).join('')
+          +'</div></div>';
+      });
+    } else if(sec.type==='tips-plain'){
+      html += '<div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:var(--r-md);padding:16px 18px;margin-bottom:12px;">'
+        +'<div style="font-size:14px;font-weight:800;color:#92400E;margin-bottom:10px;">'+esc(sec.title)+'</div>'
+        +'<div style="display:flex;flex-direction:column;gap:8px;">'
+        +sec.items.map(function(t){
+          return '<div style="font-size:13px;color:#374151;line-height:1.6;">'+esc(t)+'</div>';
+        }).join('')
+        +'</div></div>';
+    }
+  });
+
+  el.innerHTML = html;
   goScreen('scr-help');
 }
 
