@@ -642,8 +642,8 @@
 </div>
 <div class="viewer" id="home-viewer">
   <div class="viewer-wrap"><img id="hv-img" src="" alt=""></div>
-  <!-- 메모 입력 (항상 표시) -->
-  <div style="padding:10px 16px 6px;width:100%;box-sizing:border-box;">
+  <!-- 메모 입력 (메모수정 버튼으로 토글) -->
+  <div id="hv-memo-area" style="display:none;padding:10px 16px 6px;width:100%;box-sizing:border-box;">
     <div style="font-size:11px;color:rgba(255,255,255,.5);margin-bottom:5px;">📝 식단 메모 (수정 가능)</div>
     <textarea id="hv-note-input" rows="2" placeholder="예: 계란 2개, 소고기국, 견과류, 야채 절임, 블루베리&#10;더 자세히 적을수록 AI 분석이 정확해져요"
       style="width:100%;box-sizing:border-box;resize:none;background:rgba(255,255,255,.1);color:#fff;border:1.5px solid rgba(255,255,255,.2);border-radius:10px;padding:10px 12px;font-size:13px;line-height:1.5;font-family:inherit;outline:none;"
@@ -656,6 +656,7 @@
   <div id="home-viewer-analysis" style="padding:4px 16px 8px;max-height:22vh;overflow-y:auto;width:100%;font-size:13px;color:#fff;line-height:1.7;box-sizing:border-box;"></div>
   <div class="viewer-btns">
     <button class="vbtn teal" id="hv-reanalyze-btn"><i class="ti ti-sparkles"></i> 재분석</button>
+    <button class="vbtn teal" id="hv-memo-btn" onclick="A.toggleMemoArea()"><i class="ti ti-pencil"></i> 메모수정</button>
     <button class="vbtn teal" id="hv-replace-btn"><i class="ti ti-replace"></i> 교체</button>
     <button class="vbtn red"  id="hv-delete-btn"><i class="ti ti-trash"></i> 삭제</button>
     <button class="vbtn" onclick="A.closeHomeMealViewer()"><i class="ti ti-x"></i> 닫기</button>

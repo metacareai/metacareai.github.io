@@ -2699,6 +2699,15 @@ function _openHomeMealViewer(photoUrl, mealName, analysis, meal){
   var viewer=$id('home-viewer'); if(viewer) viewer.classList.add('on');
 }
 
+function toggleMemoArea(){
+  var area=$id('hv-memo-area'), btn=$id('hv-memo-btn');
+  if(!area) return;
+  var open=area.style.display!=='none';
+  area.style.display=open?'none':'block';
+  if(btn) btn.style.background=open?'':'#0e8f79';
+  if(!open){ var inp=$id('hv-note-input'); if(inp) inp.focus(); }
+}
+
 function saveMealViewerNote(){
   var noteEl=$id('hv-note-input'); if(!noteEl) return;
   var note=noteEl.value.trim();
@@ -3052,7 +3061,7 @@ return {
   openMealSlot:openMealSlot, pickHomeMeal:pickHomeMeal, onHomeMealFile:onHomeMealFile,
   saveMealNoteOnly:saveMealNoteOnly, saveMealWithMemo:saveMealWithMemo,
   closeHomeMealViewer:closeHomeMealViewer, replaceHomeMealPhoto:replaceHomeMealPhoto,
-  saveMealViewerNote:saveMealViewerNote, reanalyzeMealPhoto:reanalyzeMealPhoto, deleteMealPhoto:deleteMealPhoto
+  saveMealViewerNote:saveMealViewerNote, reanalyzeMealPhoto:reanalyzeMealPhoto, deleteMealPhoto:deleteMealPhoto, toggleMemoArea:toggleMemoArea
 };
 
 })();
