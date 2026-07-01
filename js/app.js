@@ -1346,8 +1346,8 @@ function _refreshHomeProgress(){
   if(ic){ total=7; done+=(hasSym?1:0)+(hasMed?1:0); }
   var pct=Math.round(done/total*100);
 
-  var titleEl=el.previousElementSibling;
-  if(titleEl) titleEl.innerHTML='📋 오늘 달성 현황 <span style="float:right;color:'+(pct===100?'#059669':'var(--teal)')+';">'+pct+'%</span>';
+  var pctEl=$id('home-progress-pct');
+  if(pctEl){ pctEl.textContent=pct+'%'; pctEl.style.color=pct===100?'#059669':'var(--teal)'; }
 
   el.innerHTML=html;
 }
