@@ -342,22 +342,22 @@
             <div class="days-count" id="home-days"></div>
           </div>
         </div>
-        <!-- 설치 배너 (컴팩트) -->
-        <div id="pwa-install-banner" style="display:none;background:linear-gradient(135deg,#0D7A52,#19B89B);border-radius:12px;padding:10px 14px;">
-          <div style="display:flex;align-items:center;gap:10px;">
-            <span style="font-size:20px;">📲</span>
-            <div style="flex:1;min-width:0;">
-              <div style="color:#fff;font-size:12px;font-weight:800;">홈 화면에 바로가기 추가</div>
-              <div style="color:rgba(255,255,255,.75);font-size:11px;" id="pwa-install-desc">Chrome 메뉴(⋮) → 앱 설치 / 홈 화면에 추가</div>
+        <!-- 설치 배너 -->
+        <div id="pwa-install-banner" style="display:none;background:linear-gradient(135deg,#0D7A52,#19B89B);border-radius:var(--r-md);padding:16px 18px;">
+          <div style="display:flex;align-items:center;gap:14px;">
+            <span style="font-size:32px;flex-shrink:0;">📲</span>
+            <div style="flex:1;">
+              <div style="color:#fff;font-size:14px;font-weight:800;margin-bottom:3px;">홈 화면에 바로가기 추가</div>
+              <div style="color:rgba(255,255,255,.8);font-size:12px;" id="pwa-install-desc">한 번만 설치하면 앱처럼 바로 실행!</div>
             </div>
-            <button id="pwa-install-btn" style="background:#fff;color:#19B89B;border:none;border-radius:8px;padding:7px 12px;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap;flex-shrink:0;">설치 방법 보기</button>
+            <button id="pwa-install-btn" style="background:#fff;color:#19B89B;border:none;border-radius:10px;padding:10px 16px;font-size:13px;font-weight:800;cursor:pointer;white-space:nowrap;flex-shrink:0;">설치하기</button>
           </div>
         </div>
-        <!-- 달성 현황 + 사용설명서 한 카드 -->
+        <!-- 달성 현황 + 사용설명서 -->
         <div id="home-progress-card" style="background:#fff;border:1px solid var(--bd);border-radius:var(--r-md);padding:14px 16px;">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-            <div style="font-size:12px;font-weight:700;color:var(--mu2);">📋 오늘 달성 현황 <span id="home-progress-pct" style="color:var(--teal);"></span></div>
-            <button onclick="A.goHelp()" style="background:none;border:none;color:var(--teal);font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:4px;padding:0;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+            <div style="font-size:13px;font-weight:700;color:var(--navy);">📋 오늘 달성 현황 <span id="home-progress-pct" style="color:var(--teal);font-size:12px;"></span></div>
+            <button onclick="A.goHelp()" style="background:var(--teal);color:#fff;border:none;border-radius:20px;padding:5px 14px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;flex-shrink:0;">
               <i class="ti ti-book-2"></i> 사용설명서
             </button>
           </div>
