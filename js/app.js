@@ -291,6 +291,14 @@ function md(s){
     .replace(/\n/g,'<br>');
 }
 function todayStr(){ var d=new Date(); return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+// YYYYMMDD → YYYY-MM-DD 변환 (잘못된 형식 보정)
+function normDate(s){
+  if(!s) return todayStr();
+  s=s.trim();
+  if(/^\d{8}$/.test(s)) return s.slice(0,4)+'-'+s.slice(4,6)+'-'+s.slice(6,8);
+  if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  return todayStr();
+}
 function pad(n){ return n<10?'0'+n:String(n); }
 
 /* ── 화면 전환 ── */
@@ -1587,7 +1595,7 @@ function removeExFromList(i){
 function analyzeExAll(){
   if(!KEY){ toast('API 키가 없습니다'); return; }
   if(!_exPendingList.length){ toast('운동을 먼저 추가해주세요'); return; }
-  var exDate=($id('ex-date')||{}).value.trim()||todayStr();
+  var exDate=normDate(($id('ex-date')||{}).value.trim());
   var ar=$id('ex-result'); if(ar){ ar.style.display='block'; ar.innerHTML='<div class="tip-lbl">AI 운동 분석 중...</div><div class="dots"><span></span><span></span><span></span></div>'; }
   var list=_exPendingList.slice();
   var u=USER, ic=u&&u.mode==='cancer';
@@ -1632,7 +1640,7 @@ function analyzeEx(){
   p+=ic?'암 환자 관점에서(면역 기능, 체력 유지, 피로 관리) 분석해 주세요. 3~4문장.':
     (u&&u.mode?({keto:'케토제닉',carnivore:'카니보어',lchf:'저탄고지',diet:'다이어트'}[u.mode]||''):'')+' 식단 관점에서(지방 연소, 체력, 운동 후 식사 주의사항) 분석해 주세요. 3~4문장.';
   var exDateEl=$id('ex-date');
-  var exDate = (exDateEl&&exDateEl.value.trim()) || todayStr();
+  var exDate = normDate(exDateEl&&exDateEl.value.trim());
   _api({max_tokens:350,messages:[{role:'user',content:p}]}, function(reply){
     var result=reply||'분석 결과를 가져오지 못했어요.';
     ar.innerHTML='<div class="tip-lbl">AI 운동 분석</div>'+md(result);
@@ -2305,6 +2313,8 @@ function _doSave(){
 
 function _xlLoad(){
   var days=_getRecs();
+  // 날짜 형식 보정 (YYYYMMDD → YYYY-MM-DD)
+  days.forEach(function(d){ if(d&&d.date) d.date=normDate(d.date); });
   // 중복 날짜 제거 (데이터 많은 쪽 병합)
   var merged={};
   days.forEach(function(d){
