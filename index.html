@@ -774,69 +774,82 @@ if('serviceWorker' in navigator){
 
 // ── PWA 설치 프롬프트 ──
 var _pwaPrompt = null;
-
-window.addEventListener('beforeinstallprompt', function(e){
-  e.preventDefault();
-  _pwaPrompt = e;
-  var banner = document.getElementById('pwa-install-banner');
-  if(banner) banner.style.display = 'block';
-});
-
-// PWA 설치 관련 공통 변수
 var _ua = navigator.userAgent;
 var _isIOS = /iphone|ipad|ipod/i.test(_ua);
 var _isSafari = /^((?!chrome|android).)*safari/i.test(_ua);
 var _isStandalone = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
 var _isInApp = /KAKAOTALK|NAVER|Instagram|FB_IAB|FBAN|Line|Whale/i.test(_ua);
+var _bannerReady = false; // 로그인 후 배너가 초기화됐는지
 
-// 로그인 후 홈 화면에서 배너 초기화 (app.js의 loginUser 후 호출)
+function _doInstall(){
+  var banner = document.getElementById('pwa-install-banner');
+  if(_pwaPrompt){
+    _pwaPrompt.prompt();
+    _pwaPrompt.userChoice.then(function(r){
+      if(r.outcome==='accepted' && banner) banner.style.display='none';
+      _pwaPrompt=null;
+    });
+  } else if(_isIOS && _isSafari){
+    var iosBanner = document.getElementById('ios-install-banner');
+    if(iosBanner){ iosBanner.style.display='block'; iosBanner.scrollIntoView({behavior:'smooth'}); }
+  } else {
+    alert('Chrome 오른쪽 위 메뉴(⋮) →\n"앱 설치" 또는 "홈 화면에 추가"를 눌러주세요.');
+  }
+}
+
+// beforeinstallprompt: 언제 와도 저장하고, 배너가 이미 떠 있으면 버튼 즉시 활성화
+window.addEventListener('beforeinstallprompt', function(e){
+  e.preventDefault();
+  _pwaPrompt = e;
+  if(_bannerReady){
+    var btn = document.getElementById('pwa-install-btn');
+    var desc = document.getElementById('pwa-install-desc');
+    if(btn){ btn.textContent='설치하기'; btn.onclick=_doInstall; }
+    if(desc) desc.textContent='한 번만 설치하면 앱처럼 바로 실행!';
+  }
+});
+
+// 로그인 후 홈 화면에서 호출
 function initInstallBanner(){
   var banner = document.getElementById('pwa-install-banner');
   var desc   = document.getElementById('pwa-install-desc');
   var btn    = document.getElementById('pwa-install-btn');
   if(!banner || !btn) return;
 
-  // 이미 설치된 앱으로 실행 중이면 숨김
   if(_isStandalone){ banner.style.display='none'; return; }
 
+  _bannerReady = true;
+  banner.style.display = 'block';
+
   if(_isInApp){
-    // 카카오톡 등 인앱브라우저
-    if(desc) desc.textContent = '카카오톡 안에서는 설치 불가 → Chrome으로 열어주세요';
-    btn.textContent = 'Chrome으로 열기';
-    btn.onclick = function(){
-      var url = 'https://changho105-dotcom.github.io/metacare-voice/';
+    if(desc) desc.textContent='카카오톡 안에서는 설치 불가 → Chrome으로 열어주세요';
+    btn.textContent='Chrome으로 열기';
+    btn.onclick=function(){
       if(_isIOS){
+        var url='https://changho105-dotcom.github.io/metacare-voice/';
         if(navigator.clipboard) navigator.clipboard.writeText(url);
         alert('주소를 복사했습니다!\nSafari를 열고 주소창에 붙여넣기 해주세요.');
       } else {
-        location.href = 'intent://changho105-dotcom.github.io/metacare-voice/#Intent;scheme=https;package=com.android.chrome;end';
+        location.href='intent://changho105-dotcom.github.io/metacare-voice/#Intent;scheme=https;package=com.android.chrome;end';
       }
     };
+  } else if(_pwaPrompt){
+    // 이미 prompt 받아 놓은 경우 바로 설치 가능
+    if(desc) desc.textContent='한 번만 설치하면 앱처럼 바로 실행!';
+    btn.textContent='설치하기';
+    btn.onclick=_doInstall;
   } else {
-    // 일반 Chrome / Safari
-    btn.onclick = function(){
-      if(_pwaPrompt){
-        _pwaPrompt.prompt();
-        _pwaPrompt.userChoice.then(function(r){
-          if(r.outcome==='accepted') banner.style.display='none';
-          _pwaPrompt=null;
-        });
-      } else if(_isIOS && _isSafari){
-        var iosBanner = document.getElementById('ios-install-banner');
-        if(iosBanner){ iosBanner.style.display='block'; iosBanner.scrollIntoView({behavior:'smooth'}); }
-      } else {
-        alert('브라우저 오른쪽 위 메뉴(⋮) → "홈 화면에 추가"를 눌러주세요.');
-      }
-    };
+    // prompt 아직 안 왔거나 이미 설치됨 → 메뉴 안내
+    if(desc) desc.textContent='Chrome 메뉴(⋮) → 앱 설치 / 홈 화면에 추가';
+    btn.textContent='설치 방법 보기';
+    btn.onclick=_doInstall;
   }
-
-  banner.style.display = 'block';
 }
 
 // 설치 완료 시 자동 숨김
 window.addEventListener('appinstalled', function(){
   var b = document.getElementById('pwa-install-banner');
-  if(b) b.style.display = 'none';
+  if(b) b.style.display='none';
 });
 </script>
 </body>
