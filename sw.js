@@ -1,4 +1,4 @@
-const CACHE = 'metacare-v6';
+const CACHE = 'metacare-v7';
 const ASSETS = [
   '/metacare-voice/',
   '/metacare-voice/index.html',

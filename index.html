@@ -361,13 +361,13 @@
         </button>
         <!-- 달성 현황 + 사용설명서 -->
         <div id="home-progress-card" style="background:#fff;border:1px solid var(--bd);border-radius:var(--r-md);padding:14px 16px;">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-            <div style="font-size:13px;font-weight:700;color:var(--navy);">📋 오늘 달성 현황 <span id="home-progress-pct" style="color:var(--teal);font-size:12px;"></span></div>
-            <button onclick="A.goHelp()" style="background:var(--teal);color:#fff;border:none;border-radius:20px;padding:5px 14px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;flex-shrink:0;">
+          <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:10px;">📋 오늘 달성 현황 <span id="home-progress-pct" style="color:var(--teal);font-size:12px;"></span></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+            <div id="home-progress-items" style="display:contents;"></div>
+            <button onclick="A.goHelp()" style="background:var(--teal);color:#fff;border:none;border-radius:20px;padding:5px 14px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;flex-shrink:0;height:32px;">
               <i class="ti ti-book-2"></i> 사용설명서
             </button>
           </div>
-          <div id="home-progress-items" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
         </div>
         <!-- 설치 배너 -->
         <div id="pwa-install-banner" style="display:none;background:linear-gradient(135deg,#0D7A52,#19B89B);border-radius:var(--r-md);padding:16px 18px;">
