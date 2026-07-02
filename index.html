@@ -359,15 +359,20 @@
           </div>
           <i class="ti ti-chevron-right" style="opacity:.6;font-size:20px;color:#fff;"></i>
         </button>
-        <!-- 달성 현황 + 사용설명서 -->
+        <!-- 달성 현황 + 사용설명서 + 관리자 -->
         <div style="display:flex;gap:8px;align-items:stretch;">
           <div id="home-progress-card" style="flex:1;min-width:0;background:#fff;border:1px solid var(--bd);border-radius:var(--r-md);padding:14px 16px;">
             <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:10px;">📋 오늘 달성 현황 <span id="home-progress-pct" style="color:var(--teal);font-size:12px;"></span></div>
             <div id="home-progress-items" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
           </div>
-          <button onclick="A.goHelp()" style="background:var(--teal);color:#fff;border:none;border-radius:var(--r-md);padding:0 14px;font-size:12px;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;flex-shrink:0;line-height:1.3;">
-            <i class="ti ti-book-2" style="font-size:24px;"></i>사용설명서
-          </button>
+          <div style="display:flex;flex-direction:column;gap:8px;flex-shrink:0;">
+            <button onclick="A.goHelp()" style="flex:1;background:var(--teal);color:#fff;border:none;border-radius:var(--r-md);padding:0 14px;font-size:12px;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;line-height:1.3;">
+              <i class="ti ti-book-2" style="font-size:24px;"></i>사용설명서
+            </button>
+            <button id="home-admin-btn" onclick="A.goScreen('scr-admin-pw')" style="display:none;flex:1;background:#F3F4F6;color:var(--mu);border:1px dashed var(--bd);border-radius:var(--r-md);padding:0 14px;font-size:11px;font-weight:700;cursor:pointer;flex-direction:column;align-items:center;justify-content:center;gap:4px;line-height:1.3;">
+              <i class="ti ti-settings" style="font-size:20px;"></i>관리자
+            </button>
+          </div>
         </div>
         <!-- 설치 배너 -->
         <div id="pwa-install-banner" style="display:none;background:linear-gradient(135deg,#0D7A52,#19B89B);border-radius:var(--r-md);padding:16px 18px;">
@@ -423,9 +428,6 @@
           </div>
           <div class="section-title"><i class="ti ti-pill" style="color:var(--purple)"></i> 오늘의 복약</div>
           <div id="med-list-home"></div>
-          <button id="home-admin-btn" onclick="A.goScreen('scr-admin-pw')" style="display:none;width:100%;margin-top:8px;padding:12px;background:none;border:1px dashed var(--bd);border-radius:var(--r-md);color:var(--mu);font-size:12px;font-weight:600;cursor:pointer;align-items:center;justify-content:center;gap:6px;">
-            <i class="ti ti-settings" style="font-size:15px;"></i> 관리자 메뉴
-          </button>
         </div>
       </div>
 
