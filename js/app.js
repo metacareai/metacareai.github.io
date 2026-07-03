@@ -386,13 +386,13 @@ function _renderMonitorList(){
     el.innerHTML = '<div style="padding:20px;text-align:center;color:var(--mu);">등록된 환자가 없습니다</div>';
     return;
   }
-  var ml = {cancer:'암환자', keto:'케토제닉', carnivore:'카니보어', lchf:'저탄고지', diet:'다이어트 건강식'};
+  var ml = {cancer:'질병 관리', keto:'케토제닉', carnivore:'카니보어', lchf:'저탄고지', diet:'다이어트 건강식'};
   var mi = {cancer:'🔬', keto:'🥑', carnivore:'🥩', lchf:'🍖', diet:'🥗'};
   var cn = {thyroid:'갑상선암',colorectal:'대장암',lung:'폐암',stomach:'위암',breast:'유방암',liver:'간암',pancreas:'췌장암',bile:'담낭·담도암',kidney:'신장암',cervical:'자궁경부암',prostate:'전립선암',other:'기타 암'};
 
   el.innerHTML = users.map(function(u){
     var ic = u.mode==='cancer';
-    var ctypeName = (u.ctype==='other'&&u.otherCancerName) ? u.otherCancerName : (cn[u.ctype]||'암환자');
+    var ctypeName = (u.ctype==='other'&&u.otherCancerName) ? u.otherCancerName : (cn[u.ctype]||'질병 관리');
     var ms = ic ? ((u.stage)?u.stage+'기 '+ctypeName:ctypeName) : (ml[u.mode]||u.mode);
 
     // 최근 증상
@@ -442,7 +442,7 @@ function showPatient(userId){
 
   var ic = u.mode==='cancer';
   var cn = {thyroid:'갑상선암',colorectal:'대장암',lung:'폐암',stomach:'위암',breast:'유방암',liver:'간암',pancreas:'췌장암',bile:'담낭·담도암',kidney:'신장암',cervical:'자궁경부암',prostate:'전립선암',other:'기타 암'};
-  var ctypeName = (u.ctype==='other'&&u.otherCancerName) ? u.otherCancerName : (cn[u.ctype]||'암환자');
+  var ctypeName = (u.ctype==='other'&&u.otherCancerName) ? u.otherCancerName : (cn[u.ctype]||'질병 관리');
   var ms = ic ? ((u.stage)?u.stage+'기 '+ctypeName:ctypeName) : u.mode;
 
   var el = $id('patient-detail'); if(!el) return;
@@ -528,12 +528,12 @@ function _renderAdminList(){
     el.innerHTML = '<div style="padding:16px;text-align:center;color:var(--mu);font-size:13px;">'+(q?'검색 결과가 없습니다':'등록된 사용자가 없습니다')+'</div>';
     return;
   }
-  var ml = {cancer:'암환자', keto:'케토제닉', carnivore:'카니보어', lchf:'저탄고지', diet:'다이어트 건강식'};
+  var ml = {cancer:'질병 관리', keto:'케토제닉', carnivore:'카니보어', lchf:'저탄고지', diet:'다이어트 건강식'};
   var mi = {cancer:'🔬', keto:'🥑', carnivore:'🥩', lchf:'🍖', diet:'🥗'};
   var cn = {thyroid:'갑상선암',colorectal:'대장암',lung:'폐암',stomach:'위암',breast:'유방암',liver:'간암',pancreas:'췌장암',bile:'담낭·담도암',kidney:'신장암',cervical:'자궁경부암',prostate:'전립선암',other:'기타 암'};
   el.innerHTML = users.map(function(u){
     var ic = u.mode==='cancer';
-    var ctypeName = (u.ctype==='other'&&u.otherCancerName) ? u.otherCancerName : (cn[u.ctype]||'암환자');
+    var ctypeName = (u.ctype==='other'&&u.otherCancerName) ? u.otherCancerName : (cn[u.ctype]||'질병 관리');
     var ms = ic ? ((u.stage) ? u.stage+'기 '+ctypeName : ctypeName) : (ml[u.mode]||u.mode);
     var by = u.birthYear ? ' · '+u.birthYear+'년생' : '';
     return '<div class="admin-user-card">'
@@ -643,7 +643,7 @@ function fullReset(){
 
 /* ── 사용자 추가 ── */
 var _MODES = [
-  {id:'cancer', icon:'🔬', name:'암환자', desc:'PSA 추적 · 증상 기록 · 복약 · 식단 분석'},
+  {id:'cancer', icon:'🔬', name:'질병 관리', desc:'PSA 추적 · 증상 기록 · 복약 · 식단 분석'},
   {id:'keto',   icon:'🥑', name:'케토제닉', desc:'탄수화물 20g 이하 · 인슐린 억제 · 케톤 생성'},
   {id:'carnivore', icon:'🥩', name:'카니보어', desc:'동물성 식품만 · 식물성 식품 배제 · 극단적 저탄수'},
   {id:'lchf',   icon:'🍖', name:'저탄고지', desc:'탄수화물 50~100g · 혈당 안정 · 체중 관리'},
@@ -935,7 +935,7 @@ function _initApp(){
   var u = USER;
   var ic = u.mode==='cancer';
   var ip = ic && u.ctype==='prostate';
-  var ml = {cancer:'암환자', keto:'케토제닉', carnivore:'카니보어', lchf:'저탄고지', diet:'다이어트 건강식'};
+  var ml = {cancer:'질병 관리', keto:'케토제닉', carnivore:'카니보어', lchf:'저탄고지', diet:'다이어트 건강식'};
 
   // 헤더
   var badge=$id('tb-badge'), sub=$id('tb-sub');
@@ -1173,7 +1173,7 @@ function _updateDays(){
 function goHelp(){
   var u = USER;
   var ic = u && u.mode==='cancer';
-  var modeNames = {keto:'케토제닉', carnivore:'카니보어', lchf:'저탄고지', diet:'다이어트 건강식', cancer:'암환자'};
+  var modeNames = {keto:'케토제닉', carnivore:'카니보어', lchf:'저탄고지', diet:'다이어트 건강식', cancer:'질병 관리'};
   var modeName = ic ? (u.ctype==='prostate' ? u.stage+'기 전립선암' : '암환자') : (modeNames[u.mode]||'건강관리');
   var modeColor = {keto:'#2A7B7B', carnivore:'#7A2E2E', lchf:'#1a6b4a', diet:'#1565C0', cancer:'#6B21A8'}[u?u.mode:'lchf'] || 'var(--navy)';
 
