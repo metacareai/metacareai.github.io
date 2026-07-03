@@ -1553,19 +1553,23 @@ function _refreshHomeAnalysis(){
   el.innerHTML='<div class="tip-lbl"><i class="ti ti-salad" style="font-size:10px;"></i> 오늘의 식단 분석</div>'+parts.join('');
 }
 
-var _stepsExTypes = ['걷기','빠르게 걷기','런닝','등산','계단 오르기'];
-var _repsExTypes  = ['윗몸 일으키기','플랭크','푸시업','스쿼트','줄넘기','풀업','턱걸이','버피'];
+var _stepsExTypes  = ['걷기','빠르게 걷기','런닝','등산','계단 오르기'];
+var _repsExTypes   = ['윗몸 일으키기','플랭크','푸시업','스쿼트','줄넘기','풀업','턱걸이','버피'];
+var _stairsExTypes = ['계단 오르기'];
 
 function _toggleExFields(type){
-  var needSteps = _stepsExTypes.some(function(t){ return type.includes(t); });
-  var needReps  = _repsExTypes.some(function(t){ return type.includes(t); });
+  var needSteps  = _stepsExTypes.some(function(t){ return type.includes(t); });
+  var needReps   = _repsExTypes.some(function(t){ return type.includes(t); });
+  var isStairs   = _stairsExTypes.some(function(t){ return type.includes(t); });
   var durWrap=$id('ex-dur-wrap'), repsWrap=$id('ex-reps-wrap'), stepsWrap=$id('ex-steps-wrap');
   if(durWrap)   durWrap.style.display   = needReps ? 'none' : '';
   if(repsWrap)  repsWrap.style.display  = needReps ? ''     : 'none';
   if(stepsWrap) stepsWrap.style.display = needSteps? ''     : 'none';
+  var stepsInp=$id('ex-steps');
+  if(stepsInp) stepsInp.placeholder = isStairs ? '계단 수' : '걸음 수';
   if(needReps  && $id('ex-dur'))   $id('ex-dur').value='';
   if(!needReps && $id('ex-reps'))  $id('ex-reps').value='';
-  if(!needSteps&& $id('ex-steps')) $id('ex-steps').value='';
+  if(!needSteps&& stepsInp) stepsInp.value='';
 }
 
 function pickExType(type){
@@ -1604,7 +1608,7 @@ function _renderExPending(){
   wrap.style.display=_exPendingList.length?'block':'none';
   list.innerHTML=_exPendingList.map(function(ex,i){
     return '<div style="display:flex;align-items:center;gap:8px;background:#fff;border-radius:8px;padding:8px 10px;border:1px solid var(--bd);">'
-      +'<div style="flex:1;font-size:13px;font-weight:700;">🏃 '+esc(ex.type)+(ex.reps?' <span style="font-weight:400;color:var(--mu);">· '+esc(ex.reps)+'회</span>':'')+(ex.dur?' <span style="font-weight:400;color:var(--mu);">· '+esc(ex.dur)+'</span>':'')+(ex.steps?' <span style="font-weight:400;color:var(--mu);">· '+esc(ex.steps)+'보</span>':'')+'</div>'
+      +'<div style="flex:1;font-size:13px;font-weight:700;">🏃 '+esc(ex.type)+(ex.reps?' <span style="font-weight:400;color:var(--mu);">· '+esc(ex.reps)+'회</span>':'')+(ex.dur?' <span style="font-weight:400;color:var(--mu);">· '+esc(ex.dur)+'</span>':'')+(ex.steps?' <span style="font-weight:400;color:var(--mu);">· '+esc(ex.steps)+(ex.type==='계단 오르기'?'계단':'보')+'</span>':'')+'</div>'
       +'<button onclick="A.removeExFromList('+i+')" style="background:none;border:none;color:var(--mu);font-size:16px;cursor:pointer;padding:0 4px;">✕</button>'
       +'</div>';
   }).join('');
@@ -1623,7 +1627,7 @@ function analyzeExAll(){
   var list=_exPendingList.slice();
   var u=USER, ic=u&&u.mode==='cancer';
   var modeLabel=ic?'암 환자 관점(면역·체력·피로 관리)':({keto:'케토제닉',carnivore:'카니보어',lchf:'저탄고지',diet:'다이어트'}[(u&&u.mode)||'']||'건강 관리')+' 관점(지방 연소·체력·운동 후 식사)';
-  var summary=list.map(function(ex){ return ex.type+(ex.reps?' '+ex.reps+'회':'')+(ex.dur?' '+ex.dur:'')+(ex.steps?' 걸음:'+ex.steps:''); }).join(', ');
+  var summary=list.map(function(ex){ return ex.type+(ex.reps?' '+ex.reps+'회':'')+(ex.dur?' '+ex.dur:'')+(ex.steps?' '+(ex.type==='계단 오르기'?'계단:':'걸음:')+ex.steps:''); }).join(', ');
   var prompt='오늘 운동 기록: '+summary+'. '+modeLabel+'에서 전체 평가를 3~4문장으로 해주세요.';
   _api({max_tokens:400,messages:[{role:'user',content:prompt}]}, function(reply){
     var result=reply||'분석 결과를 가져오지 못했어요.';
