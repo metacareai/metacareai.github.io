@@ -774,12 +774,96 @@ function enterByName(){
     match = users.find(function(u){ return u.name===name; });
   }
   if(!match){
-    errEl.textContent = '등록된 정보를 찾을 수 없습니다. 관리자에게 문의하세요';
+    errEl.textContent = '등록된 정보가 없습니다. 아래에서 가입해 주세요.';
     errEl.style.display = 'block';
+    var joinBtn = $id('login-join-btn');
+    if(joinBtn) joinBtn.style.display = 'block';
     return;
   }
   $id('login-name').value=''; $id('login-year').value='';
   loginUser(match);
+}
+
+/* ── 자가 가입 ── */
+var _sjName='', _sjYear='', _sjMode='', _sjCtype='', _sjStage=0;
+
+function goSelfJoin(){
+  _sjName = ($id('login-name').value||'').trim();
+  _sjYear = ($id('login-year').value||'').trim();
+  if(!_sjName){ toast('이름을 먼저 입력해 주세요'); return; }
+  var conf = $id('sj-name-confirm');
+  if(conf) conf.textContent = _sjName + (_sjYear?' · '+_sjYear+'년생':'') + ' 님';
+  _sjMode=''; _sjCtype=''; _sjStage=0;
+  // 모드 버튼 렌더
+  var mb=$id('sj-mode-btns'); if(!mb) return;
+  mb.innerHTML='';
+  _MODES.forEach(function(m){
+    var btn=document.createElement('button');
+    btn.className='mode-card'; btn.id='sj-mc-'+m.id;
+    btn.innerHTML='<div class="mode-av">'+m.icon+'</div><div><div class="mode-name">'+m.name+'</div><div class="mode-desc">'+m.desc+'</div></div>';
+    btn.onclick=function(){ _sjPickMode(m.id); };
+    mb.appendChild(btn);
+  });
+  if($id('sj-ctype-wrap')) $id('sj-ctype-wrap').style.display='none';
+  if($id('sj-other-wrap')) $id('sj-other-wrap').style.display='none';
+  if($id('sj-stage-wrap')) $id('sj-stage-wrap').style.display='none';
+  goScreen('scr-self-join');
+}
+
+function _sjPickMode(id){
+  _sjMode=id; _sjCtype=''; _sjStage=0;
+  document.querySelectorAll('#sj-mode-btns .mode-card').forEach(function(b){ b.classList.remove('active'); });
+  var mc=$id('sj-mc-'+id); if(mc) mc.classList.add('active');
+  if($id('sj-ctype-wrap')) $id('sj-ctype-wrap').style.display = id==='cancer'?'':'none';
+  if($id('sj-stage-wrap')) $id('sj-stage-wrap').style.display='none';
+  if(id==='cancer'){
+    var cb=$id('sj-ctype-btns'); if(!cb) return;
+    cb.innerHTML='';
+    _CTYPES.forEach(function(c){
+      var btn=document.createElement('button');
+      btn.className='mode-card'; btn.id='sj-ct-'+c.id;
+      btn.innerHTML='<div class="mode-av">'+c.icon+'</div><div><div class="mode-name">'+c.name+'</div><div class="mode-desc">'+c.desc+'</div></div>';
+      btn.onclick=function(){ _sjPickCtype(c.id); };
+      cb.appendChild(btn);
+    });
+  }
+}
+
+function _sjPickCtype(id){
+  _sjCtype=id;
+  document.querySelectorAll('#sj-ctype-btns .mode-card').forEach(function(b){ b.classList.remove('active'); });
+  var mc=$id('sj-ct-'+id); if(mc) mc.classList.add('active');
+  if($id('sj-other-wrap')) $id('sj-other-wrap').style.display = id==='other'?'':'none';
+  if($id('sj-stage-wrap')) $id('sj-stage-wrap').style.display='';
+  var sb=$id('sj-stage-btns'); if(!sb) return;
+  sb.innerHTML='';
+  _STAGES.forEach(function(s){
+    var btn=document.createElement('button');
+    btn.className='stage-card'; btn.id='sj-st-'+s.n;
+    btn.innerHTML='<div class="stage-num">'+s.n+'기</div><div class="stage-name">'+s.name+'</div>';
+    btn.onclick=function(){ _sjStage=s.n; document.querySelectorAll('#sj-stage-btns .stage-card').forEach(function(b){b.classList.remove('active');}); btn.classList.add('active'); };
+    sb.appendChild(btn);
+  });
+}
+
+function selfJoin(){
+  if(!_sjMode){ toast('목적을 선택해 주세요'); return; }
+  if(_sjMode==='cancer'&&!_sjCtype){ toast('암 종류를 선택해 주세요'); return; }
+  if(_sjMode==='cancer'&&!_sjStage){ toast('병기를 선택해 주세요'); return; }
+  if(_sjMode==='cancer'&&_sjCtype==='other'){
+    var on=($id('sj-other-name')&&$id('sj-other-name').value.trim())||'';
+    if(!on){ toast('암 종류를 직접 입력해 주세요'); return; }
+  }
+  var users=_getUsers();
+  if(users.some(function(u){ return u.name===_sjName && String(u.birthYear)===String(_sjYear); })){
+    toast('이미 가입된 계정이 있습니다'); loginUser(users.find(function(u){ return u.name===_sjName; })); return;
+  }
+  var otherNm=(_sjCtype==='other'&&$id('sj-other-name'))?$id('sj-other-name').value.trim():'';
+  var newUser={id:'u'+Date.now(), name:_sjName, birthYear:_sjYear, mode:_sjMode, ctype:_sjCtype, otherCancerName:otherNm, stage:_sjStage, treatments:[], createdAt:Date.now()};
+  users.push(newUser);
+  _setUsers(users);
+  toast(_sjName+' 님, 환영합니다! 🎉');
+  loginUser(newUser);
 }
 
 /* ── 로그인 ── */
@@ -3161,7 +3245,7 @@ function _initDragDrop(){
 /* ── 공개 API ── */
 return {
   // 화면
-  goScreen:goScreen, logoTap:logoTap, nameTap:nameTap, enterByName:enterByName, goHelp:goHelp, goBack:goBack,
+  goScreen:goScreen, logoTap:logoTap, nameTap:nameTap, enterByName:enterByName, goSelfJoin:goSelfJoin, selfJoin:selfJoin, goHelp:goHelp, goBack:goBack,
   // 설정
   checkPw:checkPw,
   // Admin
