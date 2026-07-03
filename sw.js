@@ -1,12 +1,12 @@
-const CACHE = 'metacare-v22';
+const CACHE = 'metacare-v23';
 const ASSETS = [
-  '/metacare-voice/',
-  '/metacare-voice/index.html',
-  '/metacare-voice/css/style.css',
-  '/metacare-voice/js/app.js',
-  '/metacare-voice/manifest.json',
-  '/metacare-voice/icons/icon-192x192.png',
-  '/metacare-voice/icons/icon-512x512.png'
+  '/',
+  '/index.html',
+  '/css/style.css',
+  '/js/app.js',
+  '/manifest.json',
+  '/icons/icon-192x192.png',
+  '/icons/icon-512x512.png'
 ];
 
 self.addEventListener('install', function(e){
@@ -22,7 +22,6 @@ self.addEventListener('activate', function(e){
 });
 
 self.addEventListener('fetch', function(e){
-  // Firebase/API 요청은 캐시 안 함
   if(e.request.url.includes('firebase') || e.request.url.includes('anthropic') || e.request.url.includes('googleapis')) return;
   e.respondWith(
     fetch(e.request).then(function(res){

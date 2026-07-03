@@ -2,8 +2,8 @@
   "name": "스마트 메타케어",
   "short_name": "메타케어",
   "description": "저탄고지·다이어트 식단 AI 건강관리 앱 — 식사 사진 찍으면 AI가 즉시 분석",
-  "start_url": "/metacare-voice/",
-  "scope": "/metacare-voice/",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#1A2F4C",
   "theme_color": "#1A2F4C",
@@ -23,7 +23,7 @@
       "name": "식사 기록하기",
       "short_name": "식사",
       "description": "오늘의 식사 사진 기록",
-      "url": "/metacare-voice/",
+      "url": "/",
       "icons": [{ "src": "icons/icon-96x96.png", "sizes": "96x96" }]
     }
   ]
