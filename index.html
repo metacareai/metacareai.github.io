@@ -776,7 +776,7 @@
 <script>
 // ── 카카오톡 앱 공유 ──
 function shareAppKakao(){
-  var APP_URL = 'https://changho105-dotcom.github.io/metacare-voice/';
+  var APP_URL = 'https://metacareai.github.io';
   var msg = '🧬 스마트 메타케어\n\n'
     + '저탄고지·케토·다이어트 식단을 AI로 관리하는 앱이에요!\n\n'
     + '📸 식사 사진 찍으면 → AI가 즉시 분석\n'
@@ -874,11 +874,11 @@ function initInstallBanner(){
     btn.textContent='Chrome으로 열기';
     btn.onclick=function(){
       if(_isIOS){
-        var url='https://changho105-dotcom.github.io/metacare-voice/';
+        var url='https://metacareai.github.io';
         if(navigator.clipboard) navigator.clipboard.writeText(url);
         alert('주소를 복사했습니다!\nSafari를 열고 주소창에 붙여넣기 해주세요.');
       } else {
-        location.href='intent://changho105-dotcom.github.io/metacare-voice/#Intent;scheme=https;package=com.android.chrome;end';
+        location.href='intent://metacareai.github.io/#Intent;scheme=https;package=com.android.chrome;end';
       }
     };
   } else if(_pwaPrompt){
