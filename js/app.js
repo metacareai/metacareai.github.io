@@ -1457,7 +1457,8 @@ function goBack(){
   if(!activeScreen) return;
   var id = activeScreen.id;
 
-  if(id==='scr-profile') return; // 로그인 화면에서는 동작 안 함
+  if(id==='scr-landing') return; // 랜딩 화면에서는 동작 안 함
+  if(id==='scr-profile'){ goScreen('scr-landing'); return; }
 
   if(id==='scr-app'){
     if(_currentPage!=='home'){ goPage('home'); return; }
@@ -2659,9 +2660,11 @@ _loadCloudData(function(){
   var lo = $id('loading-overlay'); if(lo) lo.style.display='none';
   // 자동 재로그인 시도
   if(!_tryAutoLogin()){
-    $id('scr-profile').classList.add('active');
-    _navStack.push({type:'screen',id:'scr-profile'});
-    try{ history.replaceState({navIdx:0}, '', '#scr-profile'); }catch(e){}
+    var firstScr = localStorage.getItem('mc_visited') ? 'scr-profile' : 'scr-landing';
+    localStorage.setItem('mc_visited','1');
+    $id(firstScr).classList.add('active');
+    _navStack.push({type:'screen',id:firstScr});
+    try{ history.replaceState({navIdx:0}, '', '#'+firstScr); }catch(e){}
   }
 });
 
