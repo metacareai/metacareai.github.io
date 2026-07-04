@@ -462,6 +462,12 @@ function showPatient(userId){
 
   var html = '';
 
+  // 환자로 보기 버튼
+  html += '<div style="padding:12px 16px 0;">'
+    +'<button onclick="A.viewAsPatient(\''+u.id+'\')" style="width:100%;padding:14px;background:linear-gradient(135deg,var(--teal),var(--teal2));color:#fff;border:none;border-radius:var(--r-md);font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 14px rgba(25,184,155,.3);">'
+    +'<i class="ti ti-eye"></i> '+esc(u.name)+' 님 화면으로 보기'
+    +'</button></div>';
+
   // 기본 정보
   html += '<div class="card"><div class="card-hd"><span>👤 기본 정보</span></div>'
     +'<div class="card-body">'
@@ -875,6 +881,32 @@ function selfJoin(){
   _setUsers(users);
   toast(_sjName+' 님, 환영합니다! 🎉');
   loginUser(newUser);
+}
+
+/* ── 어드민: 환자 화면으로 보기 ── */
+var _adminUser = null; // 어드민 복귀용 원래 USER 저장
+
+function viewAsPatient(userId){
+  var users = _getUsers();
+  var u = users.find(function(x){ return x.id===userId; });
+  if(!u){ toast('사용자를 찾을 수 없습니다'); return; }
+  _adminUser = USER; // 현재 어드민 저장
+  USER = u;
+  _loadUserRecords(u.id, function(){
+    _initApp();
+    goScreen('scr-app');
+    var banner = $id('admin-preview-banner');
+    if(banner) banner.style.display='flex';
+  });
+}
+
+function exitPatientView(){
+  if(!_adminUser){ goScreen('scr-admin'); return; }
+  USER = _adminUser;
+  _adminUser = null;
+  var banner = $id('admin-preview-banner');
+  if(banner) banner.style.display='none';
+  goScreen('scr-admin-patient');
 }
 
 /* ── 로그인 ── */
@@ -3349,7 +3381,7 @@ return {
   // 사용자 추가
   _selMode:_selMode, _selCtype:_selCtype, _selStage:_selStage, addUser:addUser,
   // 앱
-  goPage:goPage, onMic:onMic, toggleAnalysis:toggleAnalysis,
+  goPage:goPage, onMic:onMic, toggleAnalysis:toggleAnalysis, viewAsPatient:viewAsPatient, exitPatientView:exitPatientView,
   // 팁
 
   // 코치

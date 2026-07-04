@@ -924,6 +924,12 @@
 <canvas id="cc" style="display:none"></canvas>
 <div class="toast" id="toast"></div>
 
+<!-- 어드민 환자 미리보기 복귀 배너 -->
+<div id="admin-preview-banner" style="display:none;position:fixed;bottom:calc(env(safe-area-inset-bottom,0px) + 76px);left:50%;transform:translateX(-50%);z-index:8000;background:linear-gradient(135deg,#E5404A,#c0392b);color:#fff;border-radius:24px;padding:10px 20px;align-items:center;gap:10px;box-shadow:0 4px 20px rgba(229,64,74,.4);white-space:nowrap;">
+  <span style="font-size:13px;font-weight:700;">🛡️ 어드민 미리보기 중</span>
+  <button onclick="A.exitPatientView()" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:16px;padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer;">복귀</button>
+</div>
+
 <script src="js/app.js"></script>
 <script>
 // ── 카카오톡 앱 공유 ──
