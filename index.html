@@ -20,6 +20,26 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 <link rel="stylesheet" href="css/style.css">
+<style>
+  @keyframes waveIn {
+    0%   { opacity:0; transform:translateY(50px) scale(.93); }
+    100% { opacity:1; transform:translateY(0) scale(1); }
+  }
+  .mode-wave { animation: waveIn .45s cubic-bezier(.22,.97,.58,1) both; }
+  .mode-wave:nth-child(1){ animation-delay:.1s; }
+  .mode-wave:nth-child(2){ animation-delay:.22s; }
+  .mode-wave:nth-child(3){ animation-delay:.34s; }
+  .mode-wave:nth-child(4){ animation-delay:.46s; }
+  .mode-wave:nth-child(5){ animation-delay:.58s; }
+  .mode-pick-card {
+    display:flex;align-items:center;gap:16px;
+    background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.1);
+    border-radius:16px;padding:16px 18px;cursor:pointer;
+    transition:background .2s,border-color .2s,transform .15s;
+  }
+  .mode-pick-card:active { transform:scale(.97); }
+  .mode-pick-card:hover  { background:rgba(25,184,155,.15);border-color:rgba(25,184,155,.5); }
+</style>
 </head>
 <body>
 <div id="loading-overlay" style="position:fixed;inset:0;background:#0F1E31;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;z-index:99999;">
@@ -31,27 +51,7 @@
 
   <!-- ── 랜딩 페이지 (첫 방문자) ── -->
   <div id="scr-landing" class="screen dark" style="overflow-y:auto;justify-content:flex-start;padding:0;">
-    <style>
-      @keyframes waveIn {
-        0%   { opacity:0; transform:translateY(50px) scale(.93); }
-        100% { opacity:1; transform:translateY(0) scale(1); }
-      }
-      .mode-wave { animation: waveIn .45s cubic-bezier(.22,.97,.58,1) both; }
-      .mode-wave:nth-child(1){ animation-delay:.1s; }
-      .mode-wave:nth-child(2){ animation-delay:.22s; }
-      .mode-wave:nth-child(3){ animation-delay:.34s; }
-      .mode-wave:nth-child(4){ animation-delay:.46s; }
-      .mode-wave:nth-child(5){ animation-delay:.58s; }
-      .mode-pick-card {
-        display:flex;align-items:center;gap:16px;
-        background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.1);
-        border-radius:16px;padding:16px 18px;cursor:pointer;
-        transition:background .2s,border-color .2s,transform .15s;
-      }
-      .mode-pick-card:active { transform:scale(.97); }
-      .mode-pick-card:hover  { background:rgba(25,184,155,.15);border-color:rgba(25,184,155,.5); }
-    </style>
-    <div style="background:linear-gradient(160deg,#0D1F33 0%,#0F3D2E 100%);padding:env(safe-area-inset-top,36px) 24px 36px;display:flex;flex-direction:column;align-items:center;text-align:center;">
+    <div style="background:linear-gradient(160deg,#0D1F33 0%,#0F3D2E 100%);padding:env(safe-area-inset-top,36px) 24px 40px;display:flex;flex-direction:column;align-items:center;text-align:center;width:100%;box-sizing:border-box;">
 
       <div style="font-size:64px;margin-bottom:12px;filter:drop-shadow(0 8px 24px rgba(25,184,155,.4));">🧬</div>
       <div style="font-size:24px;font-weight:800;color:#fff;letter-spacing:-.5px;margin-bottom:8px;">스마트 메타케어</div>
