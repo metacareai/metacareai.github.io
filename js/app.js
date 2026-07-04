@@ -2472,7 +2472,7 @@ function exportExcel(){
   
   // 식단 + 운동 시트
   var aoa=[['스마트 메타케어 건강 일지'],[],
-    ['날짜','아침','점심','저녁','걸음수','운동종류','운동시간','식단분석요약']];
+    ['날짜','아침','점심','저녁','운동종류','운동시간','식단분석요약']];
   days.forEach(function(d){
     var ex=d.exercise&&d.exercise.length?d.exercise[d.exercise.length-1]:null;
     var analysis=d.analysis&&d.analysis.latest?d.analysis.latest.replace(/#+\s/g,'').substring(0,100):'';
@@ -2481,7 +2481,6 @@ function exportExcel(){
       d.photos&&d.photos.morning?'✓':'',
       d.photos&&d.photos.lunch?'✓':'',
       d.photos&&d.photos.dinner?'✓':'',
-      d.steps||'',
       ex?ex.type:'',
       ex?ex.dur:'',
       analysis
