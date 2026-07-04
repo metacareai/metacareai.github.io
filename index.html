@@ -795,10 +795,11 @@
 <div class="overlay" id="sh-psa" onclick="if(event.target.id==='sh-psa')A.closeSheet('sh-psa')">
   <div class="sheet">
     <div class="sh-title" id="sh-marker-title">수치 기록</div>
+    <p style="font-size:12px;color:var(--mu);margin-bottom:8px;line-height:1.6;">검사 결과지의 수치를 입력하세요. 추이 그래프로 변화를 확인할 수 있습니다.</p>
     <div id="sh-marker-inputs" class="col gap-sm">
-      <input class="inp-sm" id="psa-val" type="number" placeholder="수치" step="0.01" min="0">
-      <input class="inp-sm" id="psa-date" type="text" placeholder="날짜" style="margin-top:8px;">
-      <input class="inp-sm" id="psa-note" type="text" placeholder="메모 (선택)" style="margin-top:8px;">
+      <input class="inp-sm" id="psa-val" type="number" placeholder="수치 (예: 4.2)" step="0.01" min="0">
+      <input class="inp-sm" id="psa-date" type="text" placeholder="검사 날짜 (예: 2026-07-04)" style="margin-top:8px;">
+      <input class="inp-sm" id="psa-note" type="text" placeholder="메모 (예: 3개월 정기 검사)" style="margin-top:8px;">
     </div>
     <button class="btn-full purple" onclick="A.savePSA()" style="margin-top:8px;">저장</button>
     <button class="sh-cancel" onclick="A.closeSheet('sh-psa')">취소</button>

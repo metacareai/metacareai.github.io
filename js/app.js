@@ -1421,21 +1421,21 @@ function _refreshHomeProgress(){
   var hasMed=ic&&Object.keys(medDone).some(function(k){return medDone[k];});
   var hasSym=ic&&(rec.pain!==undefined||rec.urine!==undefined||rec.fatigue!==undefined);
 
-  function chip(done, label){
-    return '<div style="display:flex;align-items:center;gap:5px;padding:6px 10px;border-radius:20px;font-size:12px;font-weight:700;'
+  function chip(done, label, action){
+    return '<div onclick="'+action+'" style="cursor:pointer;display:flex;align-items:center;gap:5px;padding:6px 10px;border-radius:20px;font-size:12px;font-weight:700;'
       +(done?'background:#D1FAE5;color:#065F46;':'background:#F3F4F6;color:#9CA3AF;')
       +'">'+(done?'✓ ':'')+'<span>'+label+'</span></div>';
   }
 
   var html='';
-  html+=chip(photos>=1, '아침');
-  html+=chip(photos>=2, '점심');
-  html+=chip(photos>=3, '저녁');
-  html+=chip(hasEx, '운동');
-  html+=chip(hasCond, '컨디션');
+  html+=chip(photos>=1, '아침', "A.openMealSlot('breakfast')");
+  html+=chip(photos>=2, '점심', "A.openMealSlot('lunch')");
+  html+=chip(photos>=3, '저녁', "A.openMealSlot('dinner')");
+  html+=chip(hasEx, '운동', "A.goPage('ex')");
+  html+=chip(hasCond, '컨디션', "A.openQuickCond()");
   if(ic){
-    html+=chip(hasSym, '증상');
-    html+=chip(hasMed, '복약');
+    html+=chip(hasSym, '증상', "A.openSymSheet('pain')");
+    html+=chip(hasMed, '복약', "A.openSheet('sh-med')");
   }
 
   // 달성률 계산
@@ -1634,12 +1634,31 @@ function _refreshHomeAnalysis(){
   var parts=[];
   var labels={morning:'🌅 아침',lunch:'☀️ 점심',dinner:'🌙 저녁'};
   ['morning','lunch','dinner'].forEach(function(k){
-    if(ana[k]) parts.push('<div style="margin-bottom:8px;"><span style="font-size:11px;font-weight:700;color:var(--teal);">'+labels[k]+'</span><div style="margin-top:3px;">'+md(ana[k])+'</div></div>');
+    if(ana[k]) parts.push(
+      '<div style="margin-bottom:14px;">'
+      +'<div style="font-size:15px;font-weight:800;color:var(--navy);margin-bottom:5px;padding-bottom:4px;border-bottom:2px solid var(--teal-g);">'+labels[k]+'</div>'
+      +'<div style="font-size:13px;color:var(--mu2);line-height:1.75;">'+md(ana[k])+'</div>'
+      +'</div>'
+    );
   });
-  // latest 폴백 제거 - 끼니별 분석만 표시
-  if(!parts.length){ el.style.display='none'; return; } // 분석 없으면 숨김
+  if(!parts.length){ el.style.display='none'; return; }
   el.style.display='block';
-  el.innerHTML='<div class="tip-lbl"><i class="ti ti-salad" style="font-size:10px;"></i> 오늘의 식단 분석</div>'+parts.join('');
+  var isOpen = el.getAttribute('data-open')!=='false';
+  el.innerHTML=
+    '<div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding-bottom:'+(isOpen?'10px':'0')+';margin-bottom:'+(isOpen?'4px':'0')+';" onclick="A.toggleAnalysis()">'
+    +'<div class="tip-lbl" style="margin-bottom:0;"><i class="ti ti-salad" style="font-size:10px;"></i> 오늘의 식단 분석 보기</div>'
+    +'<span style="font-size:11px;color:var(--teal);font-weight:700;">'+(isOpen?'접기 ▲':'펼치기 ▼')+'</span>'
+    +'</div>'
+    +'<div id="home-analysis-body" style="display:'+(isOpen?'block':'none')+'">'
+    +parts.join('')
+    +'</div>';
+}
+
+function toggleAnalysis(){
+  var el=$id('home-ai-result'); if(!el) return;
+  var isOpen = el.getAttribute('data-open')!=='false';
+  el.setAttribute('data-open', isOpen?'false':'true');
+  _refreshHomeAnalysis();
 }
 
 var _stepsExTypes  = ['걷기','빠르게 걷기','런닝','등산','계단 오르기'];
@@ -2003,22 +2022,29 @@ function _refreshMedHome(){
 /* ── 이미지 압축 ── */
 // Storage URL → base64 변환 (CORS 우회)
 function _urlToBase64(url, cb){
-  var img = new Image();
-  img.crossOrigin = 'anonymous';
-  img.onload = function(){
-    var c = document.createElement('canvas');
-    c.width = img.naturalWidth; c.height = img.naturalHeight;
-    c.getContext('2d').drawImage(img, 0, 0);
-    try{
-      cb(c.toDataURL('image/jpeg', 0.8));
-    }catch(e){
-      // CORS 여전히 막히면 img src 직접 전달
-      console.warn('canvas CORS 실패, img 직접 사용');
-      cb(null);
-    }
-  };
-  img.onerror = function(){ cb(null); };
-  img.src = url + (url.includes('?') ? '&' : '?') + 't=' + Date.now();
+  // fetch로 blob → base64 (CORS 우회)
+  fetch(url)
+    .then(function(r){ return r.blob(); })
+    .then(function(blob){
+      var reader = new FileReader();
+      reader.onloadend = function(){ cb(reader.result); };
+      reader.onerror = function(){ cb(null); };
+      reader.readAsDataURL(blob);
+    })
+    .catch(function(){
+      // fallback: canvas
+      var img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = function(){
+        var c = document.createElement('canvas');
+        c.width = img.naturalWidth; c.height = img.naturalHeight;
+        c.getContext('2d').drawImage(img, 0, 0);
+        try{ cb(c.toDataURL('image/jpeg', 0.8)); }
+        catch(e){ cb(null); }
+      };
+      img.onerror = function(){ cb(null); };
+      img.src = url;
+    });
 }
 
 function _compress(dataUrl,cb){
@@ -3022,9 +3048,13 @@ function reanalyzeMealPhoto(){
       var base64=dataUrl.split(',')[1];
       var mode=USER?USER.mode:'lchf';
       var modeDesc={keto:'케토제닉(탄수화물 20g 이하)',carnivore:'카니보어(동물성 식품)',lchf:'저탄고지(탄수화물 100g 이하)',diet:'균형 건강식',cancer:'암 환자 항산화 식단'}[mode]||mode;
-      var prompt='['+mealName+' 식사 사진] '+modeDesc+' 관점에서 분석해주세요.';
-      if(note) prompt+=' 사용자 메모: "'+note+'"';
-      prompt+=' 주요 음식명, 적합도, 개선 제안을 2~3문장으로 간결하게.';
+      var prompt;
+      if(note){
+        // 메모가 있으면 메모를 기준으로 분석 (사진은 참고만)
+        prompt='['+mealName+'] 사용자가 직접 입력한 식사 메모: "'+note+'" — 이 메모를 기준으로 '+modeDesc+' 관점에서 분석해주세요. 사진은 참고만 하고 메모의 음식명을 우선으로 판단하세요. 적합도와 개선 제안을 2~3문장으로.';
+      } else {
+        prompt='['+mealName+' 식사 사진] '+modeDesc+' 관점에서 분석해주세요. 주요 음식명, 적합도, 개선 제안을 2~3문장으로 간결하게.';
+      }
       _api({max_tokens:300,messages:[{role:'user',content:[
         {type:'image',source:{type:'base64',media_type:'image/jpeg',data:base64}},
         {type:'text',text:prompt}
@@ -3319,7 +3349,7 @@ return {
   // 사용자 추가
   _selMode:_selMode, _selCtype:_selCtype, _selStage:_selStage, addUser:addUser,
   // 앱
-  goPage:goPage, onMic:onMic,
+  goPage:goPage, onMic:onMic, toggleAnalysis:toggleAnalysis,
   // 팁
 
   // 코치
