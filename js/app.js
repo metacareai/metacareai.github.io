@@ -431,7 +431,7 @@ function _renderMonitorList(){
     var doneToday = medDone[todayStr]||{};
     var medTxt = meds.length ? meds.filter(function(m){return doneToday[m.id];}).length+'/'+meds.length+'개 완료' : '약 없음';
 
-    return '<div class="admin-user-card" onclick="A.showPatient(\''+u.id+'\')" style="cursor:pointer;flex-direction:column;align-items:flex-start;gap:10px;">'
+    return '<button onclick="A.showPatient(\''+u.id+'\')" style="width:100%;text-align:left;background:#fff;border:none;border-radius:var(--r-sm);padding:13px 15px;margin-bottom:8px;box-shadow:var(--sh-sm);cursor:pointer;display:flex;flex-direction:column;align-items:flex-start;gap:10px;">'
       +'<div style="display:flex;align-items:center;gap:10px;width:100%;">'
       +'<div class="admin-user-av '+(ic?'cancer':'health')+'" style="font-size:18px;">'+(mi[u.mode]||'👤')+'</div>'
       +'<div style="flex:1"><div class="admin-user-name">'+esc(u.name)+(u.birthYear?' · '+u.birthYear+'년생':'')+'</div>'
@@ -443,7 +443,7 @@ function _renderMonitorList(){
         +'<span style="background:var(--red-l);color:var(--red);font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;">'+esc(symTxt)+'</span>'
         +'</div>':'')
       +'<div style="font-size:12px;color:var(--mu);">최근기록: '+esc(recTxt)+' · 복약: '+esc(medTxt)+'</div>'
-      +'</div>';
+      +'</button>';
   }).join('');
 }
 
