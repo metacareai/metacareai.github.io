@@ -3252,10 +3252,23 @@ function _initDragDrop(){
   }
 }
 
+/* ── 랜딩 태그 선택 ── */
+function pickLandingTag(el){
+  document.querySelectorAll('.landing-tag').forEach(function(t){
+    t.style.background='rgba(25,184,155,.2)';
+    t.style.color='#19B89B';
+    t.style.border='1px solid rgba(25,184,155,.35)';
+  });
+  el.style.background='#19B89B';
+  el.style.color='#fff';
+  el.style.border='1px solid #19B89B';
+  setTimeout(function(){ goScreen('scr-profile'); }, 300);
+}
+
 /* ── 공개 API ── */
 return {
   // 화면
-  goScreen:goScreen, logoTap:logoTap, nameTap:nameTap, enterByName:enterByName, goSelfJoin:goSelfJoin, selfJoin:selfJoin, goHelp:goHelp, goBack:goBack,
+  goScreen:goScreen, logoTap:logoTap, nameTap:nameTap, enterByName:enterByName, goSelfJoin:goSelfJoin, selfJoin:selfJoin, goHelp:goHelp, goBack:goBack, pickLandingTag:pickLandingTag,
   // 설정
   checkPw:checkPw,
   // Admin
