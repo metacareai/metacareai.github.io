@@ -325,6 +325,9 @@ function goScreen(id, opts){
   if(id==='scr-admin-users') _renderAdminList();
   if(id==='scr-admin-monitor') _renderMonitorList();
   if(id==='scr-add-user') _resetAddForm();
+  // 미리보기 배너: scr-app 진입 시 sessionStorage 기반으로 표시
+  var _pvBanner = $id('admin-preview-banner');
+  if(_pvBanner) _pvBanner.style.display = (id==='scr-app' && sessionStorage.getItem('mc_preview_admin_id')) ? 'flex' : 'none';
   if(!_suppressPush){
     _navStack.push({type:'screen', id:id});
     try{ history.pushState({navIdx:_navStack.length-1}, '', '#'+id); }catch(e){}
@@ -893,7 +896,8 @@ function viewAsPatient(userId){
   var users = _getUsers();
   var u = users.find(function(x){ return x.id===userId; });
   if(!u){ toast('사용자를 찾을 수 없습니다'); return; }
-  _adminUser = USER; // 현재 어드민 저장
+  _adminUser = USER;
+  sessionStorage.setItem('mc_preview_admin_id', USER.id);
   USER = u;
   _loadUserRecords(u.id, function(){
     _initApp();
@@ -904,11 +908,19 @@ function viewAsPatient(userId){
 }
 
 function exitPatientView(){
+  var adminId = sessionStorage.getItem('mc_preview_admin_id');
+  sessionStorage.removeItem('mc_preview_admin_id');
+  var banner = $id('admin-preview-banner');
+  if(banner) banner.style.display='none';
+  if(!_adminUser && adminId){
+    // 메모리 손실 시 adminId로 복원
+    var users = _getUsers();
+    var a = users.find(function(x){ return x.id===adminId; });
+    if(a){ _adminUser = a; }
+  }
   if(!_adminUser){ goScreen('scr-admin'); return; }
   USER = _adminUser;
   _adminUser = null;
-  var banner = $id('admin-preview-banner');
-  if(banner) banner.style.display='none';
   goScreen('scr-admin-patient');
 }
 
