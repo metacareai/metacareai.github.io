@@ -2660,9 +2660,11 @@ _loadCloudData(function(){
   var lo = $id('loading-overlay'); if(lo) lo.style.display='none';
   // 자동 재로그인 시도
   if(!_tryAutoLogin()){
-    $id('scr-landing').classList.add('active');
-    _navStack.push({type:'screen',id:'scr-landing'});
-    try{ history.replaceState({navIdx:0}, '', '#scr-landing'); }catch(e){}
+    // 기존 방문자(mc_last_user 있음)는 로그인 화면으로, 첫 방문자는 랜딩으로
+    var firstScr = localStorage.getItem('mc_last_user') ? 'scr-profile' : 'scr-landing';
+    $id(firstScr).classList.add('active');
+    _navStack.push({type:'screen',id:firstScr});
+    try{ history.replaceState({navIdx:0}, '', '#'+firstScr); }catch(e){}
   }
 });
 
