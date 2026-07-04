@@ -454,22 +454,6 @@ h2 { font-size:21px; font-weight:700; }
 .nb.back-nb { color:var(--mu2); }
 .nb.back-nb:active { background:var(--cream); }
 
-/* FAB */
-.vfab {
-  position:fixed; right:18px;
-  bottom: calc(env(safe-area-inset-bottom,0px) + 78px);
-  width:60px; height:60px; border-radius:50%;
-  border:none; z-index:9999;
-  display:flex; align-items:center; justify-content:center;
-  background: var(--navy);
-  box-shadow: 0 4px 20px rgba(15,30,49,.45);
-  transition: background .2s;
-  font-size:26px; color:#fff;
-}
-.vfab i { font-size:26px; color:#fff; }
-.vfab.listening { background:var(--red); animation:pulse 1s infinite; }
-.vfab.thinking  { background:var(--warn); }
-.vfab.speaking  { background:var(--blue); }
 @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
 
 /* ════════════════════════════════════════

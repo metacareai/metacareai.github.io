@@ -106,7 +106,6 @@ function _saveRecsCloud(userId, recs){
   _saveRecsTimer = setTimeout(function(){
     var ref = _db.collection('users').doc(userId).collection('data').doc('records');
     ref.set({records: JSON.stringify(recs), ts: Date.now()})
-      .then(function(){ console.log('✅ records 저장:', recs.length+'개'); })
       .catch(function(err){ console.error('records 저장 오류:', err); });
   }, 500);
 }
@@ -137,7 +136,6 @@ function _loadCloudData(cb){
   _db.collection('config').doc('api').get().then(function(doc){
     if(doc.exists && doc.data().Key) KEY = doc.data().Key;
     else if(doc.exists && doc.data().key) KEY = doc.data().key;
-    console.log('KEY 로드:', KEY ? '성공 ('+KEY.slice(0,20)+'...)' : '실패 - doc.exists:'+doc.exists);
     keyLoaded = true; tryDone();
   }).catch(function(err){ console.error('KEY 로드 오류:', err); keyLoaded = true; tryDone(); });
 
@@ -222,7 +220,6 @@ function _autoBackup(){
     _db.collection('metacare').doc('backups').set(
       _cache[backupKey] ? {[backupKey]: _cache[backupKey]} : {}
     , {merge: true}).catch(function(e){ console.warn('백업 저장 실패:', e.message); });
-    console.log('✅ 자동 백업 완료:', dateKey);
   } catch(e) {
     console.error('백업 오류:', e);
   }
@@ -232,7 +229,6 @@ function _verifyDataIntegrity(){
   try{
     var recs = ugj('records',[]);
     var users = S.gj('mc_users',[]);
-    console.log('📊 데이터 무결성 검사: records='+recs.length+'개, users='+users.length+'명');
     if(users.length > 0 && recs.length === 0){
       console.warn('⚠️ 사용자는 있는데 기록이 없습니다. 백업 복원을 확인하세요.');
     }
@@ -249,16 +245,12 @@ function _cleanBase64FromRecs(){
       if(!rec.photos) return;
       Object.keys(rec.photos).forEach(function(meal){
         if(rec.photos[meal] && rec.photos[meal].startsWith('data:image')){
-          console.warn('🧹 base64 제거:', rec.date, meal);
           delete rec.photos[meal];
           cleaned = true;
         }
       });
     });
-    if(cleaned){
-      usj('records', recs);
-      console.log('✅ base64 정리 완료');
-    }
+    if(cleaned){ usj('records', recs); }
   }catch(e){ console.error('base64 정리 오류:', e); }
 }
 
@@ -591,7 +583,6 @@ function forceCloudSave(){
     if(k.startsWith('mc_backup_')) return;
     slim[k] = v;
   });
-  console.log('강제 저장 키:', Object.keys(slim));
   _docRef.set(slim).then(function(){
     toast('✅ 데이터 강제 저장 완료!');
     alert('저장 완료! 키: ' + Object.keys(slim).join(', '));
@@ -896,9 +887,7 @@ function loginUser(u){
       var info = JSON.parse(saved);
       if(info.id === u.id) lastPage = info.lastPage||'home';
     }
-    localStorage.setItem('mc_last_user', JSON.stringify({id:u.id, name:u.name, birthYear:u.birthYear, lastPage:lastPage})); 
-    // 빠른 입장 버튼 숨기기
-    var quickBtn=$id('quick-login-btn'); if(quickBtn) quickBtn.style.display='none';
+    localStorage.setItem('mc_last_user', JSON.stringify({id:u.id, name:u.name, birthYear:u.birthYear, lastPage:lastPage}));
   }catch(e){}
   if(!KEY){ toast('API 키가 없습니다. Admin에서 설정해주세요.'); return; }
   // 컬렉션에서 해당 사용자 records 로드
@@ -936,12 +925,8 @@ function _loadUserRecords(userId, cb){
     if(doc.exists && doc.data().records){
       try{
         var recs = JSON.parse(doc.data().records);
-        console.log('✅ 컬렉션에서 records 로드:', recs.length+'개');
-        // 캐시 업데이트 (메인 문서의 records보다 컬렉션 우선)
         _cache['mc_'+userId+'_records'] = JSON.stringify(recs);
       }catch(e){ console.warn('컬렉션 records 파싱 실패:', e); }
-    } else {
-      console.log('ℹ️ 컬렉션 records 없음 - 메인 문서 사용');
     }
     cb();
   }).catch(function(err){
@@ -996,7 +981,6 @@ function _initApp(){
   if(ic){
     var ps=$id('psa-banner-wrap'); if(ps) ps.innerHTML=ip?_buildPSABanner():'';
     var ub=$id('sd-urine-btn'); if(ub) ub.style.display=ip?'':'none';
-    var nuw=$id('nrs-urine-wrap'); if(nuw) nuw.style.display=ip?'':'none';
     if(ip) _refreshPSABanner();
   }
 
@@ -1056,7 +1040,6 @@ function _initHealthHome(mode){
     return lbl+' '+val;
   }).join(' · ');
   if(g('home-goal-items')) g('home-goal-items').textContent=txt;
-  if(g('home-banner-sub')) g('home-banner-sub').textContent=c.bannerSub;
   // 식사 슬롯 색상 동기화
   var goalBg = c.goalBg;
   setTimeout(function(){
@@ -1083,7 +1066,6 @@ function _initCancerHome(u){
     el.style.background='linear-gradient(135deg,#4a1d96,#6B3FA0)';
     el.style.color='#fff'; el.classList.add('colored');
   });
-  var bs=$id('home-banner-sub'); if(bs) bs.textContent='항산화·저당 관점의 암 환자 맞춤 식단 분석';
   if(ip) _refreshPSABanner();
 }
 
@@ -1467,9 +1449,6 @@ function _refreshHomeProgress(){
 
   el.innerHTML=html;
 
-  // 김창호 계정에만 관리자 메뉴 버튼 표시
-  var adminBtn=$id('home-admin-btn');
-  if(adminBtn){ adminBtn.style.display=(USER&&localStorage.getItem('mc_is_admin')==='1')?'flex':'none'; }
 }
 
 function goBack(){
@@ -1838,12 +1817,6 @@ function _refreshHomeExercise(){
   } else {
     el.style.display='none';
   }
-}
-
-function setCancerTab(t){
-  ['sym','med'].forEach(function(x){ $id('tb-'+x).className='tbtn '+x+(t===x?' active':''); });
-  $id('sym-form').style.display=t==='sym'?'':'none';
-  $id('med-form').style.display=t==='med'?'':'none';
 }
 
 /* ── PSA ── */
@@ -2904,7 +2877,6 @@ function deleteExItem(idx){
   toast('운동 기록을 삭제했어요');
 }
 
-function _refreshExPage_dummy(){} // placeholder
 function _refreshComprehensiveBtn(){
   var today=todayStr();
   var days=_getRecs();
