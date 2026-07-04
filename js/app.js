@@ -2660,11 +2660,9 @@ _loadCloudData(function(){
   var lo = $id('loading-overlay'); if(lo) lo.style.display='none';
   // 자동 재로그인 시도
   if(!_tryAutoLogin()){
-    var firstScr = localStorage.getItem('mc_visited') ? 'scr-profile' : 'scr-landing';
-    localStorage.setItem('mc_visited','1');
-    $id(firstScr).classList.add('active');
-    _navStack.push({type:'screen',id:firstScr});
-    try{ history.replaceState({navIdx:0}, '', '#'+firstScr); }catch(e){}
+    $id('scr-landing').classList.add('active');
+    _navStack.push({type:'screen',id:'scr-landing'});
+    try{ history.replaceState({navIdx:0}, '', '#scr-landing'); }catch(e){}
   }
 });
 
