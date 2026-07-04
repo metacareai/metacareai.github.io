@@ -379,6 +379,7 @@ function checkPw(){
   if(pw === stored){
     $id('admin-pw-input').value = '';
     localStorage.setItem('mc_is_admin','1');
+    sessionStorage.setItem('mc_admin_session','1');
     goScreen('scr-admin');
   } else {
     toast('비밀번호가 틀렸습니다');
@@ -938,8 +939,8 @@ function loginUser(u){
 /* ── 자동 재로그인 (한 번 로그인하면 유지) ── */
 function _tryAutoLogin(){
   try{
-    // 어드민 세션 복원
-    if(localStorage.getItem('mc_is_admin')==='1'){
+    // 어드민 세션 복원 (새로고침만, 새 URL 입력은 제외)
+    if(sessionStorage.getItem('mc_admin_session')==='1'){
       goScreen('scr-admin');
       return true;
     }
