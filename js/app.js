@@ -938,13 +938,17 @@ function loginUser(u){
 /* ── 자동 재로그인 (한 번 로그인하면 유지) ── */
 function _tryAutoLogin(){
   try{
+    // 어드민 세션 복원
+    if(localStorage.getItem('mc_is_admin')==='1'){
+      goScreen('scr-admin');
+      return true;
+    }
     var saved = localStorage.getItem('mc_last_user');
     if(!saved) return false;
     var info = JSON.parse(saved);
     var users = _getUsers();
     var match = users.find(function(u){ return u.id===info.id; });
     if(!match) return false;
-    // 바로 앱으로 진입
     loginUser(match);
     return true;
   }catch(e){ return false; }
