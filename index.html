@@ -434,7 +434,7 @@
             <div style="font-size:13px;opacity:.85;margin-top:2px;" id="home-goal-items"></div>
           </div>
         </div>
-        <button class="condition-btn" onclick="A.openConditionSheet()">
+        <button class="condition-btn" onclick="A.openQuickCond()">
           <div class="condition-btn-left">
             <i class="ti ti-activity-heartbeat" style="font-size:22px;color:#fff;"></i>
             <div>
@@ -767,6 +767,21 @@
     <button class="vbtn teal" id="hv-replace-btn"><i class="ti ti-replace"></i> 교체</button>
     <button class="vbtn red"  id="hv-delete-btn"><i class="ti ti-trash"></i> 삭제</button>
     <button class="vbtn" onclick="A.closeHomeMealViewer()"><i class="ti ti-x"></i> 닫기</button>
+  </div>
+</div>
+
+<!-- 컨디션 빠른 팝업 -->
+<div id="sh-condition-quick" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9000;display:none;align-items:center;justify-content:center;" onclick="if(event.target.id==='sh-condition-quick')A.closeQuickCond()">
+  <div style="background:#fff;border-radius:20px;padding:24px 20px;width:88%;max-width:340px;text-align:center;box-shadow:0 16px 48px rgba(0,0,0,.25);">
+    <div style="font-size:15px;font-weight:800;color:var(--navy);margin-bottom:6px;">오늘 컨디션은?</div>
+    <div style="font-size:12px;color:var(--mu);margin-bottom:20px;" id="qc-date"></div>
+    <div style="display:flex;gap:10px;justify-content:center;margin-bottom:20px;">
+      <button id="qc-good" onclick="A.quickCondPick('good')" style="flex:1;padding:14px 0;border-radius:14px;border:2px solid #eee;background:#f9f9f9;font-size:22px;cursor:pointer;transition:all .15s;">😊<br><span style="font-size:11px;font-weight:700;color:#555;">좋음</span></button>
+      <button id="qc-normal" onclick="A.quickCondPick('normal')" style="flex:1;padding:14px 0;border-radius:14px;border:2px solid #eee;background:#f9f9f9;font-size:22px;cursor:pointer;transition:all .15s;">😐<br><span style="font-size:11px;font-weight:700;color:#555;">보통</span></button>
+      <button id="qc-bad" onclick="A.quickCondPick('bad')" style="flex:1;padding:14px 0;border-radius:14px;border:2px solid #eee;background:#f9f9f9;font-size:22px;cursor:pointer;transition:all .15s;">😔<br><span style="font-size:11px;font-weight:700;color:#555;">나쁨</span></button>
+    </div>
+    <button onclick="A.saveQuickCond()" style="width:100%;padding:13px;background:var(--teal);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:800;cursor:pointer;margin-bottom:8px;">저장</button>
+    <button onclick="A.closeQuickCond();A.openConditionSheet()" style="width:100%;padding:10px;background:none;border:1px solid var(--bd);border-radius:12px;font-size:13px;color:var(--mu);cursor:pointer;">자세히 기록하기 →</button>
   </div>
 </div>
 

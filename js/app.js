@@ -2675,6 +2675,56 @@ _loadCloudData(function(){
   }
 });
 
+/* ── 컨디션 빠른 팝업 ── */
+var _quickCondState = '';
+
+function openQuickCond(){
+  _quickCondState = '';
+  var today = todayStr();
+  var recs = _getCondRecs();
+  var todayRec = recs.find(function(r){ return r.date===today; });
+  if(todayRec && todayRec.state) _quickCondState = todayRec.state;
+  var el=$id('qc-date'); if(el) el.textContent = today;
+  ['good','normal','bad'].forEach(function(s){
+    var b=$id('qc-'+s); if(!b) return;
+    var sel = _quickCondState===s;
+    b.style.border = sel ? '2px solid var(--teal)' : '2px solid #eee';
+    b.style.background = sel ? 'rgba(25,184,155,.1)' : '#f9f9f9';
+  });
+  var popup=$id('sh-condition-quick');
+  if(popup){ popup.style.display='flex'; }
+}
+
+function quickCondPick(s){
+  _quickCondState = s;
+  ['good','normal','bad'].forEach(function(st){
+    var b=$id('qc-'+st); if(!b) return;
+    var sel = st===s;
+    b.style.border = sel ? '2px solid var(--teal)' : '2px solid #eee';
+    b.style.background = sel ? 'rgba(25,184,155,.1)' : '#f9f9f9';
+  });
+}
+
+function closeQuickCond(){
+  var popup=$id('sh-condition-quick'); if(popup) popup.style.display='none';
+}
+
+function saveQuickCond(){
+  if(!_quickCondState){ toast('상태를 선택해주세요'); return; }
+  var today = todayStr();
+  var recs = _getCondRecs();
+  var idx = recs.findIndex(function(r){ return r.date===today; });
+  var rec = idx>=0 ? recs[idx] : {date:today, ts:Date.now()};
+  rec.state = _quickCondState;
+  rec.ts = Date.now();
+  if(idx>=0) recs[idx]=rec; else recs.push(rec);
+  _setCondRecs(recs);
+  closeQuickCond();
+  _refreshCondSummary();
+  _refreshHomeProgress();
+  toast('컨디션이 저장됐어요 ✓');
+}
+
 /* ── 컨디션 기록 ── */
 var _condState = '';
 
@@ -3269,6 +3319,7 @@ function pickLandingTag(el){
 return {
   // 화면
   goScreen:goScreen, logoTap:logoTap, nameTap:nameTap, enterByName:enterByName, goSelfJoin:goSelfJoin, selfJoin:selfJoin, goHelp:goHelp, goBack:goBack, pickLandingTag:pickLandingTag,
+  openQuickCond:openQuickCond, quickCondPick:quickCondPick, closeQuickCond:closeQuickCond, saveQuickCond:saveQuickCond,
   // 설정
   checkPw:checkPw,
   // Admin
