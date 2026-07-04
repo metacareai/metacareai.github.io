@@ -325,9 +325,6 @@ function goScreen(id, opts){
   if(id==='scr-admin-users') _renderAdminList();
   if(id==='scr-admin-monitor') _renderMonitorList();
   if(id==='scr-add-user') _resetAddForm();
-  // 미리보기 배너: scr-app 진입 시 sessionStorage 기반으로 표시
-  var _pvBanner = $id('admin-preview-banner');
-  if(_pvBanner) _pvBanner.style.display = (id==='scr-app' && sessionStorage.getItem('mc_preview_admin_id')) ? 'flex' : 'none';
   if(!_suppressPush){
     _navStack.push({type:'screen', id:id});
     try{ history.pushState({navIdx:_navStack.length-1}, '', '#'+id); }catch(e){}
