@@ -1,5 +1,21 @@
 'use strict';
 
+/* 랜딩 태그 선택 — A 로드 전에도 동작하도록 전역 함수 */
+function landingTagPick(el){
+  document.querySelectorAll('.landing-tag').forEach(function(t){
+    t.style.background='rgba(25,184,155,.2)';
+    t.style.color='#19B89B';
+    t.style.border='1px solid rgba(25,184,155,.35)';
+  });
+  el.style.background='#19B89B';
+  el.style.color='#fff';
+  el.style.border='1px solid #19B89B';
+  setTimeout(function(){
+    document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+    var p=document.getElementById('scr-profile'); if(p) p.classList.add('active');
+  }, 280);
+}
+
 /* ════════════════════════════
    A — 앱 전체 네임스페이스
 ════════════════════════════ */
