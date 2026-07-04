@@ -896,12 +896,10 @@ function viewAsPatient(userId){
   _adminUser = USER;
   sessionStorage.setItem('mc_preview_admin_id', USER.id);
   USER = u;
-  _loadUserRecords(u.id, function(){
-    _initApp();
-    goScreen('scr-app');
-    var banner = $id('admin-preview-banner');
-    if(banner) banner.style.display='flex';
-  });
+  _initApp();
+  goScreen('scr-app');
+  var banner = $id('admin-preview-banner');
+  if(banner) banner.style.display='flex';
 }
 
 function exitPatientView(){
