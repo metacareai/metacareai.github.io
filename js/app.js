@@ -555,10 +555,10 @@ function _renderAdminList(){
     var ctypeName = (u.ctype==='other'&&u.otherCancerName) ? u.otherCancerName : (cn[u.ctype]||'질병 관리');
     var ms = ic ? ((u.stage) ? u.stage+'기 '+ctypeName : ctypeName) : (ml[u.mode]||u.mode);
     var by = u.birthYear ? ' · '+u.birthYear+'년생' : '';
-    return '<div class="admin-user-card">'
+    return '<div class="admin-user-card" onclick="A.showPatient(\''+u.id+'\')" style="cursor:pointer;">'
       +'<div class="admin-user-av '+(ic?'cancer':'health')+'">'+(mi[u.mode]||'👤')+'</div>'
       +'<div style="flex:1"><div class="admin-user-name">'+esc(u.name)+'</div><div class="admin-user-detail">'+esc(ms)+esc(by)+'</div></div>'
-      +'<button class="admin-act del" onclick="A.delUser(\''+u.id+'\')"><i class="ti ti-trash"></i> 삭제</button>'
+      +'<button class="admin-act del" onclick="event.stopPropagation();A.delUser(\''+u.id+'\')"><i class="ti ti-trash"></i> 삭제</button>'
       +'</div>';
   }).join('');
 }
