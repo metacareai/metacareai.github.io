@@ -1457,8 +1457,9 @@ function goBack(){
   if(!activeScreen) return;
   var id = activeScreen.id;
 
-  if(id==='scr-landing') return; // 랜딩 화면에서는 동작 안 함
-  if(id==='scr-profile'){ goScreen('scr-landing'); return; }
+  if(id==='scr-landing') return;
+  if(id==='scr-mode-pick'){ goScreen('scr-landing'); return; }
+  if(id==='scr-profile'){ goScreen('scr-mode-pick'); return; }
 
   if(id==='scr-app'){
     if(_currentPage!=='home'){ goPage('home'); return; }
