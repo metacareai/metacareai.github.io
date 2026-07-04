@@ -939,8 +939,11 @@ function loginUser(u){
 /* ── 자동 재로그인 (한 번 로그인하면 유지) ── */
 function _tryAutoLogin(){
   try{
-    // 어드민 세션 복원 (새로고침만, 새 URL 입력은 제외)
-    if(sessionStorage.getItem('mc_admin_session')==='1'){
+    // 어드민 세션 복원 (새로고침(F5)일 때만, 새 URL 입력은 제외)
+    var isReload = (function(){
+      try{ return performance.getEntriesByType('navigation')[0].type==='reload'; }catch(e){ return false; }
+    })();
+    if(isReload && localStorage.getItem('mc_is_admin')==='1'){
       goScreen('scr-admin');
       return true;
     }
