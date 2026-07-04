@@ -555,10 +555,12 @@ function _renderAdminList(){
     var ctypeName = (u.ctype==='other'&&u.otherCancerName) ? u.otherCancerName : (cn[u.ctype]||'질병 관리');
     var ms = ic ? ((u.stage) ? u.stage+'기 '+ctypeName : ctypeName) : (ml[u.mode]||u.mode);
     var by = u.birthYear ? ' · '+u.birthYear+'년생' : '';
-    return '<div class="admin-user-card" onclick="A.showPatient(\''+u.id+'\')" style="cursor:pointer;">'
+    return '<div class="admin-user-card">'
+      +'<button onclick="A.showPatient(\''+u.id+'\')" style="flex:1;display:flex;align-items:center;gap:0;background:none;border:none;padding:0;cursor:pointer;text-align:left;min-width:0;">'
       +'<div class="admin-user-av '+(ic?'cancer':'health')+'">'+(mi[u.mode]||'👤')+'</div>'
-      +'<div style="flex:1"><div class="admin-user-name">'+esc(u.name)+'</div><div class="admin-user-detail">'+esc(ms)+esc(by)+'</div></div>'
-      +'<button class="admin-act del" onclick="event.stopPropagation();A.delUser(\''+u.id+'\')"><i class="ti ti-trash"></i> 삭제</button>'
+      +'<div style="flex:1;min-width:0;"><div class="admin-user-name">'+esc(u.name)+'</div><div class="admin-user-detail">'+esc(ms)+esc(by)+'</div></div>'
+      +'</button>'
+      +'<button class="admin-act del" onclick="A.delUser(\''+u.id+'\')"><i class="ti ti-trash"></i> 삭제</button>'
       +'</div>';
   }).join('');
 }
