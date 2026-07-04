@@ -1595,9 +1595,14 @@ function analyze(){
   var msgs;
   if(hasPic){ var b64=pre.src.split(',')[1],mt=pre.src.startsWith('data:image/png')?'image/png':'image/jpeg'; var txt=p; if(name)txt+=' 음식:'+name; msgs=[{role:'user',content:[{type:'image',source:{type:'base64',media_type:mt,data:b64}},{type:'text',text:txt}]}]; }
   else{ msgs=[{role:'user',content:'"'+name+'"을 '+p}]; }
-  _api({max_tokens:400,messages:msgs}, function(reply){
+  _api({max_tokens:400,messages:msgs,system:'음식 분석 시 첫 줄에 "주요 음식: 음식1, 음식2" 형식으로 인식된 음식명을 먼저 나열해주세요.'}, function(reply){
     var result = reply||'분석 결과를 가져오지 못했어요.';
     ar.innerHTML='<div class="tip-lbl">AI 식단 분석</div>'+esc(result);
+    // 인식된 음식명 → food-name 자동 채우기
+    if(hasPic && !name){
+      var m = result.match(/주요\s*음식[:\s：]+([^\n]+)/);
+      if(m){ var fn=$id('food-name'); if(fn) fn.value=m[1].trim(); }
+    }
     // 분석 결과를 오늘 기록장에 저장
     _saveAnalysisResult(result);
   });
@@ -1664,7 +1669,8 @@ function pickExType(type){
     c.classList.toggle('active', c.textContent.trim().includes(type));
   });
   _toggleExFields(type);
-  inp.focus();
+  // 칩으로 선택 시 텍스트 입력 필드 숨김 (직접 입력 필요 없음)
+  inp.style.display = type ? 'none' : '';
 }
 
 var _exPendingList = [];
@@ -1713,10 +1719,15 @@ function analyzeExAll(){
   var u=USER, ic=u&&u.mode==='cancer';
   var modeLabel=ic?'암 환자 관점(면역·체력·피로 관리)':({keto:'케토제닉',carnivore:'카니보어',lchf:'저탄고지',diet:'다이어트'}[(u&&u.mode)||'']||'건강 관리')+' 관점(지방 연소·체력·운동 후 식사)';
   var summary=list.map(function(ex){ return ex.type+(ex.reps?' '+ex.reps+'회':'')+(ex.dur?' '+ex.dur:'')+(ex.steps?' '+(ex.type==='계단 오르기'?'계단:':'걸음:')+ex.steps:''); }).join(', ');
-  var prompt='오늘 운동 기록: '+summary+'. '+modeLabel+'에서 전체 평가를 3~4문장으로 해주세요.';
+  // 오늘 식사 메모 포함
+  var todayMealMemo = (function(){
+    var fn=$id('food-name'); return fn&&fn.value.trim()||'';
+  })();
+  var prompt='오늘 운동 기록: '+summary+'.'+(todayMealMemo?' 오늘 식사: '+todayMealMemo+'.':'')+' '+modeLabel+'에서 전체 평가를 3~4문장으로 해주세요.';
   _api({max_tokens:400,messages:[{role:'user',content:prompt}]}, function(reply){
     var result=reply||'분석 결과를 가져오지 못했어요.';
-    if(ar) ar.innerHTML='<div class="tip-lbl">AI 운동 분석</div>'+md(result);
+    var mealTag = todayMealMemo ? '<div style="font-size:11px;color:var(--teal);margin-bottom:6px;">🍽 식사 메모: '+esc(todayMealMemo)+'</div>' : '';
+    if(ar) ar.innerHTML='<div class="tip-lbl">AI 운동 분석</div>'+mealTag+md(result);
     // 한 번에 모두 저장 (중복 _xlLoad 방지)
     var days=_getRecs();
     var dayRec=days.find(function(d){return d.date===exDate;});
@@ -2299,11 +2310,7 @@ function _makeCard(d){
   ['morning','lunch','dinner'].forEach(function(meal){ var slot=document.createElement('div'); slot.setAttribute('data-meal',meal); grid.appendChild(slot); });
   card.appendChild(grid);
 
-  // 만보 기록
-  var sr=document.createElement('div'); sr.className='steps-row';
-  var sl=document.createElement('span'); sl.className='steps-lbl'; sl.innerHTML='<i class="ti ti-walk"></i>만보';
-  var si=document.createElement('input'); si.className='steps-in'; si.type='text'; si.value=d.steps||''; si.placeholder='오늘 걸음 수'; si.addEventListener('input',_schedSave);
-  sr.appendChild(sl); sr.appendChild(si); card.appendChild(sr);
+  // 걸음수 제거 (불필요)
 
   // 운동 기록 섹션
   var ex = d.exercise && d.exercise.length ? d.exercise[d.exercise.length-1] : null;
