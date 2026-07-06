@@ -922,7 +922,7 @@ function exitPatientView(){
 /* ── 로그인 ── */
 function loginUser(u){
   USER = u;
-  try{ 
+  try{
     var saved = localStorage.getItem('mc_last_user');
     var lastPage = 'home';
     if(saved){
@@ -930,6 +930,7 @@ function loginUser(u){
       if(info.id === u.id) lastPage = info.lastPage||'home';
     }
     localStorage.setItem('mc_last_user', JSON.stringify({id:u.id, name:u.name, birthYear:u.birthYear, lastPage:lastPage}));
+    localStorage.removeItem('mc_is_admin'); // 일반 사용자 로그인 시 어드민 플래그 제거
   }catch(e){}
   if(!KEY){ toast('API 키가 없습니다. Admin에서 설정해주세요.'); return; }
   // 컬렉션에서 해당 사용자 records 로드
