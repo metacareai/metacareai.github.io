@@ -379,6 +379,7 @@ function checkPw(){
   if(pw === stored){
     $id('admin-pw-input').value = '';
     localStorage.setItem('mc_is_admin','1');
+    localStorage.removeItem('mc_last_user'); // 어드민 로그인 시 환자 세션 제거
     sessionStorage.setItem('mc_admin_session','1');
     goScreen('scr-admin');
   } else {
@@ -953,7 +954,8 @@ function _tryAutoLogin(){
     var isReload = (function(){
       try{ return performance.getEntriesByType('navigation')[0].type==='reload'; }catch(e){ return false; }
     })();
-    if(isReload && localStorage.getItem('mc_is_admin')==='1'){
+    // F5 새로고침 + 어드민 플래그 있음 + 환자로 로그인된 상태 아닐 때만 어드민 복원
+    if(isReload && localStorage.getItem('mc_is_admin')==='1' && !localStorage.getItem('mc_last_user')){
       goScreen('scr-admin');
       return true;
     }
