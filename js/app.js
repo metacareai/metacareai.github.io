@@ -1471,9 +1471,9 @@ function _refreshHomeProgress(){
   var hasSym=ic&&(rec.pain!==undefined||rec.urine!==undefined||rec.fatigue!==undefined);
 
   function chip(done, label, action){
-    return '<div onclick="'+action+'" style="cursor:pointer;display:flex;align-items:center;gap:5px;padding:6px 10px;border-radius:20px;font-size:12px;font-weight:700;'
+    return '<button onclick="'+action+'" style="cursor:pointer;display:flex;align-items:center;gap:5px;padding:6px 10px;border-radius:20px;font-size:12px;font-weight:700;border:none;'
       +(done?'background:#D1FAE5;color:#065F46;':'background:#F3F4F6;color:#9CA3AF;')
-      +'">'+(done?'✓ ':'')+'<span>'+label+'</span></div>';
+      +'">'+(done?'✓ ':'')+'<span>'+label+'</span></button>';
   }
 
   var html='';
