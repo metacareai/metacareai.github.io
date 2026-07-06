@@ -2670,6 +2670,58 @@ function vChg(){
   if(!_vCtx) return; _pendMeal={cardId:_vCtx.cid,meal:_vCtx.meal}; closeViewer();
   var lm={morning:'아침',lunch:'점심',dinner:'저녁'}; $id('sh-meal-title').textContent=(lm[_pendMeal.meal]||_pendMeal.meal)+' 사진 교체'; openSheet('sh-meal');
 }
+function vEditMemo(){
+  if(!_vCtx) return;
+  var area = $id('viewer-memo-area');
+  var input = $id('viewer-memo-input');
+  if(!area || !input) return;
+  var isOpen = area.style.display !== 'none';
+  if(isOpen){ area.style.display='none'; return; }
+  // 현재 메모 불러오기
+  var card=$id(_vCtx.cid); if(!card) return;
+  var dateVal=card.querySelector('.day-date')?card.querySelector('.day-date').value:'';
+  var days=_getRecs();
+  var dayRec=days.find(function(d){return d.date===dateVal;});
+  var meal=_vCtx.meal;
+  var altMeal={morning:'breakfast',breakfast:'morning',lunch:'lunch',dinner:'dinner'}[meal]||meal;
+  var note=(dayRec&&dayRec.mealNotes)?(dayRec.mealNotes[meal]||dayRec.mealNotes[altMeal]||''):'';
+  input.value=note;
+  area.style.display='block';
+  setTimeout(function(){ input.focus(); },100);
+}
+
+function vSaveMemo(){
+  if(!_vCtx) return;
+  var input=$id('viewer-memo-input'); if(!input) return;
+  var note=input.value.trim();
+  var card=$id(_vCtx.cid); if(!card) return;
+  var dateVal=card.querySelector('.day-date')?card.querySelector('.day-date').value:'';
+  var days=_getRecs();
+  var dayRec=days.find(function(d){return d.date===dateVal;});
+  if(!dayRec){ dayRec={date:dateVal,photos:{},steps:''}; days.push(dayRec); }
+  if(!dayRec.mealNotes) dayRec.mealNotes={};
+  dayRec.mealNotes[_vCtx.meal]=note;
+  _setRecs(days);
+  // 뷰어 분석 영역 메모 갱신
+  var infoEl=$id('viewer-analysis');
+  if(infoEl){
+    var ana=(dayRec.analysis&&(dayRec.analysis[_vCtx.meal]||''))||'';
+    var txt='';
+    if(note) txt+='<div style="font-size:12px;color:rgba(255,255,255,.6);margin-bottom:4px;">📝 '+esc(note)+'</div>';
+    if(ana)  txt+='<div style="font-size:12px;color:rgba(255,255,255,.85);line-height:1.7;">'+md(ana)+'</div>';
+    else txt+='<div style="font-size:12px;color:rgba(255,255,255,.45);">AI 분석 없음</div>';
+    infoEl.innerHTML=txt;
+  }
+  $id('viewer-memo-area').style.display='none';
+  // 기록장 카드 메모 textarea 갱신
+  var noteArea=card.querySelector('[data-note-cardid]');
+  if(noteArea){
+    var allNotes=Object.values(dayRec.mealNotes).filter(Boolean).join(' / ');
+    noteArea.value=allNotes;
+  }
+  toast('메모가 저장됐어요 ✓');
+}
+
 function vDel(){
   if(!_vCtx) return; if(!confirm('이 사진을 삭제할까요?')) return;
   var card=$id(_vCtx.cid); if(card){ var slot=card.querySelector('[data-meal="'+_vCtx.meal+'"]'); if(slot) _renderEmpty(slot); }
@@ -3420,7 +3472,7 @@ return {
   // 기록장
   addLogDay:addLogDay, exportExcel:exportExcel,
   // 뷰어
-  _openViewer:_openViewer, closeViewer:closeViewer, vRot:vRot, vChg:vChg, vDel:vDel, vAnalyze:vAnalyze,
+  _openViewer:_openViewer, closeViewer:closeViewer, vRot:vRot, vChg:vChg, vDel:vDel, vAnalyze:vAnalyze, vEditMemo:vEditMemo, vSaveMemo:vSaveMemo,
   closeHomeViewer:closeHomeViewer,
   // 기록장 내부
   _openMealSheet:_openMealSheet,

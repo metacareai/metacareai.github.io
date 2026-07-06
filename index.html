@@ -828,10 +828,15 @@
 <div class="viewer" id="viewer">
   <div class="viewer-wrap"><img id="viewer-img" src="" alt=""></div>
   <div id="viewer-analysis" style="padding:10px 16px;max-height:28vh;overflow-y:auto;width:100%;min-height:40px;"></div>
+  <div id="viewer-memo-area" style="display:none;padding:6px 16px;width:100%;box-sizing:border-box;">
+    <textarea id="viewer-memo-input" style="width:100%;padding:8px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.12);color:#fff;font-size:13px;resize:none;box-sizing:border-box;" rows="2" placeholder="식사 내용 메모 (예: 닭가슴살 샐러드)"></textarea>
+    <button onclick="A.vSaveMemo()" style="margin-top:5px;width:100%;padding:8px;background:var(--teal);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;"><i class="ti ti-check"></i> 메모 저장</button>
+  </div>
   <div class="viewer-btns">
     <button class="vbtn" onclick="A.vRot(-90)"><i class="ti ti-rotate-counterclockwise"></i> 왼쪽</button>
     <button class="vbtn" onclick="A.vRot(90)"><i class="ti ti-rotate-clockwise"></i> 오른쪽</button>
     <button class="vbtn teal" onclick="A.vAnalyze()"><i class="ti ti-sparkles"></i> AI분석</button>
+    <button class="vbtn teal" onclick="A.vEditMemo()"><i class="ti ti-pencil"></i> 메모수정</button>
     <button class="vbtn teal" onclick="A.vChg()"><i class="ti ti-replace"></i> 교체</button>
     <button class="vbtn red" onclick="A.vDel()"><i class="ti ti-trash"></i> 삭제</button>
     <button class="vbtn" onclick="A.closeViewer()"><i class="ti ti-x"></i> 닫기</button>
