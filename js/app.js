@@ -1464,7 +1464,8 @@ function _refreshHomeProgress(){
 
   var photos=rec.photos?Object.keys(rec.photos).filter(function(k){return rec.photos[k];}).length:0;
   var hasEx=!!(rec.exercise&&rec.exercise.length);
-  var hasCond=!!(rec.cond||rec.weight||rec.glucose);
+  var condRec=_getCondRecs().find(function(r){return r.date===today;});
+  var hasCond=!!(rec.cond||rec.weight||rec.glucose||(condRec&&condRec.state));
   // 복약: med_done[today] 에 하나라도 체크된 항목이 있으면 완료
   var medDone=ic?(_getMedDone()[todayStr()]||{}):{};
   var hasMed=ic&&Object.keys(medDone).some(function(k){return medDone[k];});
