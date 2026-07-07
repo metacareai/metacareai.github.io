@@ -1504,6 +1504,13 @@ function _refreshHomeProgress(){
 
 }
 
+function confirmLogout(){
+  if(!confirm((USER?USER.name+'님, ':'')+'로그아웃 할까요?')) return;
+  try{ localStorage.removeItem('mc_last_user'); localStorage.removeItem('mc_is_admin'); }catch(e){}
+  USER = null;
+  goScreen('scr-profile');
+}
+
 function goBack(){
   var activeScreen = document.querySelector('.screen.active');
   if(!activeScreen) return;
@@ -2377,9 +2384,9 @@ function _makeCard(d){
   var del=document.createElement('button'); del.className='day-del'; del.innerHTML='<i class="ti ti-trash"></i>'; del.addEventListener('click',function(){_delCard(card);});
   hd.appendChild(di); hd.appendChild(del); card.appendChild(hd);
 
-  // 식사 사진 3칸
+  // 식사 사진 3칸 + 간식
   var grid=document.createElement('div'); grid.className='meal-grid';
-  ['morning','lunch','dinner'].forEach(function(meal){ var slot=document.createElement('div'); slot.setAttribute('data-meal',meal); grid.appendChild(slot); });
+  ['morning','lunch','dinner','snack'].forEach(function(meal){ var slot=document.createElement('div'); slot.setAttribute('data-meal',meal); grid.appendChild(slot); });
   card.appendChild(grid);
 
   // 걸음수 제거 (불필요)
@@ -2419,6 +2426,23 @@ function _makeCard(d){
   noteRow.appendChild(noteLbl); noteRow.appendChild(noteArea);
   card.appendChild(noteRow);
 
+  // 복약 내용 (암환자)
+  if(USER && USER.mode==='cancer'){
+    var meds = S.gj('mc_'+USER.id+'_meds', []);
+    if(meds.length){
+      var medDoneAll = _getMedDone();
+      var medDone = medDoneAll[d.date] || {};
+      var medRow=document.createElement('div');
+      medRow.style.cssText='padding:8px 12px;border-top:1px solid var(--bd);font-size:12px;';
+      var medTxt = meds.map(function(m){
+        var done = medDone[m.name];
+        return '<span style="margin-right:8px;color:'+(done?'var(--teal)':'var(--mu)')+';">'+(done?'✓ ':'○ ')+esc(m.name)+'</span>';
+      }).join('');
+      medRow.innerHTML='<div style="font-size:11px;font-weight:700;color:var(--mu2);margin-bottom:4px;">💊 복약</div>'+medTxt;
+      card.appendChild(medRow);
+    }
+  }
+
   return card;
 }
 
@@ -2443,21 +2467,21 @@ var _exFromLog = null;
 
 function _renderEmpty(slot){
   var meal=slot.getAttribute('data-meal'),cid=slot.closest('.day-card').id;
-  var lm={morning:'아침',lunch:'점심',dinner:'저녁'},lc={morning:'am',lunch:'pm',dinner:'ev'};
+  var lm={morning:'아침',lunch:'점심',dinner:'저녁',snack:'간식'},lc={morning:'am',lunch:'pm',dinner:'ev',snack:'sn'};
   slot.innerHTML='<div class="meal-lbl '+lc[meal]+'">'+lm[meal]+'</div><div class="meal-empty" onclick="A._openMealSheet(\''+cid+'\',\''+meal+'\')"><i class="ti ti-camera-plus"></i><span>탭하여<br>선택</span></div>';
   slot.removeAttribute('data-photo');
 }
 
 function _renderFilled(slot,url,rot){
   var meal=slot.getAttribute('data-meal'),cid=slot.closest('.day-card').id;
-  var lm={morning:'아침',lunch:'점심',dinner:'저녁'},lc={morning:'am',lunch:'pm',dinner:'ev'};
+  var lm={morning:'아침',lunch:'점심',dinner:'저녁',snack:'간식'},lc={morning:'am',lunch:'pm',dinner:'ev',snack:'sn'};
   slot.setAttribute('data-photo',url);
   slot.innerHTML='<div class="meal-lbl '+lc[meal]+'">'+lm[meal]+'</div><div class="meal-filled" onclick="A._openViewer(\''+cid+'\',\''+meal+'\')" ><img src="'+url+'" alt="'+lm[meal]+'" style="transform:rotate('+(rot||0)+'deg)"><div class="meal-overlay"><i class="ti ti-eye"></i></div></div>';
 }
 
 function _openMealSheet(cardId,meal){
   _pendMeal={cardId:cardId,meal:meal};
-  var lm={morning:'아침',lunch:'점심',dinner:'저녁'};
+  var lm={morning:'아침',lunch:'점심',dinner:'저녁',snack:'간식'};
   $id('sh-meal-title').textContent=(lm[meal]||meal)+' 사진 선택';
   // 기록장에서 기존 메모 로드
   var days=_getRecs();
@@ -3444,7 +3468,7 @@ function pickLandingTag(el){
 /* ── 공개 API ── */
 return {
   // 화면
-  goScreen:goScreen, logoTap:logoTap, nameTap:nameTap, enterByName:enterByName, goSelfJoin:goSelfJoin, selfJoin:selfJoin, goHelp:goHelp, goBack:goBack, pickLandingTag:pickLandingTag,
+  goScreen:goScreen, logoTap:logoTap, nameTap:nameTap, enterByName:enterByName, goSelfJoin:goSelfJoin, selfJoin:selfJoin, goHelp:goHelp, goBack:goBack, pickLandingTag:pickLandingTag, confirmLogout:confirmLogout,
   openQuickCond:openQuickCond, quickCondPick:quickCondPick, closeQuickCond:closeQuickCond, saveQuickCond:saveQuickCond,
   // 설정
   checkPw:checkPw,

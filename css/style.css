@@ -699,6 +699,7 @@ h2 { font-size:21px; font-weight:700; }
 .meal-lbl.am   { color:var(--teal2); }
 .meal-lbl.pm   { color:var(--warn); }
 .meal-lbl.ev   { color:#9A5F1A; }
+.meal-lbl.sn   { color:#9B59B6; }
 .meal-empty {
   aspect-ratio:1; border-radius:8px;
   border: 1.5px dashed rgba(25,184,155,.28);
