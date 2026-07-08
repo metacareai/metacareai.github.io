@@ -970,14 +970,24 @@ function _tryAutoLogin(){
   }catch(e){ return false; }
 }
 
-/* ── 사용자 records 컬렉션 로드 ── */
+/* ── 사용자 records 컬렉션 로드 (구버전 경로 마이그레이션용) ── */
 function _loadUserRecords(userId, cb){
   var ref = _db.collection('users').doc(userId).collection('data').doc('records');
   ref.get().then(function(doc){
     if(doc.exists && doc.data().records){
       try{
-        var recs = JSON.parse(doc.data().records);
-        _cache['mc_'+userId+'_records'] = JSON.stringify(recs);
+        var oldRecs = JSON.parse(doc.data().records);
+        var cacheKey = 'mc_'+userId+'_records';
+        var curRecs = [];
+        try{ curRecs = JSON.parse(_cache[cacheKey]||'[]')||[]; }catch(e2){}
+        // 현재 캐시보다 구버전 데이터가 많을 때만 병합 (덮어쓰기 금지)
+        if(oldRecs.length > curRecs.length){
+          // 날짜 기준 병합 (현재 캐시 우선)
+          var merged = {};
+          oldRecs.forEach(function(r){ if(r&&r.date) merged[r.date]=r; });
+          curRecs.forEach(function(r){ if(r&&r.date) merged[r.date]=r; }); // 현재 캐시가 덮어씀
+          _cache[cacheKey] = JSON.stringify(Object.values(merged));
+        }
       }catch(e){ console.warn('컬렉션 records 파싱 실패:', e); }
     }
     cb();
