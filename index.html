@@ -267,7 +267,7 @@
   <div id="scr-admin-pw" class="screen dark center">
     <div style="font-size:48px;">🔐</div>
     <h2>Admin 로그인</h2>
-    <input id="admin-pw-input" class="inp pw-inp" type="password" autocomplete="new-password" placeholder="••••••"
+    <input id="admin-pw-input" class="inp pw-inp" type="text" inputmode="text" autocomplete="off" placeholder="비밀번호 입력"
            onkeydown="if(event.key==='Enter')A.checkPw()">
     <div class="row gap">
       <button class="btn-ghost" onclick="A.goScreen('scr-profile')">취소</button>
