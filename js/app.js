@@ -1505,10 +1505,10 @@ function _refreshHomeProgress(){
 }
 
 function confirmLogout(){
-  if(!confirm((USER?USER.name+'님, ':'')+'로그아웃 할까요?')) return;
   try{ localStorage.removeItem('mc_last_user'); localStorage.removeItem('mc_is_admin'); }catch(e){}
   USER = null;
   goScreen('scr-profile');
+  toast('로그아웃 됐어요');
 }
 
 function goBack(){
