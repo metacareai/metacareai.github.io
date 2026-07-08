@@ -601,6 +601,81 @@ function forceCloudSave(){
   });
 }
 
+/* ── 데이터 진단 (읽기 전용) ── */
+function runDiag(){
+  goScreen('scr-admin-diag');
+  var el = $id('diag-result'); if(!el) return;
+  el.innerHTML = '진단 중...';
+
+  var users = S.gj('mc_users', []);
+  var lines = [];
+
+  lines.push('=== 전체 캐시 키 목록 ===');
+  var allKeys = Object.keys(_cache).sort();
+  allKeys.forEach(function(k){
+    var val = _cache[k];
+    var size = val ? String(val).length : 0;
+    lines.push('  '+k+' ('+size+'bytes)');
+  });
+
+  lines.push('');
+  lines.push('=== 사용자별 기록 현황 ===');
+  users.forEach(function(u){
+    var key = 'mc_'+u.id+'_records';
+    var recs = [];
+    try{ recs = JSON.parse(_cache[key]||'[]')||[]; }catch(e){}
+    var dates = recs.map(function(r){return r.date||'?';}).sort();
+    lines.push('');
+    lines.push('👤 '+u.name+' (id: '+u.id+')');
+    lines.push('  records 키: '+key);
+    lines.push('  기록 수: '+recs.length+'개');
+    if(dates.length){
+      lines.push('  첫 날짜: '+dates[0]);
+      lines.push('  마지막: '+dates[dates.length-1]);
+      lines.push('  전체: '+dates.join(', '));
+    } else {
+      lines.push('  ⚠️ 기록 없음');
+    }
+  });
+
+  lines.push('');
+  lines.push('=== 백업 현황 ===');
+  var backups = _listBackups();
+  if(backups.length){
+    backups.forEach(function(k){ lines.push('  '+k); });
+  } else {
+    lines.push('  백업 없음');
+  }
+
+  lines.push('');
+  lines.push('=== 구버전 경로 확인 중... ===');
+  el.innerHTML = lines.join('\n');
+
+  // 구버전 Firestore 경로 읽기 (읽기만, 저장 안 함)
+  var checked = 0;
+  users.forEach(function(u){
+    var ref = _db.collection('users').doc(u.id).collection('data').doc('records');
+    ref.get().then(function(doc){
+      if(doc.exists && doc.data().records){
+        try{
+          var oldRecs = JSON.parse(doc.data().records)||[];
+          lines.push('⚠️ '+u.name+' 구버전 경로에 '+oldRecs.length+'개 기록 존재');
+          var oldDates = oldRecs.map(function(r){return r.date;}).sort();
+          lines.push('   날짜: '+oldDates.join(', '));
+        }catch(e){ lines.push(u.name+' 구버전 파싱 오류'); }
+      } else {
+        lines.push('✅ '+u.name+' 구버전 경로 없음 (정상)');
+      }
+      checked++;
+      if(checked===users.length){
+        lines.push('');
+        lines.push('=== 진단 완료 ===');
+        el.innerHTML = lines.join('\n');
+      }
+    }).catch(function(){ checked++; if(checked===users.length) el.innerHTML=lines.join('\n'); });
+  });
+}
+
 function backup(){
   var bk = JSON.parse(JSON.stringify(_cache));
   bk['_date'] = new Date().toLocaleString('ko-KR');
@@ -1540,7 +1615,7 @@ function goBack(){
   }
 
   // Admin 하위 화면
-  var adminSubs = ['scr-admin-users','scr-admin-backup','scr-admin-password','scr-admin-reset','scr-admin-monitor','scr-admin-patient','scr-add-user'];
+  var adminSubs = ['scr-admin-users','scr-admin-backup','scr-admin-password','scr-admin-reset','scr-admin-monitor','scr-admin-patient','scr-add-user','scr-admin-diag'];
   if(adminSubs.indexOf(id)>=0){ goScreen('scr-admin'); return; }
   if(id==='scr-admin'||id==='scr-admin-pw'){ goScreen('scr-profile'); return; }
   if(id==='scr-help'){ goScreen('scr-app'); return; }
@@ -3483,7 +3558,7 @@ return {
   // 설정
   checkPw:checkPw,
   // Admin
-  delUser:delUser, changePw:changePw, backup:backup, restore:restore, fullReset:fullReset, filterAdminUsers:filterAdminUsers, backupText:backupText, copyBackupText:copyBackupText, showPatient:showPatient,
+  delUser:delUser, changePw:changePw, backup:backup, restore:restore, fullReset:fullReset, filterAdminUsers:filterAdminUsers, backupText:backupText, copyBackupText:copyBackupText, showPatient:showPatient, runDiag:runDiag,
   loadAiRec:loadAiRec, loadBackupList:loadBackupList, forceCloudSave:forceCloudSave, restoreBackup:_restoreBackup, restoreCloudBackup:restoreCloudBackup,
   // 사용자 추가
   _selMode:_selMode, _selCtype:_selCtype, _selStage:_selStage, addUser:addUser,

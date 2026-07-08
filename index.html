@@ -303,6 +303,10 @@
           <div class="admin-tile-icon red">⚠️</div>
           <div class="admin-tile-name">앱 초기화</div>
         </button>
+        <button class="admin-tile" onclick="A.runDiag()">
+          <div class="admin-tile-icon" style="background:#0D7A52;">🔍</div>
+          <div class="admin-tile-name">데이터 진단</div>
+        </button>
         <button class="admin-tile" onclick="shareAppKakao()">
           <div class="admin-tile-icon" style="background:#FEE500;">💬</div>
           <div class="admin-tile-name">앱 공유</div>
@@ -408,6 +412,17 @@
           <button class="btn-full red" onclick="A.fullReset()">전체 초기화</button>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- ── 데이터 진단 ── -->
+  <div id="scr-admin-diag" class="screen light">
+    <div class="topbar navy">
+      <button class="back-btn" onclick="A.goScreen('scr-admin')"><i class="ti ti-arrow-left"></i></button>
+      <span class="topbar-title">🔍 데이터 진단 (읽기 전용)</span>
+    </div>
+    <div class="scroll-body">
+      <div class="card"><div class="card-body" id="diag-result" style="font-size:13px;line-height:1.8;white-space:pre-wrap;word-break:break-all;">진단 중...</div></div>
     </div>
   </div>
 
