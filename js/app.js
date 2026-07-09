@@ -1056,12 +1056,15 @@ function _loadUserRecords(userId, cb){
         var curRecs = [];
         try{ curRecs = JSON.parse(_cache[cacheKey]||'[]')||[]; }catch(e2){}
         // 현재 캐시보다 구버전 데이터가 많을 때만 병합 (덮어쓰기 금지)
-        if(oldRecs.length > curRecs.length){
-          // 날짜 기준 병합 (현재 캐시 우선)
-          var merged = {};
-          oldRecs.forEach(function(r){ if(r&&r.date) merged[r.date]=r; });
-          curRecs.forEach(function(r){ if(r&&r.date) merged[r.date]=r; }); // 현재 캐시가 덮어씀
-          S.s(cacheKey, JSON.stringify(Object.values(merged)));
+        // 날짜 기준 항상 병합 (더 많은 쪽 우선, 같은 날짜는 캐시 우선)
+        var merged = {};
+        oldRecs.forEach(function(r){ if(r&&r.date) merged[r.date]=r; });
+        curRecs.forEach(function(r){ if(r&&r.date) merged[r.date]=r; });
+        var mergedArr = Object.values(merged).sort(function(a,b){ return a.date<b.date?-1:1; });
+        if(mergedArr.length > curRecs.length){
+          S.s(cacheKey, JSON.stringify(mergedArr));
+          // 병합 결과를 per-user 경로에도 즉시 저장
+          _saveRecsCloud(userId, mergedArr);
         }
       }catch(e){ console.warn('컬렉션 records 파싱 실패:', e); }
     }
