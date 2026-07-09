@@ -53,7 +53,7 @@
   <div id="scr-landing" class="screen dark" style="overflow-y:auto;justify-content:flex-start;padding:0;">
     <div style="background:linear-gradient(160deg,#0D1F33 0%,#0F3D2E 100%);padding:env(safe-area-inset-top,36px) 24px 40px;display:flex;flex-direction:column;align-items:center;text-align:center;width:100%;box-sizing:border-box;">
 
-      <div style="font-size:64px;margin-bottom:12px;filter:drop-shadow(0 8px 24px rgba(25,184,155,.4));">🧬</div>
+      <div onclick="A.logoTap()" ontouchstart="A.logoTap()" style="font-size:64px;margin-bottom:12px;filter:drop-shadow(0 8px 24px rgba(25,184,155,.4));cursor:pointer;">🧬</div>
       <div style="font-size:24px;font-weight:800;color:#fff;letter-spacing:-.5px;margin-bottom:8px;">스마트 메타케어</div>
       <div style="font-size:13px;color:rgba(255,255,255,.55);line-height:1.7;margin-bottom:28px;">
         식사 사진 한 장으로 시작하는<br><b style="color:#19B89B;">AI 맞춤 식단·건강 관리</b>
@@ -747,11 +747,11 @@
     
 
     <nav class="bnav">
-      <button class="nb active" id="nb-home"  onclick="A.goPage('home')"><i class="ti ti-home"></i><span>홈</span></button>
-      <button class="nb"        id="nb-chat"  onclick="A.goPage('chat')"><i class="ti ti-message-circle"></i><span>AI코치</span></button>
-      <button class="nb"        id="nb-ex"    onclick="A.goPage('ex')"><i class="ti ti-run"></i><span>운동</span></button>
-      <button class="nb"        id="nb-log"   onclick="A.goPage('log')"><i class="ti ti-table"></i><span>기록장</span></button>
-      <button class="nb"        id="nb-track" onclick="A.goPage('track')"><i class="ti ti-chart-line"></i><span id="nb-track-lbl">추적</span></button>
+      <button class="nb active" id="nb-home"  onclick="A.goPage('home')"  ontouchstart="A.goPage('home')"><i class="ti ti-home"></i><span>홈</span></button>
+      <button class="nb"        id="nb-chat"  onclick="A.goPage('chat')"  ontouchstart="A.goPage('chat')"><i class="ti ti-message-circle"></i><span>AI코치</span></button>
+      <button class="nb"        id="nb-ex"    onclick="A.goPage('ex')"    ontouchstart="A.goPage('ex')"><i class="ti ti-run"></i><span>운동</span></button>
+      <button class="nb"        id="nb-log"   onclick="A.goPage('log')"   ontouchstart="A.goPage('log')"><i class="ti ti-table"></i><span>기록장</span></button>
+      <button class="nb"        id="nb-track" onclick="A.goPage('track')" ontouchstart="A.goPage('track')"><i class="ti ti-chart-line"></i><span id="nb-track-lbl">추적</span></button>
     </nav>
   </div><!-- /scr-app -->
 
