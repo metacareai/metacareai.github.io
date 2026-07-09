@@ -56,6 +56,7 @@ var _cardSeq = 0;
 
 var _logoTapCount = 0;
 var _logoTapTimer = null;
+var _lastLogoTapTs = 0;
 
 /* ── Firebase 초기화 ── */
 var firebaseConfig = {
@@ -349,6 +350,9 @@ try{
 
 /* ── Admin 진입 (로고 5탭) ── */
 function logoTap(){
+  var now=Date.now();
+  if(now-_lastLogoTapTs<200) return; // onclick+ontouchstart 동시 발생 방지
+  _lastLogoTapTs=now;
   _logoTapCount++;
   if(_logoTapTimer) clearTimeout(_logoTapTimer);
   _logoTapTimer = setTimeout(function(){ _logoTapCount=0; }, 1500);
@@ -358,8 +362,11 @@ function logoTap(){
     goScreen('scr-admin-pw');
   }
 }
-var _nameTapCount=0, _nameTapTimer=null;
+var _nameTapCount=0, _nameTapTimer=null, _lastNameTapTs=0;
 function nameTap(){
+  var now=Date.now();
+  if(now-_lastNameTapTs<200) return;
+  _lastNameTapTs=now;
   _nameTapCount++;
   if(_nameTapTimer) clearTimeout(_nameTapTimer);
   _nameTapTimer = setTimeout(function(){ _nameTapCount=0; }, 1500);
@@ -2604,7 +2611,8 @@ function _doSave(){
     }
     var noteArea = card.querySelector('[data-note-cardid]');
     var mealNote = noteArea ? noteArea.value.trim() : '';
-    var rec = {date:dateVal, steps:card.querySelector('.steps-in').value, photos:photos};
+    var existSteps = existing ? (existing.steps||'') : '';
+    var rec = {date:dateVal, steps:existSteps, photos:photos};
     if(mealNote) rec.mealNote = mealNote;
     if(existing&&existing.analysis) rec.analysis=existing.analysis;
     if(existing&&existing.exercise) rec.exercise=existing.exercise;
