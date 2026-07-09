@@ -1014,12 +1014,12 @@ function loginUser(u){
     _initApp();
     goScreen('scr-app');
     if(typeof initInstallBanner==='function') initInstallBanner();
+    // 마지막 페이지 복원 — records 로드 완료 후 실행해야 데이터가 있음
+    try{
+      var s=localStorage.getItem('mc_last_user');
+      if(s){ var inf=JSON.parse(s); var lp=inf.lastPage||'home'; if(lp!=='home') setTimeout(function(){ goPage(lp); },100); }
+    }catch(e){}
   });
-  // 마지막 페이지 복원 (같은 사용자일 때만)
-  try{
-    var s=localStorage.getItem('mc_last_user');
-    if(s){ var inf=JSON.parse(s); var lp=inf.lastPage||'home'; if(lp!=='home') setTimeout(function(){ goPage(lp); },100); }
-  }catch(e){}
 }
 
 /* ── 자동 재로그인 (한 번 로그인하면 유지) ── */
@@ -1061,7 +1061,7 @@ function _loadUserRecords(userId, cb){
           var merged = {};
           oldRecs.forEach(function(r){ if(r&&r.date) merged[r.date]=r; });
           curRecs.forEach(function(r){ if(r&&r.date) merged[r.date]=r; }); // 현재 캐시가 덮어씀
-          _cache[cacheKey] = JSON.stringify(Object.values(merged));
+          S.s(cacheKey, JSON.stringify(Object.values(merged)));
         }
       }catch(e){ console.warn('컬렉션 records 파싱 실패:', e); }
     }
