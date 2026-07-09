@@ -1501,8 +1501,6 @@ function goHelp(){
 var _currentPage = 'home';
 
 function goPage(p){
-  // 기록장에서 나갈 때 즉시 저장
-  if(_currentPage==='log' && p!=='log') _doSave();
   document.querySelectorAll('.page').forEach(function(e){ e.classList.remove('active'); });
   document.querySelectorAll('.nb').forEach(function(e){ e.classList.remove('active'); });
   var pg=$id('pg-'+p); if(pg) pg.classList.add('active');
