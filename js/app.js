@@ -2583,7 +2583,7 @@ function _openMealSheet(cardId,meal){
 
 function _delCard(card){ card.remove(); if(!$id('log-cards').children.length) $id('log-empty').style.display='block'; _schedSave(); _refreshPhotos(); }
 
-function _schedSave(){ if(_saveTimer) clearTimeout(_saveTimer); _saveTimer=setTimeout(_doSave,800); }
+function _schedSave(){ if(_saveTimer) clearTimeout(_saveTimer); _saveTimer=setTimeout(_doSave,300); }
 function _doSave(){
   var existingRecs = _getRecs(); // 기존 저장된 데이터
   var days=[]; document.querySelectorAll('#log-cards .day-card').forEach(function(card){
@@ -2896,6 +2896,14 @@ function _delRot(c,m){ var a=_allRot(); if(a[c]){ delete a[c][m]; usj('rot',a); 
 
 /* ── 자동저장 배지 ── */
 function _showAutosave(){ var b=$id('autosave'); if(!b) return; b.classList.add('show'); setTimeout(function(){b.classList.remove('show');},1800); }
+
+/* ── 앱 백그라운드/종료 시 즉시 저장 ── */
+document.addEventListener('visibilitychange', function(){
+  if(document.hidden && _currentPage==='log') _doSave();
+});
+window.addEventListener('pagehide', function(){
+  if(_currentPage==='log') _doSave();
+});
 
 /* ── 초기 진입 ── */
 _loadCloudData(function(){
