@@ -106,9 +106,22 @@ function _saveRecsCloud(userId, recs){
   if(_saveRecsTimer) clearTimeout(_saveRecsTimer);
   _saveRecsTimer = setTimeout(function(){
     var ref = _db.collection('users').doc(userId).collection('data').doc('records');
-    ref.set({records: JSON.stringify(recs), ts: Date.now()})
-      .catch(function(err){ console.error('records 저장 오류:', err); });
+    var payload = {records: JSON.stringify(recs), ts: Date.now()};
+    ref.set(payload).catch(function(err){
+      console.error('records 저장 실패 - 3초 후 재시도:', err);
+      setTimeout(function(){
+        ref.set(payload).catch(function(e2){ console.error('records 재시도 최종 실패:', e2); });
+      }, 3000);
+    });
   }, 500);
+}
+
+// localStorage 즉시 미러 (Firestore 장애/종료 대비)
+function _lsSaveRecs(userId, recs){
+  try{ localStorage.setItem('mc_'+userId+'_records', JSON.stringify(recs)); }catch(e){}
+}
+function _lsLoadRecs(userId){
+  try{ return JSON.parse(localStorage.getItem('mc_'+userId+'_records')||'null')||[]; }catch(e){ return []; }
 }
 
 var S = {
@@ -228,12 +241,12 @@ function _autoBackup(){
 
 function _verifyDataIntegrity(){
   try{
+    if(!USER) return; // 로그인 전에는 user-specific records 접근 불가
     var recs = ugj('records',[]);
     var users = S.gj('mc_users',[]);
     if(users.length > 0 && recs.length === 0){
       console.warn('⚠️ 사용자는 있는데 기록이 없습니다. 백업 복원을 확인하세요.');
     }
-    // base64 정리는 저장 시점에만 처리 (데이터 손실 방지)
   }catch(e){ console.error('무결성 검사 오류:', e); }
 }
 
@@ -1052,32 +1065,51 @@ function _tryAutoLogin(){
   }catch(e){ return false; }
 }
 
-/* ── 사용자 records 컬렉션 로드 (구버전 경로 마이그레이션용) ── */
+/* ── 사용자 records 컬렉션 로드 ── */
 function _loadUserRecords(userId, cb){
+  var cacheKey = 'mc_'+userId+'_records';
+
+  // 날짜 기준 병합 헬퍼 (같은 날짜는 b 우선)
+  function _mergeRecs(a, b){
+    var m={};
+    (a||[]).forEach(function(r){ if(r&&r.date) m[r.date]=r; });
+    (b||[]).forEach(function(r){ if(r&&r.date) m[r.date]=r; });
+    return Object.values(m).sort(function(x,y){ return x.date<y.date?-1:1; });
+  }
+
   var ref = _db.collection('users').doc(userId).collection('data').doc('records');
   ref.get().then(function(doc){
+    var cloudRecs = [];
     if(doc.exists && doc.data().records){
-      try{
-        var oldRecs = JSON.parse(doc.data().records);
-        var cacheKey = 'mc_'+userId+'_records';
-        var curRecs = [];
-        try{ curRecs = JSON.parse(_cache[cacheKey]||'[]')||[]; }catch(e2){}
-        // 현재 캐시보다 구버전 데이터가 많을 때만 병합 (덮어쓰기 금지)
-        // 날짜 기준 항상 병합 (더 많은 쪽 우선, 같은 날짜는 캐시 우선)
-        var merged = {};
-        oldRecs.forEach(function(r){ if(r&&r.date) merged[r.date]=r; });
-        curRecs.forEach(function(r){ if(r&&r.date) merged[r.date]=r; });
-        var mergedArr = Object.values(merged).sort(function(a,b){ return a.date<b.date?-1:1; });
-        if(mergedArr.length > curRecs.length){
-          S.s(cacheKey, JSON.stringify(mergedArr));
-          // 병합 결과를 per-user 경로에도 즉시 저장
-          _saveRecsCloud(userId, mergedArr);
-        }
-      }catch(e){ console.warn('컬렉션 records 파싱 실패:', e); }
+      try{ cloudRecs = JSON.parse(doc.data().records)||[]; }catch(e){}
+    }
+    // 세 소스 병합: Firestore → localStorage → 메모리캐시 (나중이 우선)
+    var lsRecs   = _lsLoadRecs(userId);
+    var curRecs  = [];
+    try{ curRecs = JSON.parse(_cache[cacheKey]||'null')||[]; }catch(e){}
+
+    var merged = _mergeRecs(_mergeRecs(cloudRecs, lsRecs), curRecs);
+    var maxLen = Math.max(cloudRecs.length, lsRecs.length, curRecs.length);
+
+    if(merged.length >= maxLen && merged.length > curRecs.length){
+      // 새로 발견된 records가 있을 때만 업데이트
+      _cache[cacheKey] = JSON.stringify(merged);
+      _lsSaveRecs(userId, merged);
+      _saveRecsCloud(userId, merged);
     }
     cb();
   }).catch(function(err){
-    console.warn('컬렉션 records 로드 실패:', err);
+    console.warn('Firestore records 로드 실패 - localStorage 복원 시도:', err);
+    // Firestore 실패 시 localStorage에서 복원
+    var lsRecs = _lsLoadRecs(userId);
+    if(lsRecs.length){
+      var curRecs = [];
+      try{ curRecs = JSON.parse(_cache[cacheKey]||'null')||[]; }catch(e){}
+      if(lsRecs.length > curRecs.length){
+        _cache[cacheKey] = JSON.stringify(lsRecs);
+        toast('⚠️ 네트워크 오류 - 로컬 백업에서 복원됐습니다 ('+lsRecs.length+'개)');
+      }
+    }
     cb();
   });
 }
@@ -2419,7 +2451,9 @@ function _setRecs(d){
     });
   });
   usj('records', d);
-  // 컬렉션에도 저장 (이중 저장으로 안전성 확보)
+  // localStorage 즉시 미러 (Firestore 장애/앱 종료 대비 동기 저장)
+  if(USER) _lsSaveRecs(USER.id, d);
+  // Firestore 컬렉션 저장 (이중 저장으로 안전성 확보)
   if(USER) _saveRecsCloud(USER.id, d);
   _schedSafetyBackup();
 }
@@ -2625,6 +2659,8 @@ function _doSave(){
 }
 
 function _xlLoad(){
+  // 펜딩 DOM 저장이 있으면 먼저 flush (미저장 편집 유실 방지)
+  if(_saveTimer){ clearTimeout(_saveTimer); _saveTimer=null; _doSave(); }
   var days=_getRecs();
   // 날짜 형식 보정 (YYYYMMDD → YYYY-MM-DD)
   days.forEach(function(d){ if(d&&d.date) d.date=normDate(d.date); });
@@ -2908,12 +2944,20 @@ function _delRot(c,m){ var a=_allRot(); if(a[c]){ delete a[c][m]; usj('rot',a); 
 function _showAutosave(){ var b=$id('autosave'); if(!b) return; b.classList.add('show'); setTimeout(function(){b.classList.remove('show');},1800); }
 
 /* ── 앱 백그라운드/종료 시 즉시 저장 ── */
-document.addEventListener('visibilitychange', function(){
-  if(document.hidden && _currentPage==='log') _doSave();
-});
-window.addEventListener('pagehide', function(){
+function _emergencySave(){
   if(_currentPage==='log') _doSave();
+  // localStorage에 즉시 동기 저장 (Firestore debounce가 실행 전에 페이지 종료 대비)
+  if(USER){
+    try{
+      var recs = ugj('records',[]);
+      if(recs.length) _lsSaveRecs(USER.id, recs);
+    }catch(e){}
+  }
+}
+document.addEventListener('visibilitychange', function(){
+  if(document.hidden) _emergencySave();
 });
+window.addEventListener('pagehide', _emergencySave);
 
 /* ── 초기 진입 ── */
 _loadCloudData(function(){
