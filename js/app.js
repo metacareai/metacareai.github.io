@@ -2585,8 +2585,10 @@ function _delCard(card){ card.remove(); if(!$id('log-cards').children.length) $i
 
 function _schedSave(){ if(_saveTimer) clearTimeout(_saveTimer); _saveTimer=setTimeout(_doSave,300); }
 function _doSave(){
+  var cards = document.querySelectorAll('#log-cards .day-card');
+  if(!cards.length) return; // 카드 없으면 저장 안 함
   var existingRecs = _getRecs(); // 기존 저장된 데이터
-  var days=[]; document.querySelectorAll('#log-cards .day-card').forEach(function(card){
+  var days=[]; cards.forEach(function(card){
     var dateVal = card.querySelector('.day-date').value;
     var photos={};
     card.querySelectorAll('[data-meal]').forEach(function(slot){
