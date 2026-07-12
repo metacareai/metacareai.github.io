@@ -2385,6 +2385,13 @@ function saveMealWithMemo(){
     var blob=new Blob([ab],{type:'image/jpeg'});
     toast('업로드 중...');
     ref.put(blob).then(function(){ return ref.getDownloadURL(); }).then(function(url){
+      // records 캐시에 사진 URL 즉시 저장 → 홈 화면에 바로 반영
+      var days2=_getRecs();
+      var dayRec2=days2.find(function(d){return d.date===dateVal;});
+      if(!dayRec2){ dayRec2={date:dateVal,photos:{},steps:''}; days2.push(dayRec2); }
+      if(!dayRec2.photos) dayRec2.photos={};
+      dayRec2.photos[meal]=url;
+      _setRecs(days2);
       _saveRot(logCtx.cardId,meal,0); _renderFilled(slot,url,0); _schedSave(); _refreshPhotos();
       toast(mealName+' 사진 저장됐어요 ✓');
       // AI 분석 자동 실행
