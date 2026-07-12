@@ -2407,13 +2407,17 @@ function _analyzeLogMeal(imgData, mealName, note, dateVal, mealKey){
   toast('AI 분석 중...');
   var mode=USER?USER.mode:'lchf';
   var modeDesc={keto:'케토제닉(탄수화물 20g 이하)',carnivore:'카니보어(동물성 식품)',lchf:'저탄고지(탄수화물 100g 이하)',diet:'균형 건강식',cancer:'암 환자 항산화 식단'}[mode]||mode;
-  var prompt='['+mealName+' 식사 사진] '+modeDesc+' 관점에서 분석해주세요.';
-  if(note) prompt+=' 사용자 메모: "'+note+'"';
-  prompt+=' 주요 음식명, 적합도, 개선 제안을 2~3문장으로 간결하게.';
-  _api({max_tokens:300,messages:[{role:'user',content:[
-    {type:'image',source:{type:'base64',media_type:'image/jpeg',data:imgData.split(',')[1]}},
-    {type:'text',text:prompt}
-  ]}]}, function(reply){
+  var prompt, content;
+  if(note){
+    // 메모 우선: 사용자가 직접 기록한 내용을 기준으로 분석
+    prompt='['+mealName+'] 사용자 기록: "'+note+'"\n위 내용을 기준으로 '+modeDesc+' 관점에서 분석해주세요. 사진은 참고용입니다. 적합도와 개선 제안을 2~3문장으로 간결하게.';
+    content=[{type:'text',text:prompt},{type:'image',source:{type:'base64',media_type:'image/jpeg',data:imgData.split(',')[1]}}];
+  } else {
+    // 메모 없음: 사진 기준 분석
+    prompt='['+mealName+' 식사 사진] '+modeDesc+' 관점에서 주요 음식명, 적합도, 개선 제안을 2~3문장으로 간결하게.';
+    content=[{type:'image',source:{type:'base64',media_type:'image/jpeg',data:imgData.split(',')[1]}},{type:'text',text:prompt}];
+  }
+  _api({max_tokens:300,messages:[{role:'user',content:content}]}, function(reply){
     if(!reply) return;
     var days=_getRecs();
     var dayRec=days.find(function(d){return d.date===dateVal;});
@@ -3425,15 +3429,17 @@ function _analyzeHomeMeal(imgData, mealName, note){
   }
   var mode=USER?USER.mode:'lchf';
   var modeDesc={keto:'케토제닉(탄수화물 20g 이하)',carnivore:'카니보어(동물성 식품)',lchf:'저탄고지(탄수화물 100g 이하)',diet:'균형 건강식',cancer:'암 환자 항산화 식단'}[mode]||mode;
-  var prompt='['+mealName+' 식사 사진] '+modeDesc+' 관점에서 분석해주세요.';
-  if(note) prompt += ' 사용자 메모: "'+note+'"';
-  prompt += ' 주요 음식명, 적합도, 개선 제안을 2~3문장으로 간결하게.';
+  var prompt, content;
+  if(note){
+    prompt='['+mealName+'] 사용자 기록: "'+note+'"\n위 내용을 기준으로 '+modeDesc+' 관점에서 분석해주세요. 사진은 참고용입니다. 적합도와 개선 제안을 2~3문장으로 간결하게.';
+    content=[{type:'text',text:prompt},{type:'image',source:{type:'base64',media_type:'image/jpeg',data:imgData.split(',')[1]}}];
+  } else {
+    prompt='['+mealName+' 식사 사진] '+modeDesc+' 관점에서 주요 음식명, 적합도, 개선 제안을 2~3문장으로 간결하게.';
+    content=[{type:'image',source:{type:'base64',media_type:'image/jpeg',data:imgData.split(',')[1]}},{type:'text',text:prompt}];
+  }
   _api({
     max_tokens:300,
-    messages:[{role:'user',content:[
-      {type:'image',source:{type:'base64',media_type:'image/jpeg',data:imgData.split(',')[1]}},
-      {type:'text',text:prompt}
-    ]}]
+    messages:[{role:'user',content:content}]
   }, function(reply){
     if(!reply) return;
     // 끼니 키로 저장
