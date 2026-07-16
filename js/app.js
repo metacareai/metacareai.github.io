@@ -1031,6 +1031,9 @@ function loginUser(u){
   if(!KEY){ toast('API 키가 없습니다. Admin에서 설정해주세요.'); return; }
   // 컬렉션에서 해당 사용자 records 로드
   _loadUserRecords(u.id, function(){
+    _loadChallenge(u.id, function(){
+      _refreshChallengeCard();
+    });
     _initApp();
     goScreen('scr-app');
     if(typeof initInstallBanner==='function') initInstallBanner();
@@ -2004,6 +2007,136 @@ function _saveExerciseResult(type, dur, steps, memo, analysis, targetDate){
   toast('운동 기록이 저장됐어요 ✓');
 }
 
+/* ══════════════════════════════════
+   만보 챌린지
+══════════════════════════════════ */
+var _challengeCache = null; // { "2026-07-01": 12500, ... }  날짜→걸음수
+var _challengeSaveTimer = null;
+var CHALLENGE_GOAL = 10000;
+var CHALLENGE_POINT = 100; // 원/일
+
+function _loadChallenge(userId, cb){
+  if(!userId){ _challengeCache={}; if(cb) cb(); return; }
+  var ref = _db.collection('users').doc(userId).collection('data').doc('challenge');
+  ref.get().then(function(doc){
+    if(doc.exists && doc.data().log){
+      try{ _challengeCache = JSON.parse(doc.data().log); }catch(e){ _challengeCache={}; }
+    } else { _challengeCache={}; }
+    if(cb) cb();
+  }).catch(function(){ _challengeCache={}; if(cb) cb(); });
+}
+
+function _saveChallenge(userId){
+  if(!userId||!_challengeCache) return;
+  if(_challengeSaveTimer) clearTimeout(_challengeSaveTimer);
+  _challengeSaveTimer = setTimeout(function(){
+    _db.collection('users').doc(userId).collection('data').doc('challenge')
+      .set({ log: JSON.stringify(_challengeCache), ts: Date.now() })
+      .catch(function(e){ console.error('챌린지 저장 오류:', e); });
+  }, 500);
+}
+
+function _certifyChallenge(date, steps){
+  if(!USER||!_challengeCache) return false;
+  if(steps < CHALLENGE_GOAL) return false;
+  _challengeCache[date] = steps;
+  _saveChallenge(USER.id);
+  _refreshChallengeCard();
+  return true;
+}
+
+function _getChallengeMonthStats(yyyymm){
+  if(!_challengeCache) return { days:0, points:0 };
+  var days=0;
+  Object.keys(_challengeCache).forEach(function(date){
+    if(date.startsWith(yyyymm) && _challengeCache[date] >= CHALLENGE_GOAL) days++;
+  });
+  return { days:days, points:days*CHALLENGE_POINT };
+}
+
+function _refreshChallengeCard(){
+  var el=$id('home-challenge-card'); if(!el) return;
+  if(!_challengeCache){ el.style.display='none'; return; }
+  var today=todayStr(), yyyymm=today.slice(0,7);
+  var todaySteps=_challengeCache[today]||0;
+  var certified=todaySteps>=CHALLENGE_GOAL;
+  var stats=_getChallengeMonthStats(yyyymm);
+  var pct=Math.min(100,Math.round(todaySteps/CHALLENGE_GOAL*100));
+  var daysInMonth=new Date(parseInt(yyyymm.slice(0,4)),parseInt(yyyymm.slice(5,7)),0).getDate();
+  el.style.display='block';
+  el.innerHTML=
+    '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">'
+    +'<div style="font-size:13px;font-weight:700;color:var(--navy);">🏆 만보 챌린지</div>'
+    +'<div style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;'+(certified?'background:#E8F8F3;color:#0D7A52;':'background:var(--cream);color:var(--mu2);')+'">'
+    +(certified?'✅ 오늘 달성!':'오늘 미달성')+'</div>'
+    +'</div>'
+    +(todaySteps>0?
+      '<div style="margin-bottom:10px;">'
+      +'<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--mu2);margin-bottom:4px;">'
+      +'<span>오늘 '+Number(todaySteps).toLocaleString()+'보</span>'
+      +'<span>목표 '+Number(CHALLENGE_GOAL).toLocaleString()+'보</span></div>'
+      +'<div style="height:7px;background:var(--cream);border-radius:4px;overflow:hidden;">'
+      +'<div style="height:100%;width:'+pct+'%;background:'+(certified?'var(--teal)':'#F0A500')+';border-radius:4px;transition:width .4s;"></div>'
+      +'</div></div>':'')
+    +'<div style="display:flex;gap:8px;margin-bottom:'+(certified?'0':'10px')+'">'
+    +'<div style="flex:1;text-align:center;background:var(--cream);border-radius:var(--r-sm);padding:8px 4px;">'
+    +'<div style="font-size:20px;font-weight:800;color:var(--teal);">'+stats.days+'</div>'
+    +'<div style="font-size:10px;color:var(--mu2);">이번 달 달성</div></div>'
+    +'<div style="flex:1;text-align:center;background:var(--cream);border-radius:var(--r-sm);padding:8px 4px;">'
+    +'<div style="font-size:20px;font-weight:800;color:var(--navy);">'+stats.points.toLocaleString()+'</div>'
+    +'<div style="font-size:10px;color:var(--mu2);">누적 포인트(원)</div></div>'
+    +'<div style="flex:1;text-align:center;background:var(--cream);border-radius:var(--r-sm);padding:8px 4px;">'
+    +'<div style="font-size:20px;font-weight:800;color:var(--mu2);">'+(daysInMonth-stats.days)+'</div>'
+    +'<div style="font-size:10px;color:var(--mu2);">남은 기회</div></div>'
+    +'</div>'
+    +(!certified?
+      '<button onclick="A.parseSamsungHealth()" ontouchstart="A.parseSamsungHealth()" style="width:100%;padding:11px;background:linear-gradient(135deg,#1428A0,#2563EB);color:#fff;border:none;border-radius:var(--r-sm);font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">'
+      +'<i class="ti ti-camera"></i> 삼성 헬스 스크린샷으로 인증하기</button>':'');
+}
+
+function showChallengeAdmin(){
+  goScreen('scr-admin-challenge');
+  var yyyymm=todayStr().slice(0,7);
+  var monthEl=$id('challenge-admin-month');
+  if(monthEl) monthEl.textContent=yyyymm.replace('-','년 ')+'월 챌린지 현황';
+  var listEl=$id('challenge-admin-list');
+  if(listEl) listEl.innerHTML='<div style="text-align:center;padding:20px;color:var(--mu2);">로딩 중...</div>';
+  var totalEl=$id('challenge-admin-total'), totalAmtEl=$id('challenge-admin-total-amt');
+  if(totalEl) totalEl.style.display='none';
+  var users=_getUsers(); if(!users.length){ if(listEl) listEl.innerHTML='<div style="padding:20px;text-align:center;color:var(--mu);">등록된 회원 없음</div>'; return; }
+  var results=[], pending=users.length;
+  users.forEach(function(u){
+    _db.collection('users').doc(u.id).collection('data').doc('challenge').get().then(function(doc){
+      var log={};
+      if(doc.exists&&doc.data().log){ try{ log=JSON.parse(doc.data().log); }catch(e){} }
+      var days=0;
+      Object.keys(log).forEach(function(date){ if(date.startsWith(yyyymm)&&log[date]>=CHALLENGE_GOAL) days++; });
+      results.push({ name:u.name, days:days, points:days*CHALLENGE_POINT });
+    }).catch(function(){ results.push({ name:u.name, days:0, points:0 }); })
+    .finally(function(){
+      pending--;
+      if(pending>0) return;
+      results.sort(function(a,b){ return b.days-a.days; });
+      var grandTotal=results.reduce(function(s,r){ return s+r.points; },0);
+      if(totalEl){ totalEl.style.display='block'; }
+      if(totalAmtEl) totalAmtEl.textContent=grandTotal.toLocaleString()+'원';
+      if(listEl) listEl.innerHTML=results.map(function(r,i){
+        var badge=i===0&&r.days>0?'🥇':i===1&&r.days>0?'🥈':i===2&&r.days>0?'🥉':'';
+        return '<div style="background:#fff;border-radius:var(--r-sm);padding:12px 15px;margin-bottom:8px;box-shadow:var(--sh-sm);display:flex;align-items:center;gap:12px;">'
+          +'<div style="width:30px;text-align:center;font-size:'+(badge?'20px':'13px')+';font-weight:800;color:var(--mu2);">'+(badge||(i+1))+'</div>'
+          +'<div style="flex:1;">'
+          +'<div style="font-size:14px;font-weight:700;">'+esc(r.name)+'</div>'
+          +'<div style="font-size:11px;color:var(--mu2);">'+r.days+'일 달성 · 하루 '+CHALLENGE_POINT+'원</div>'
+          +'</div>'
+          +'<div style="text-align:right;">'
+          +'<div style="font-size:18px;font-weight:800;color:'+(r.points>0?'var(--navy)':'var(--mu2)')+';">'+r.points.toLocaleString()+'원</div>'
+          +'<div style="font-size:10px;color:var(--mu2);">지급 예정</div>'
+          +'</div></div>';
+      }).join('');
+    });
+  });
+}
+
 /* ── 삼성 헬스 스크린샷 파싱 ── */
 function parseSamsungHealth(){
   var inp=$id('sh-img-input'); if(inp) inp.click();
@@ -2050,6 +2183,12 @@ function _shImgSelected(input){
           }
           if(added.length){
             _renderExPending();
+            // 만보 챌린지 자동 인증
+            var exDate=normDate(($id('ex-date')||{}).value)||todayStr();
+            if(json.steps>=CHALLENGE_GOAL){
+              var certified=_certifyChallenge(exDate, json.steps);
+              if(certified) added.push('🏆 만보 달성!');
+            }
             if(ar) ar.style.display='none';
             toast('자동 입력 완료: '+added.join(', ')+' ✓');
           } else {
@@ -3713,7 +3852,7 @@ return {
   // 컨디션 기록
   openConditionSheet:openConditionSheet, selectCondState:selectCondState, saveCondition:saveCondition,
   // 종합 분석
-  analyzeEx:analyzeEx, analyzeExAll:analyzeExAll, addExToList:addExToList, removeExFromList:removeExFromList, deleteExItem:deleteExItem, pickExType:pickExType, parseSamsungHealth:parseSamsungHealth, _shImgSelected:_shImgSelected,
+  analyzeEx:analyzeEx, analyzeExAll:analyzeExAll, addExToList:addExToList, removeExFromList:removeExFromList, deleteExItem:deleteExItem, pickExType:pickExType, parseSamsungHealth:parseSamsungHealth, _shImgSelected:_shImgSelected, showChallengeAdmin:showChallengeAdmin,
   analyzeComprehensive:analyzeComprehensive,
   // 증상
   openSymSheet:openSymSheet, saveSymQuick:saveSymQuick, saveSym:saveSym,

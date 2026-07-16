@@ -311,7 +311,27 @@
           <div class="admin-tile-icon" style="background:#FEE500;">💬</div>
           <div class="admin-tile-name">앱 공유</div>
         </button>
+        <button class="admin-tile" onclick="A.showChallengeAdmin()">
+          <div class="admin-tile-icon" style="background:#FFF3E0;">🏆</div>
+          <div class="admin-tile-name">챌린지 현황</div>
+        </button>
       </div>
+    </div>
+  </div>
+
+  <!-- ── Admin: 챌린지 현황 ── -->
+  <div id="scr-admin-challenge" class="screen light">
+    <div class="topbar" style="background:linear-gradient(135deg,#1428A0,#2563EB);">
+      <button class="back-btn" onclick="A.goScreen('scr-admin')"><i class="ti ti-arrow-left"></i></button>
+      <span class="topbar-title">🏆 만보 챌린지 현황</span>
+    </div>
+    <div class="scroll-body">
+      <div id="challenge-admin-month" style="font-size:13px;font-weight:700;color:var(--mu2);margin-bottom:12px;text-align:center;"></div>
+      <div id="challenge-admin-total" style="background:#fff;border-radius:var(--r-md);padding:14px;margin-bottom:12px;text-align:center;box-shadow:var(--sh-sm);display:none;">
+        <div style="font-size:11px;color:var(--mu2);margin-bottom:4px;">이번 달 총 지급 예정</div>
+        <div id="challenge-admin-total-amt" style="font-size:28px;font-weight:800;color:var(--navy);"></div>
+      </div>
+      <div id="challenge-admin-list"></div>
     </div>
   </div>
 
@@ -561,6 +581,9 @@
             <button id="pwa-install-btn" style="background:#fff;color:#19B89B;border:none;border-radius:10px;padding:8px 14px;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap;flex-shrink:0;">설치하기</button>
           </div>
         </div>
+
+        <!-- ── 만보 챌린지 카드 ── -->
+        <div id="home-challenge-card" style="display:none;background:#fff;border-radius:var(--r-md);padding:14px 16px;box-shadow:var(--sh-sm);border:1px solid var(--bd);"></div>
 
         <!-- ── 오늘의 식사 ── -->
         <div>
