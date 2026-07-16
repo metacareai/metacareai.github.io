@@ -2203,7 +2203,8 @@ function showChallengeAdmin(){
 
 /* ── 삼성 헬스 스크린샷 파싱 ── */
 function parseSamsungHealth(){
-  var inp=$id('sh-img-input'); if(inp) inp.click();
+  var inp=$id('sh-img-input-global')||$id('sh-img-input');
+  if(inp) inp.click();
 }
 
 function _shImgSelected(input){

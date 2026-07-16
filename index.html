@@ -214,7 +214,7 @@
              onkeydown="if(event.key==='Enter')A.enterByName()" style="margin-bottom:14px;">
       <button class="btn-primary" onclick="A.enterByName()" style="font-size:16px;padding:18px;">시작하기 →</button>
       <p id="login-error" class="sub" style="color:#FF8A80;display:none;text-align:center;margin-top:10px;"></p>
-      <button id="login-join-btn" onclick="A.goSelfJoin()" style="display:none;width:100%;padding:14px;margin-top:8px;background:rgba(25,184,155,.15);border:1px solid rgba(25,184,155,.4);border-radius:12px;color:#19B89B;font-size:14px;font-weight:700;cursor:pointer;">
+      <button id="login-join-btn" onclick="A.goSelfJoin()" style="width:100%;padding:14px;margin-top:8px;background:rgba(25,184,155,.15);border:1px solid rgba(25,184,155,.4);border-radius:12px;color:#19B89B;font-size:14px;font-weight:700;cursor:pointer;">
         처음 오셨나요? 지금 가입하기 →
       </button>
 
@@ -1010,6 +1010,8 @@
 </div>
 <input type="file" id="f-home-meal-cam" accept="image/*" capture="environment" style="display:none" onchange="A.onHomeMealFile(event,'cam')">
 <input type="file" id="f-home-meal-gal" accept="image/*" style="display:none" onchange="A.onHomeMealFile(event,'gal')">
+<!-- 삼성 헬스 파싱 전역 input (홈+운동 탭 공용) -->
+<input type="file" id="sh-img-input-global" accept="image/*" style="display:none" onchange="A._shImgSelected(this)">
 <input type="file" id="f-cam" accept="image/*" capture="environment" style="display:none" onchange="A.onFile(event,'cam')">
 <input type="file" id="f-gal" accept="image/*" style="display:none" onchange="A.onFile(event,'gal')">
 <input type="file" id="f-meal-cam" accept="image/*" capture="environment" style="display:none" onchange="A.onMealFile(event,'cam')">
