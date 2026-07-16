@@ -923,6 +923,10 @@ function goSelfJoin(){
   if($id('sj-ctype-wrap')) $id('sj-ctype-wrap').style.display='none';
   if($id('sj-other-wrap')) $id('sj-other-wrap').style.display='none';
   if($id('sj-stage-wrap')) $id('sj-stage-wrap').style.display='none';
+  // 동의 체크박스 초기화
+  ['sj-agree-all','sj-agree-terms','sj-agree-privacy','sj-agree-data'].forEach(function(id){
+    var cb=$id(id); if(cb) cb.checked=false;
+  });
   goScreen('scr-self-join');
 }
 
@@ -1082,6 +1086,7 @@ function exitPatientView(){
 /* ── 로그인 ── */
 function loginUser(u){
   USER = u;
+  _challengeCache = null; // 사용자 전환 시 이전 캐시 초기화
   try{
     var saved = localStorage.getItem('mc_last_user');
     var lastPage = 'home';
@@ -1633,6 +1638,7 @@ function goPage(p){
     _refreshComprehensiveBtn();
     _refreshYesterdayFeedback();
     _refreshHomeProgress();
+    _refreshChallengeCard();
     if(USER&&USER.mode!=='cancer'){ _refreshStats(); }
     else{ _refreshMedHome(); _refreshTodaySym(); if(USER.ctype==='prostate') _refreshPSABanner(); }
   }
@@ -1659,11 +1665,11 @@ function _refreshHomeProgress(){
   var rec=days.find(function(d){return d.date===today;})||{};
   var ic=USER&&USER.mode==='cancer';
 
-  var photos=rec.photos?Object.keys(rec.photos).filter(function(k){return rec.photos[k];}).length:0;
+  var p=rec.photos||{};
+  var hasMorning=!!(p.morning); var hasLunch=!!(p.lunch); var hasDinner=!!(p.dinner);
   var hasEx=!!(rec.exercise&&rec.exercise.length);
   var condRec=_getCondRecs().find(function(r){return r.date===today;});
   var hasCond=!!(rec.cond||rec.weight||rec.glucose||(condRec&&condRec.state));
-  // 복약: med_done[today] 에 하나라도 체크된 항목이 있으면 완료
   var medDone=ic?(_getMedDone()[todayStr()]||{}):{};
   var hasMed=ic&&Object.keys(medDone).some(function(k){return medDone[k];});
   var hasSym=ic&&(rec.pain!==undefined||rec.urine!==undefined||rec.fatigue!==undefined);
@@ -1675,9 +1681,9 @@ function _refreshHomeProgress(){
   }
 
   var html='';
-  html+=chip(photos>=1, '아침', "A.openMealSlot('breakfast')");
-  html+=chip(photos>=2, '점심', "A.openMealSlot('lunch')");
-  html+=chip(photos>=3, '저녁', "A.openMealSlot('dinner')");
+  html+=chip(hasMorning, '아침', "A.openMealSlot('breakfast')");
+  html+=chip(hasLunch, '점심', "A.openMealSlot('lunch')");
+  html+=chip(hasDinner, '저녁', "A.openMealSlot('dinner')");
   html+=chip(hasEx, '운동', "A.goPage('ex')");
   html+=chip(hasCond, '컨디션', "A.openQuickCond()");
   if(ic){
@@ -1686,8 +1692,8 @@ function _refreshHomeProgress(){
   }
 
   // 달성률 계산
-  var total=ic?5:5;
-  var done=(photos>=1?1:0)+(photos>=2?1:0)+(photos>=3?1:0)+(hasEx?1:0)+(hasCond?1:0);
+  var total=5;
+  var done=(hasMorning?1:0)+(hasLunch?1:0)+(hasDinner?1:0)+(hasEx?1:0)+(hasCond?1:0);
   if(ic){ total=7; done+=(hasSym?1:0)+(hasMed?1:0); }
   var pct=Math.round(done/total*100);
 
@@ -2170,16 +2176,17 @@ function showChallengeAdmin(){
   var users=_getUsers(); if(!users.length){ if(listEl) listEl.innerHTML='<div style="padding:20px;text-align:center;color:var(--mu);">등록된 회원 없음</div>'; return; }
   var results=[], pending=users.length;
   users.forEach(function(u){
-    _db.collection('users').doc(u.id).collection('data').doc('challenge').get().then(function(doc){
-      var log={};
-      if(doc.exists&&doc.data().log){ try{ log=JSON.parse(doc.data().log); }catch(e){} }
-      var days=0;
-      Object.keys(log).forEach(function(date){ if(date.startsWith(yyyymm)&&log[date]>=CHALLENGE_GOAL) days++; });
-      results.push({ name:u.name, days:days, points:days*CHALLENGE_POINT });
-    }).catch(function(){ results.push({ name:u.name, days:0, points:0 }); })
-    .finally(function(){
-      pending--;
-      if(pending>0) return;
+    (function(user){
+      _db.collection('users').doc(user.id).collection('data').doc('challenge').get().then(function(doc){
+        var log={};
+        if(doc.exists&&doc.data().log){ try{ log=JSON.parse(doc.data().log); }catch(e){} }
+        var days=0;
+        Object.keys(log).forEach(function(date){ if(date.startsWith(yyyymm)&&log[date]>=CHALLENGE_GOAL) days++; });
+        results.push({ name:user.name, days:days, points:days*CHALLENGE_POINT });
+      }).catch(function(){ results.push({ name:user.name, days:0, points:0 }); })
+      .then(function(){
+        pending--;
+        if(pending>0) return;
       results.sort(function(a,b){ return b.days-a.days; });
       var grandTotal=results.reduce(function(s,r){ return s+r.points; },0);
       if(totalEl){ totalEl.style.display='block'; }
@@ -2197,7 +2204,8 @@ function showChallengeAdmin(){
           +'<div style="font-size:10px;color:var(--mu2);">지급 예정</div>'
           +'</div></div>';
       }).join('');
-    });
+      });
+    })(u);
   });
 }
 
