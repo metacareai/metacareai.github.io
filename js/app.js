@@ -970,16 +970,80 @@ function selfJoin(){
     var on=($id('sj-other-name')&&$id('sj-other-name').value.trim())||'';
     if(!on){ toast('암 종류를 직접 입력해 주세요'); return; }
   }
+  // 필수 동의 확인
+  if(!($id('sj-agree-terms')&&$id('sj-agree-terms').checked)){
+    toast('서비스 이용약관에 동의해 주세요'); return;
+  }
+  if(!($id('sj-agree-privacy')&&$id('sj-agree-privacy').checked)){
+    toast('개인정보 수집·이용에 동의해 주세요'); return;
+  }
+  var agreeData=!!($id('sj-agree-data')&&$id('sj-agree-data').checked);
   var users=_getUsers();
   if(users.some(function(u){ return u.name===_sjName && String(u.birthYear)===String(_sjYear); })){
     toast('이미 가입된 계정이 있습니다'); loginUser(users.find(function(u){ return u.name===_sjName; })); return;
   }
   var otherNm=(_sjCtype==='other'&&$id('sj-other-name'))?$id('sj-other-name').value.trim():'';
-  var newUser={id:'u'+Date.now(), name:_sjName, birthYear:_sjYear, mode:_sjMode, ctype:_sjCtype, otherCancerName:otherNm, stage:_sjStage, treatments:[], createdAt:Date.now()};
+  var newUser={id:'u'+Date.now(), name:_sjName, birthYear:_sjYear, mode:_sjMode, ctype:_sjCtype, otherCancerName:otherNm, stage:_sjStage, treatments:[], createdAt:Date.now(), agreeTerms:true, agreePrivacy:true, agreeData:agreeData, agreedAt:Date.now()};
   users.push(newUser);
   _setUsers(users);
   toast(_sjName+' 님, 환영합니다! 🎉');
   loginUser(newUser);
+}
+
+/* ── 동의서 체크박스 동기화 ── */
+function sjToggleAll(el){
+  var checked=el.checked;
+  ['sj-agree-terms','sj-agree-privacy','sj-agree-data'].forEach(function(id){
+    var cb=$id(id); if(cb) cb.checked=checked;
+  });
+}
+function sjSyncAll(){
+  var all=['sj-agree-terms','sj-agree-privacy','sj-agree-data'].every(function(id){
+    var cb=$id(id); return cb&&cb.checked;
+  });
+  var allCb=$id('sj-agree-all'); if(allCb) allCb.checked=all;
+}
+
+/* ── 동의서 전문 팝업 ── */
+var _CONSENT_TEXTS = {
+  terms: {
+    title: '서비스 이용약관',
+    body: '<b>제1조 (목적)</b><br>본 약관은 스마트 메타케어(이하 "서비스")의 이용 조건 및 절차에 관한 사항을 규정합니다.<br><br>'
+      +'<b>제2조 (서비스 내용)</b><br>본 서비스는 개인 건강 기록 관리, AI 기반 식단·운동 분석, 건강 목표 추적 기능을 제공합니다. 본 서비스는 의료 서비스가 아니며 의학적 진단·처방을 대체하지 않습니다.<br><br>'
+      +'<b>제3조 (이용자 의무)</b><br>이용자는 정확한 정보를 입력해야 하며, 타인의 정보를 도용하거나 서비스를 악용해서는 안 됩니다.<br><br>'
+      +'<b>제4조 (서비스 변경·중단)</b><br>운영자는 서비스 내용을 변경하거나 중단할 수 있으며, 이 경우 사전 공지합니다.<br><br>'
+      +'<b>제5조 (면책)</b><br>본 서비스에서 제공하는 AI 분석 결과는 참고용이며, 이를 근거로 한 의사결정의 결과에 대해 운영자는 책임지지 않습니다.<br><br>'
+      +'<b>제6조 (준거법)</b><br>본 약관은 대한민국 법령에 따라 해석됩니다.'
+  },
+  privacy: {
+    title: '개인정보 수집·이용 동의',
+    body: '<b>수집 항목</b><br>이름, 출생연도, 건강 목적(암/케토 등), 식단 사진·메모, 운동 기록, 컨디션 기록, 만보 챌린지 기록<br><br>'
+      +'<b>수집 목적</b><br>개인 맞춤 건강 기록 관리, AI 식단·운동 분석 서비스 제공, 만보 챌린지 운영<br><br>'
+      +'<b>보유 기간</b><br>회원 탈퇴 시까지. 단, 관계 법령에 따라 일정 기간 보존이 필요한 경우 해당 기간 보관<br><br>'
+      +'<b>제3자 제공</b><br>이용자의 개인정보는 원칙적으로 제3자에게 제공하지 않습니다.<br><br>'
+      +'<b>처리 위탁</b><br>Firebase(Google LLC) — 데이터 저장·관리 / Anthropic — AI 분석(식단·운동 텍스트 및 사진 전송)<br><br>'
+      +'<b>이용자 권리</b><br>이용자는 언제든지 개인정보 열람·수정·삭제를 요청할 수 있습니다.'
+  },
+  data: {
+    title: '건강 데이터 연구 활용 동의 (선택)',
+    body: '<b>활용 목적</b><br>수집된 건강 기록(식단, 운동, 걸음수 등)을 통계·연구 목적으로 활용합니다.<br><br>'
+      +'<b>익명화 처리</b><br>연구에 활용되는 데이터는 이름·출생연도 등 개인 식별 정보를 제거한 완전 익명화 데이터만 사용됩니다.<br><br>'
+      +'<b>활용 범위</b><br>질환별 생활 패턴 분석, 식단·운동 효과 연구, 건강 지표 통계 자료 작성<br><br>'
+      +'<b>동의 철회</b><br>본 동의는 언제든지 철회 가능하며, 철회 시 이후 데이터는 연구에 활용되지 않습니다.<br><br>'
+      +'<span style="color:var(--teal);font-weight:700;">본 동의는 선택사항이며, 동의하지 않아도 서비스 이용에 제한이 없습니다.</span>'
+  }
+};
+
+function showConsent(type){
+  var ct=_CONSENT_TEXTS[type]; if(!ct) return;
+  var sheet=$id('consent-sheet'), title=$id('consent-title'), body=$id('consent-body');
+  if(!sheet) return;
+  if(title) title.textContent=ct.title;
+  if(body) body.innerHTML=ct.body;
+  sheet.style.display='block';
+}
+function closeConsent(){
+  var sheet=$id('consent-sheet'); if(sheet) sheet.style.display='none';
 }
 
 /* ── 어드민: 환자 화면으로 보기 ── */
@@ -3831,7 +3895,7 @@ function pickLandingTag(el){
 /* ── 공개 API ── */
 return {
   // 화면
-  goScreen:goScreen, logoTap:logoTap, nameTap:nameTap, enterByName:enterByName, goSelfJoin:goSelfJoin, selfJoin:selfJoin, goHelp:goHelp, goBack:goBack, pickLandingTag:pickLandingTag, confirmLogout:confirmLogout,
+  goScreen:goScreen, logoTap:logoTap, nameTap:nameTap, enterByName:enterByName, goSelfJoin:goSelfJoin, selfJoin:selfJoin, goHelp:goHelp, goBack:goBack, pickLandingTag:pickLandingTag, confirmLogout:confirmLogout, sjToggleAll:sjToggleAll, sjSyncAll:sjSyncAll, showConsent:showConsent, closeConsent:closeConsent,
   openQuickCond:openQuickCond, quickCondPick:quickCondPick, closeQuickCond:closeQuickCond, saveQuickCond:saveQuickCond,
   // 설정
   checkPw:checkPw,
