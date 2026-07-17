@@ -158,7 +158,6 @@ function _loadCloudData(cb){
     _cache = doc.exists ? (doc.data()||{}) : {};
     _cacheReady = true;
     dataLoaded = true;
-    // 데이터 로드 후 자동 백업 + 무결성 검사
     setTimeout(function(){
       _autoBackup();
       _verifyDataIntegrity();
@@ -166,6 +165,7 @@ function _loadCloudData(cb){
     tryDone();
   }).catch(function(err){
     console.error('Firestore 로드 오류', err);
+    toast('DB오류: '+(err&&err.message?err.message:String(err)));
     _cache = {};
     _cacheReady = true;
     dataLoaded = true; tryDone();
@@ -1202,6 +1202,14 @@ function _initApp(){
   // 이름 표시
   document.querySelectorAll('.uname').forEach(function(el){ el.textContent=u.name; });
 
+  // 네이티브 앱: 삼성헬스 버튼 텍스트 변경
+  var shBtn=$id('sh-parse-btn');
+  if(shBtn){
+    if(_isCapacitor()){
+      shBtn.innerHTML='<i class="ti ti-shoe"></i> 걸음수 자동 인증 (Health Connect)';
+    }
+  }
+
   // 홈 설정 (건강관리 vs 암환자 섹션)
   var cancerSec = $id('home-cancer-section');
   if(cancerSec) cancerSec.style.display = ic?'':'none';
@@ -2161,7 +2169,7 @@ function _refreshChallengeCard(){
     +'</div>'
     +(!certified?
       '<button onclick="A.parseSamsungHealth()" ontouchstart="A.parseSamsungHealth()" style="width:100%;padding:11px;background:linear-gradient(135deg,#1428A0,#2563EB);color:#fff;border:none;border-radius:var(--r-sm);font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">'
-      +'<i class="ti ti-camera"></i> 삼성 헬스 스크린샷으로 인증하기</button>':'');
+      +'<i class="ti ti-shoe"></i> 걸음수 인증하기</button>':'');
 }
 
 function showChallengeAdmin(){
@@ -2209,8 +2217,76 @@ function showChallengeAdmin(){
   });
 }
 
+/* ── Health Connect API (Capacitor 네이티브 앱 전용) ── */
+var _hcPlugin = null;
+
+function _isCapacitor(){
+  return !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+}
+
+function _getHCPlugin(){
+  if(_hcPlugin) return _hcPlugin;
+  try{
+    if(window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Health){
+      _hcPlugin = window.Capacitor.Plugins.Health;
+    }
+  } catch(e){}
+  return _hcPlugin;
+}
+
+// 오늘 걸음수를 Health Connect에서 자동으로 읽어 챌린지 인증
+function readHealthConnectSteps(cb){
+  var plugin = _getHCPlugin();
+  if(!plugin){ if(cb) cb(null, 'Health Connect 플러그인 없음'); return; }
+  var today = todayStr();
+  var startDate = today+'T00:00:00.000Z';
+  var endDate   = today+'T23:59:59.999Z';
+  plugin.isAvailable().then(function(avail){
+    if(!avail.available){ throw new Error('Health Connect 미지원 기기: '+(avail.reason||'')); }
+    return plugin.requestAuthorization({ read: ['steps'] });
+  }).then(function(){
+    return plugin.queryAggregated({
+      dataType: 'steps',
+      startDate: startDate,
+      endDate:   endDate,
+      bucket:    'day'
+    });
+  }).then(function(res){
+    var steps = 0;
+    if(res && res.samples && res.samples.length){
+      res.samples.forEach(function(s){ steps += (s.value||0); });
+    }
+    if(cb) cb(steps, null);
+  }).catch(function(err){
+    if(cb) cb(null, err && err.message ? err.message : String(err));
+  });
+}
+
+// 챌린지 카드의 "자동 인증" 버튼 또는 홈 진입 시 호출
+function autoReadHealthSteps(){
+  if(!_isCapacitor()){ toast('삼성헬스 자동 연동은 앱 버전에서만 가능합니다.'); return; }
+  toast('걸음수 불러오는 중...');
+  readHealthConnectSteps(function(steps, err){
+    if(err){ toast('걸음수 읽기 실패: '+err); return; }
+    var today = todayStr();
+    if(steps >= CHALLENGE_GOAL){
+      var certified = _certifyChallenge(today, steps);
+      if(certified){
+        toast('🏆 오늘 '+steps.toLocaleString()+'보 달성! 만보 인증 완료');
+      } else {
+        toast(steps.toLocaleString()+'보 — 이미 인증됨');
+      }
+    } else {
+      toast('오늘 '+steps.toLocaleString()+'보 (목표 '+CHALLENGE_GOAL.toLocaleString()+'보)');
+    }
+  });
+}
+
 /* ── 삼성 헬스 스크린샷 파싱 ── */
 function parseSamsungHealth(){
+  // Capacitor 네이티브 앱: Health Connect API 직접 사용
+  if(_isCapacitor()){ autoReadHealthSteps(); return; }
+  // PWA: 스크린샷 파싱
   var inp=$id('sh-img-input-global')||$id('sh-img-input');
   if(inp) inp.click();
 }
@@ -3925,7 +4001,7 @@ return {
   // 컨디션 기록
   openConditionSheet:openConditionSheet, selectCondState:selectCondState, saveCondition:saveCondition,
   // 종합 분석
-  analyzeEx:analyzeEx, analyzeExAll:analyzeExAll, addExToList:addExToList, removeExFromList:removeExFromList, deleteExItem:deleteExItem, pickExType:pickExType, parseSamsungHealth:parseSamsungHealth, _shImgSelected:_shImgSelected, showChallengeAdmin:showChallengeAdmin,
+  analyzeEx:analyzeEx, analyzeExAll:analyzeExAll, addExToList:addExToList, removeExFromList:removeExFromList, deleteExItem:deleteExItem, pickExType:pickExType, parseSamsungHealth:parseSamsungHealth, _shImgSelected:_shImgSelected, autoReadHealthSteps:autoReadHealthSteps, showChallengeAdmin:showChallengeAdmin,
   analyzeComprehensive:analyzeComprehensive,
   // 증상
   openSymSheet:openSymSheet, saveSymQuick:saveSymQuick, saveSym:saveSym,
