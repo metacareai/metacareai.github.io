@@ -691,14 +691,6 @@
           <label style="font-size:12px;font-weight:700;color:var(--mu2);white-space:nowrap;">날짜</label>
           <input class="inp-sm" id="ex-date" type="text" placeholder="YYYY-MM-DD" style="flex:1;">
         </div>
-        <!-- 삼성 헬스 스크린샷 파싱 -->
-        <div style="margin-top:10px;">
-          <button onclick="A.parseSamsungHealth()" ontouchstart="A.parseSamsungHealth()" style="width:100%;padding:12px;background:linear-gradient(135deg,#1428A0,#2563EB);color:#fff;border:none;border-radius:var(--r-sm);font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
-            <i class="ti ti-camera"></i> 삼성 헬스 스크린샷으로 자동 입력
-          </button>
-          <input type="file" id="sh-img-input" accept="image/*" style="display:none" onchange="A._shImgSelected(this)">
-          <div id="sh-parse-result" style="display:none;margin-top:8px;font-size:13px;color:var(--mu2);text-align:center;padding:10px;background:var(--cream);border-radius:var(--r-sm);border:1px solid var(--bd);"></div>
-        </div>
         <!-- 빠른 선택 칩 -->
         <div style="margin-top:10px;">
           <div style="font-size:11px;font-weight:700;color:var(--mu2);margin-bottom:7px;">빠른 선택 (탭하면 입력)</div>
@@ -1010,8 +1002,6 @@
 </div>
 <input type="file" id="f-home-meal-cam" accept="image/*" capture="environment" style="display:none" onchange="A.onHomeMealFile(event,'cam')">
 <input type="file" id="f-home-meal-gal" accept="image/*" style="display:none" onchange="A.onHomeMealFile(event,'gal')">
-<!-- 삼성 헬스 파싱 전역 input (홈+운동 탭 공용) -->
-<input type="file" id="sh-img-input-global" accept="image/*" style="display:none" onchange="A._shImgSelected(this)">
 <input type="file" id="f-cam" accept="image/*" capture="environment" style="display:none" onchange="A.onFile(event,'cam')">
 <input type="file" id="f-gal" accept="image/*" style="display:none" onchange="A.onFile(event,'gal')">
 <input type="file" id="f-meal-cam" accept="image/*" capture="environment" style="display:none" onchange="A.onMealFile(event,'cam')">

@@ -1202,13 +1202,7 @@ function _initApp(){
   // 이름 표시
   document.querySelectorAll('.uname').forEach(function(el){ el.textContent=u.name; });
 
-  // 네이티브 앱: 삼성헬스 버튼 텍스트 변경
-  var shBtn=$id('sh-parse-btn');
-  if(shBtn){
-    if(_isCapacitor()){
-      shBtn.innerHTML='<i class="ti ti-shoe"></i> 걸음수 자동 인증 (Health Connect)';
-    }
-  }
+
 
   // 홈 설정 (건강관리 vs 암환자 섹션)
   var cancerSec = $id('home-cancer-section');
@@ -2168,7 +2162,7 @@ function _refreshChallengeCard(){
     +'<div style="font-size:10px;color:var(--mu2);">남은 기회</div></div>'
     +'</div>'
     +(!certified?
-      '<button onclick="A.parseSamsungHealth()" ontouchstart="A.parseSamsungHealth()" style="width:100%;padding:11px;background:linear-gradient(135deg,#1428A0,#2563EB);color:#fff;border:none;border-radius:var(--r-sm);font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">'
+      '<button onclick="A.autoReadHealthSteps()" ontouchstart="A.autoReadHealthSteps()" style="width:100%;padding:11px;background:linear-gradient(135deg,#1428A0,#2563EB);color:#fff;border:none;border-radius:var(--r-sm);font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">'
       +'<i class="ti ti-shoe"></i> 걸음수 인증하기</button>':'');
 }
 
@@ -2282,76 +2276,6 @@ function autoReadHealthSteps(){
   });
 }
 
-/* ── 삼성 헬스 스크린샷 파싱 ── */
-function parseSamsungHealth(){
-  // Capacitor 네이티브 앱: Health Connect API 직접 사용
-  if(_isCapacitor()){ autoReadHealthSteps(); return; }
-  // PWA: 스크린샷 파싱
-  var inp=$id('sh-img-input-global')||$id('sh-img-input');
-  if(inp) inp.click();
-}
-
-function _shImgSelected(input){
-  if(!input||!input.files||!input.files[0]) return;
-  var file=input.files[0];
-  var ar=$id('sh-parse-result');
-  if(ar){ ar.style.display='block'; ar.innerHTML='<div class="dots"><span></span><span></span><span></span></div> 삼성 헬스 데이터 읽는 중...'; }
-  var r=new FileReader();
-  r.onload=function(ev){
-    // 스크린샷은 숫자가 읽혀야 하므로 더 높은 해상도 유지
-    var dataUrl=ev.target.result;
-    var img=new Image();
-    img.onload=function(){
-      var MAX=900, w=img.width, h=img.height;
-      if(w>MAX){h=Math.round(h*MAX/w);w=MAX;}
-      var c=document.createElement('canvas');
-      c.width=w;c.height=h;
-      c.getContext('2d').drawImage(img,0,0,w,h);
-      var small=c.toDataURL('image/jpeg',0.85);
-      var b64=small.split(',')[1];
-      var prompt='이 이미지는 삼성 헬스(Samsung Health) 앱 스크린샷입니다. 화면에서 읽을 수 있는 수치를 JSON으로만 답하세요 (설명 없이 JSON만, 없으면 null): {"steps":걸음수숫자, "floors":층수숫자, "distance_km":거리숫자, "calories":칼로리숫자, "active_min":활성시간분숫자}';
-      _api({max_tokens:150,messages:[{role:'user',content:[
-        {type:'image',source:{type:'base64',media_type:'image/jpeg',data:b64}},
-        {type:'text',text:prompt}
-      ]}]}, function(reply){
-        input.value='';
-        try{
-          var clean=reply.replace(/```json|```/g,'').trim();
-          var json=JSON.parse(clean);
-          var added=[];
-          if(json.steps&&json.steps>0){
-            var memo='';
-            if(json.distance_km) memo+='거리 '+json.distance_km+'km';
-            if(json.calories) memo+=(memo?' · ':'')+json.calories+'kcal';
-            _exPendingList.push({type:'걷기', dur:json.active_min?json.active_min+'분':'', reps:'', steps:String(json.steps), memo:memo});
-            added.push('걷기 '+Number(json.steps).toLocaleString()+'보');
-          }
-          if(json.floors&&json.floors>0){
-            _exPendingList.push({type:'계단 오르기', dur:'', reps:'', steps:String(json.floors), memo:''});
-            added.push('계단 '+json.floors+'층');
-          }
-          if(added.length){
-            _renderExPending();
-            // 만보 챌린지 자동 인증
-            var exDate=normDate(($id('ex-date')||{}).value)||todayStr();
-            if(json.steps>=CHALLENGE_GOAL){
-              var certified=_certifyChallenge(exDate, json.steps);
-              if(certified) added.push('🏆 만보 달성!');
-            }
-            if(ar) ar.style.display='none';
-            toast('자동 입력 완료: '+added.join(', ')+' ✓');
-          } else {
-            if(ar) ar.innerHTML='걸음수를 인식하지 못했어요. 걸음수가 보이는 화면을 캡처해 주세요.';
-          }
-        }catch(e){
-          if(ar) ar.innerHTML='파싱 오류. 걸음수가 크게 보이는 화면을 캡처해 주세요.';
-        }
-      });
-    };
-    img.src=dataUrl;
-  };
-  r.readAsDataURL(file);
-}
 
 function _refreshHomeExercise(){
   var el=$id('home-exercise-result'); if(!el) return;
@@ -4001,7 +3925,7 @@ return {
   // 컨디션 기록
   openConditionSheet:openConditionSheet, selectCondState:selectCondState, saveCondition:saveCondition,
   // 종합 분석
-  analyzeEx:analyzeEx, analyzeExAll:analyzeExAll, addExToList:addExToList, removeExFromList:removeExFromList, deleteExItem:deleteExItem, pickExType:pickExType, parseSamsungHealth:parseSamsungHealth, _shImgSelected:_shImgSelected, autoReadHealthSteps:autoReadHealthSteps, showChallengeAdmin:showChallengeAdmin,
+  analyzeEx:analyzeEx, analyzeExAll:analyzeExAll, addExToList:addExToList, removeExFromList:removeExFromList, deleteExItem:deleteExItem, pickExType:pickExType, autoReadHealthSteps:autoReadHealthSteps, showChallengeAdmin:showChallengeAdmin,
   analyzeComprehensive:analyzeComprehensive,
   // 증상
   openSymSheet:openSymSheet, saveSymQuick:saveSymQuick, saveSym:saveSym,
