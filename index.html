@@ -546,7 +546,7 @@
           <i class="ti ti-help-circle" style="font-size:22px;"></i>
         </button>
         <button onclick="A.confirmLogout()" style="background:none;border:none;cursor:pointer;padding:4px 8px;border-radius:12px;font-size:11px;font-weight:700;color:var(--mu2);white-space:nowrap;" title="로그아웃">나가기</button>
-        <button class="tb-btn" onclick="A.onMic()" id="vfab-top" style="width:48px;height:48px;font-size:28px;"><i class="ti ti-microphone" id="mic-icon"></i></button>
+        <button class="tb-btn" onclick="A.onMic()" id="vfab-top" style="width:38px;height:38px;font-size:20px;"><i class="ti ti-microphone" id="mic-icon"></i></button>
       </div>
     </div>
 
@@ -694,6 +694,9 @@
         <div style="margin-top:10px;">
           <div style="font-size:11px;font-weight:700;color:var(--mu2);margin-bottom:7px;">빠른 선택 (탭하면 입력)</div>
           <div style="display:flex;flex-wrap:wrap;gap:6px;" id="ex-quick-chips">
+            <button class="ex-chip" onclick="A.pickExType('걷기')">🚶 걷기</button>
+            <button class="ex-chip" onclick="A.pickExType('런닝')">🏃 런닝</button>
+            <button class="ex-chip" onclick="A.pickExType('등산')">🧗 등산</button>
             <button class="ex-chip" onclick="A.pickExType('계단 오르기')">🪜 계단 오르기</button>
             <button class="ex-chip" onclick="A.pickExType('자전거')">🚴 자전거</button>
             <button class="ex-chip" onclick="A.pickExType('수영')">🏊 수영</button>
@@ -1102,7 +1105,7 @@ function initInstallBanner(){
   var btn    = document.getElementById('pwa-install-btn');
   if(!banner || !btn) return;
 
-  if(_isStandalone){ banner.style.display='none'; return; }
+  if(_isStandalone || (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform())){ banner.style.display='none'; return; }
 
   _bannerReady = true;
   banner.style.display = 'block';
