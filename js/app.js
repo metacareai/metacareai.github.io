@@ -1641,6 +1641,7 @@ function goPage(p){
     _refreshYesterdayFeedback();
     _refreshHomeProgress();
     _refreshChallengeCard();
+    _startStepsAutoRefresh();
     if(USER&&USER.mode!=='cancer'){ _refreshStats(); }
     else{ _refreshMedHome(); _refreshTodaySym(); if(USER.ctype==='prostate') _refreshPSABanner(); }
   }
@@ -1923,7 +1924,7 @@ function toggleAnalysis(){
   _refreshHomeAnalysis();
 }
 
-var _stepsExTypes  = ['걷기','빠르게 걷기','런닝','등산','계단 오르기'];
+var _stepsExTypes  = ['계단 오르기'];
 var _repsExTypes   = ['윗몸 일으키기','플랭크','푸시업','스쿼트','줄넘기','풀업','턱걸이','버피'];
 var _stairsExTypes = ['계단 오르기'];
 
@@ -1998,12 +1999,16 @@ function analyzeExAll(){
   var list=_exPendingList.slice();
   var u=USER, ic=u&&u.mode==='cancer';
   var modeLabel=ic?'암 환자 관점(면역·체력·피로 관리)':({keto:'케토제닉',carnivore:'카니보어',lchf:'저탄고지',diet:'다이어트'}[(u&&u.mode)||'']||'건강 관리')+' 관점(지방 연소·체력·운동 후 식사)';
-  var summary=list.map(function(ex){ return ex.type+(ex.reps?' '+ex.reps+'회':'')+(ex.dur?' '+ex.dur:'')+(ex.steps?' '+(ex.type==='계단 오르기'?'계단:':'걸음:')+ex.steps:''); }).join(', ');
-  // 오늘 식사 메모 포함
+  var hcRec = list.find(function(e){ return e.source==='healthconnect'; });
+  var manualList = list.filter(function(e){ return e.source!=='healthconnect'; });
+  var summary = manualList.map(function(ex){ return ex.type+(ex.reps?' '+ex.reps+'회':'')+(ex.dur?' '+ex.dur:'')+(ex.steps?' 계단:'+ex.steps:''); }).join(', ');
   var todayMealMemo = (function(){
     var fn=$id('food-name'); return fn&&fn.value.trim()||'';
   })();
-  var prompt='오늘 운동 기록: '+summary+'.'+(todayMealMemo?' 오늘 식사: '+todayMealMemo+'.':'')+' '+modeLabel+'에서 전체 평가를 3~4문장으로 해주세요.';
+  var prompt=(hcRec?'삼성헬스 오늘 총 걸음수: '+Number(hcRec.steps).toLocaleString()+'보. ':'')
+    +(summary?'수기 운동: '+summary+'. ':'')
+    +(todayMealMemo?'오늘 식사: '+todayMealMemo+'. ':'')
+    +modeLabel+'에서 전체 평가를 3~4문장으로 해주세요.';
   _api({max_tokens:400,messages:[{role:'user',content:prompt}]}, function(reply){
     var result=reply||'분석 결과를 가져오지 못했어요.';
     var mealTag = todayMealMemo ? '<div style="font-size:11px;color:var(--teal);margin-bottom:6px;">🍽 식사 메모: '+esc(todayMealMemo)+'</div>' : '';
@@ -2142,14 +2147,15 @@ function _refreshChallengeCard(){
     +'<div style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;'+(certified?'background:#E8F8F3;color:#0D7A52;':'background:var(--cream);color:var(--mu2);')+'">'
     +(certified?'✅ 오늘 달성!':'오늘 미달성')+'</div>'
     +'</div>'
-    +(todaySteps>0?
-      '<div style="margin-bottom:10px;">'
-      +'<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--mu2);margin-bottom:4px;">'
-      +'<span>오늘 '+Number(todaySteps).toLocaleString()+'보</span>'
-      +'<span>목표 '+Number(CHALLENGE_GOAL).toLocaleString()+'보</span></div>'
-      +'<div style="height:7px;background:var(--cream);border-radius:4px;overflow:hidden;">'
-      +'<div style="height:100%;width:'+pct+'%;background:'+(certified?'var(--teal)':'#F0A500')+';border-radius:4px;transition:width .4s;"></div>'
-      +'</div></div>':'')
+    +'<div style="margin-bottom:10px;">'
+    +'<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;">'
+    +'<span style="font-size:26px;font-weight:800;color:'+(certified?'var(--teal)':'var(--navy)')+';">'+Number(todaySteps).toLocaleString()+'<span style="font-size:12px;font-weight:400;margin-left:3px;color:var(--mu2);">보</span></span>'
+    +'<span style="font-size:11px;color:var(--mu2);">목표 '+Number(CHALLENGE_GOAL).toLocaleString()+'보</span></div>'
+    +'<div style="height:8px;background:var(--cream);border-radius:4px;overflow:hidden;">'
+    +'<div style="height:100%;width:'+pct+'%;background:'+(certified?'var(--teal)':'#F0A500')+';border-radius:4px;transition:width .6s;"></div>'
+    +'</div>'
+    +(todaySteps===0?'<div style="font-size:11px;color:var(--mu2);margin-top:4px;">잠시 후 자동으로 불러옵니다</div>':'')
+    +'</div>'
     +'<div style="display:flex;gap:8px;margin-bottom:'+(certified?'0':'10px')+'">'
     +'<div style="flex:1;text-align:center;background:var(--cream);border-radius:var(--r-sm);padding:8px 4px;">'
     +'<div style="font-size:20px;font-weight:800;color:var(--teal);">'+stats.days+'</div>'
@@ -2214,10 +2220,6 @@ function showChallengeAdmin(){
 /* ── Health Connect API (Capacitor 네이티브 앱 전용) ── */
 var _hcPlugin = null;
 
-function _isCapacitor(){
-  return !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
-}
-
 function _getHCPlugin(){
   if(_hcPlugin) return _hcPlugin;
   try{
@@ -2256,13 +2258,47 @@ function readHealthConnectSteps(cb){
   });
 }
 
-// 챌린지 카드의 "자동 인증" 버튼 또는 홈 진입 시 호출
+// 조용히 걸음수 읽어서 카드만 갱신 (토스트 없음)
+var _stepsRefreshTimer = null;
+function _silentReadSteps(){
+  if(!_getHCPlugin()) return;
+  readHealthConnectSteps(function(steps, err){
+    if(err || steps == null) return;
+    var today = todayStr();
+    if(!_challengeCache) _challengeCache = {};
+    _challengeCache[today] = steps;
+    _refreshChallengeCard();
+    // 운동 기록 동기화
+    var days = _getRecs();
+    var dayRec = days.find(function(d){ return d.date===today; });
+    if(!dayRec){ dayRec={date:today,photos:{},steps:''}; days.push(dayRec); days.sort(function(a,b){return a.date<b.date?-1:1;}); }
+    if(!dayRec.exercise) dayRec.exercise=[];
+    var hcIdx = dayRec.exercise.findIndex(function(e){ return e.source==='healthconnect'; });
+    var hcRec = {type:'걸음수(삼성헬스)', steps:steps, source:'healthconnect', ts:Date.now()};
+    if(hcIdx>=0){ dayRec.exercise[hcIdx]=hcRec; } else { dayRec.exercise.push(hcRec); }
+    dayRec.steps = String(steps);
+    _setRecs(days);
+    _refreshHomeExercise();
+  });
+}
+
+function _startStepsAutoRefresh(){
+  if(!_getHCPlugin()) return;
+  _silentReadSteps();
+  if(_stepsRefreshTimer) clearInterval(_stepsRefreshTimer);
+  _stepsRefreshTimer = setInterval(_silentReadSteps, 5*60*1000);
+}
+
+// 챌린지 카드의 "걸음수 인증하기" 버튼
 function autoReadHealthSteps(){
-  if(!_isCapacitor()){ toast('삼성헬스 자동 연동은 앱 버전에서만 가능합니다.'); return; }
-  toast('걸음수 불러오는 중...');
+  if(!_getHCPlugin()){
+    toast('삼성헬스 자동 연동은 앱에서만 사용 가능합니다');
+    return;
+  }
   readHealthConnectSteps(function(steps, err){
     if(err){ toast('걸음수 읽기 실패: '+err); return; }
     var today = todayStr();
+    // 챌린지 인증
     if(steps >= CHALLENGE_GOAL){
       var certified = _certifyChallenge(today, steps);
       if(certified){
@@ -2273,6 +2309,19 @@ function autoReadHealthSteps(){
     } else {
       toast('오늘 '+steps.toLocaleString()+'보 (목표 '+CHALLENGE_GOAL.toLocaleString()+'보)');
     }
+    // 운동 기록에 자동 저장 (삼성헬스 출처, 중복 방지)
+    var days = _getRecs();
+    var dayRec = days.find(function(d){ return d.date===today; });
+    if(!dayRec){ dayRec={date:today,photos:{},steps:''}; days.push(dayRec); days.sort(function(a,b){return a.date<b.date?-1:1;}); }
+    if(!dayRec.exercise) dayRec.exercise=[];
+    var hcIdx = dayRec.exercise.findIndex(function(e){ return e.source==='healthconnect'; });
+    var hcRec = {type:'걸음수(삼성헬스)', steps:steps, source:'healthconnect', ts:Date.now()};
+    if(hcIdx>=0){ dayRec.exercise[hcIdx]=hcRec; }
+    else { dayRec.exercise.push(hcRec); }
+    dayRec.steps = String(steps);
+    _setRecs(days);
+    _refreshHomeExercise();
+    _refreshComprehensiveBtn();
   });
 }
 
@@ -2285,16 +2334,18 @@ function _refreshHomeExercise(){
   if(dayRec&&dayRec.exercise&&dayRec.exercise.length){
     var exList=dayRec.exercise;
     el.style.display='block';
-    var html='<div class="tip-lbl"><i class="ti ti-run" style="font-size:10px;"></i> 운동 분석 ('+exList.length+'개)</div>';
+    el.style.cursor='pointer';
+    var html='<div class="tip-lbl"><i class="ti ti-run" style="font-size:10px;"></i> 운동 분석 ('+exList.length+'개) <span style="float:right;font-size:10px;color:var(--teal);">운동 탭 →</span></div>';
     exList.forEach(function(ex,i){
       html+=(i>0?'<div style="border-top:1px solid var(--bd);margin:6px 0;"></div>':'')
-        +'<div style="font-size:11px;font-weight:700;margin-bottom:2px;">🏃 '+esc(ex.type)+(ex.dur?' · '+esc(ex.dur):'')+'</div>'
+        +'<div style="font-size:11px;font-weight:700;margin-bottom:2px;">🏃 '+esc(ex.type)+(ex.dur?' · '+esc(ex.dur):'')+(ex.steps&&ex.source!=='healthconnect'?' · '+Number(ex.steps).toLocaleString()+'계단':'')+'</div>'
         +(ex.analysis?'<div style="font-size:11px;">'+esc(ex.analysis)+'</div>':'');
     });
     el.innerHTML=html;
-
+    el.onclick=function(){ goPage('ex'); };
   } else {
     el.style.display='none';
+    el.onclick=null;
   }
 }
 
@@ -3239,11 +3290,19 @@ function _emergencySave(){
   }
 }
 document.addEventListener('visibilitychange', function(){
-  if(document.hidden) _emergencySave();
+  if(document.hidden){ _emergencySave(); }
+  else { _silentReadSteps(); }
 });
 window.addEventListener('pagehide', _emergencySave);
 
 /* ── 초기 진입 ── */
+// Capgo Live Update: 앱이 정상 로드됐음을 알림 (롤백 방지)
+try{
+  if(window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.CapacitorUpdater){
+    window.Capacitor.Plugins.CapacitorUpdater.notifyAppReady();
+  }
+}catch(e){}
+
 _loadCloudData(function(){
   var lo = $id('loading-overlay'); if(lo) lo.style.display='none';
   // 자동 재로그인 시도
