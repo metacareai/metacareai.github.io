@@ -2292,7 +2292,7 @@ function _startStepsAutoRefresh(){
 // 챌린지 카드의 "걸음수 인증하기" 버튼
 function autoReadHealthSteps(){
   if(!_getHCPlugin()){
-    toast('삼성헬스 자동 연동은 앱에서만 사용 가능합니다');
+    toast('다음 버전을 준비하고 있습니다');
     return;
   }
   readHealthConnectSteps(function(steps, err){
