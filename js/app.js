@@ -1,6 +1,6 @@
 'use strict';
 
-/* 랜딩 태그 클릭 이벤트 — DOM 준비 후 직접 바인딩 */
+/* 랜딩 태그 클릭 이벤트  DOM 준비 후 직접 바인딩 */
 document.addEventListener('DOMContentLoaded', function(){
   document.querySelectorAll('.landing-tag').forEach(function(tag){
     tag.addEventListener('click', function(){
@@ -20,13 +20,13 @@ document.addEventListener('DOMContentLoaded', function(){
   });
 });
 
-/* ════════════════════════════
-   A — 앱 전체 네임스페이스
-════════════════════════════ */
+/* 
+   A  앱 전체 네임스페이스
+ */
 var A = (function(){
 
-/* ══════════════════════════════════════════════════════
-   ⚠️  절대 변경 금지 구역 (CRITICAL - DO NOT MODIFY)
+/* 
+     절대 변경 금지 구역 (CRITICAL - DO NOT MODIFY)
    아래 함수/변수는 데이터 구조의 핵심입니다.
    변경 시 기존 사용자 데이터가 모두 손실됩니다.
    
@@ -36,9 +36,9 @@ var A = (function(){
    - _setRecs()       : records 키 이름 고정
    - _cache           : Firestore 동기화 캐시
    - _docRef          : Firestore 문서 경로 고정
-══════════════════════════════════════════════════════ */
+ */
 
-/* ── 상태 ── */
+/*  상태  */
 var KEY = ''; // Anthropic API key - Firebase에서 로드
 var USER = null;        // 현재 로그인 사용자
 var _newMode = '';
@@ -58,7 +58,7 @@ var _logoTapCount = 0;
 var _logoTapTimer = null;
 var _lastLogoTapTs = 0;
 
-/* ── Firebase 초기화 ── */
+/*  Firebase 초기화  */
 var firebaseConfig = {
   apiKey: "AIzaSyCOYX1JyAqM7nZHQGc4QzjiOS6mNvFlEYc",
   authDomain: "metacare-voice.firebaseapp.com",
@@ -72,7 +72,7 @@ var _db = firebase.firestore();
 var _docRef = _db.collection('metacare').doc('data');
 var _storage = firebase.storage();
 
-/* ── 스토리지 헬퍼 (메모리 캐시 + Firestore 동기화) ── */
+/*  스토리지 헬퍼 (메모리 캐시 + Firestore 동기화)  */
 var _cache = {};        // 모든 키-값을 메모리에 보관 (동기 접근용)
 var _cacheReady = false;
 var _saveCloudTimer = null;
@@ -91,8 +91,8 @@ function _saveCloud(){
     });
     var size = JSON.stringify(slim).length;
     if(size > 900000){
-      console.error('🚨 저장 데이터 크기 초과:', size, 'bytes');
-      toast('⚠️ 데이터 크기 초과 - 관리자에게 문의하세요');
+      console.error(' 저장 데이터 크기 초과:', size, 'bytes');
+      toast(' 데이터 크기 초과 - 관리자에게 문의하세요');
       return;
     }
     _docRef.set(slim).catch(function(err){ console.error('Firestore 저장 오류', err); });
@@ -132,13 +132,13 @@ var S = {
 };
 
 // 사용자별 키
-function uk(k){ return 'mc_'+USER.id+'_'+k; }
+function uk(k){ if(!USER) return ''; return 'mc_'+USER.id+'_'+k; }
 function ug(k){ return S.g(uk(k)); }
 function us(k,v){ S.s(uk(k),v); }
 function ugj(k,d){ try{ return JSON.parse(ug(k)||'null')||d; }catch(e){ return d; } }
 function usj(k,v){ us(k,JSON.stringify(v)); }
 
-/* ── 클라우드에서 초기 데이터 로드 ── */
+/*  클라우드에서 초기 데이터 로드  */
 function _loadCloudData(cb){
   // API 키와 앱 데이터를 병렬로 로드
   var keyLoaded = false, dataLoaded = false;
@@ -172,11 +172,11 @@ function _loadCloudData(cb){
   });
 }
 
-/* ══════════════════════════════════════════════════════
-   🛡️  자동 백업 시스템 (AUTO-BACKUP SYSTEM)
+/* 
+     자동 백업 시스템 (AUTO-BACKUP SYSTEM)
    앱 로드 시 자동으로 스냅샷 저장
    최근 7일치 보관, 언제든 복구 가능
-══════════════════════════════════════════════════════ */
+ */
 function _autoBackup(){
   try {
     var today = new Date();
@@ -245,7 +245,7 @@ function _verifyDataIntegrity(){
     var recs = ugj('records',[]);
     var users = S.gj('mc_users',[]);
     if(users.length > 0 && recs.length === 0){
-      console.warn('⚠️ 사용자는 있는데 기록이 없습니다. 백업 복원을 확인하세요.');
+      console.warn(' 사용자는 있는데 기록이 없습니다. 백업 복원을 확인하세요.');
     }
   }catch(e){ console.error('무결성 검사 오류:', e); }
 }
@@ -287,7 +287,7 @@ function _restoreBackup(dateKey){
     });
     _cache = Object.assign({}, snapshot, backups);
     _saveCloud();
-    toast('✅ '+dateKey+' 백업으로 복원됐습니다. 앱을 새로고침하세요.');
+    toast(' '+dateKey+' 백업으로 복원됐습니다. 앱을 새로고침하세요.');
     return true;
   } catch(e) {
     toast('복원 실패: '+e.message);
@@ -300,7 +300,7 @@ function toast(msg){ var t=$id('toast'); t.textContent=msg; t.classList.add('sho
 function _showGreeting(name){
   var el = document.createElement('div');
   el.style.cssText = 'position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(26,47,76,.92);z-index:9999;gap:14px;';
-  el.innerHTML = '<div style="font-size:52px;">🧬</div>'
+  el.innerHTML = '<div style="font-size:52px;"></div>'
     +'<div style="color:#fff;font-size:22px;font-weight:700;">안녕하세요</div>'
     +'<div style="color:#7DFFC8;font-size:26px;font-weight:700;">'+esc(name)+' 님!</div>'
     +'<div style="color:rgba(255,255,255,.55);font-size:14px;margin-top:4px;">AI로 관리 받으세요</div>';
@@ -309,7 +309,7 @@ function _showGreeting(name){
 }
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function md(s){
-  // 마크다운 → HTML 간단 변환 (**굵게**, *기울임*, # 제목, 줄바꿈)
+  // 마크다운  HTML 간단 변환 (**굵게**, *기울임*, # 제목, 줄바꿈)
   return esc(s)
     .replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>')
     .replace(/\*([^*]+)\*/g,'<em>$1</em>')
@@ -317,7 +317,7 @@ function md(s){
     .replace(/\n/g,'<br>');
 }
 function todayStr(){ var d=new Date(); return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
-// YYYYMMDD → YYYY-MM-DD 변환 (잘못된 형식 보정)
+// YYYYMMDD  YYYY-MM-DD 변환 (잘못된 형식 보정)
 function normDate(s){
   if(!s) return todayStr();
   s=s.trim();
@@ -327,7 +327,7 @@ function normDate(s){
 }
 function pad(n){ return n<10?'0'+n:String(n); }
 
-/* ── 화면 전환 ── */
+/*  화면 전환  */
 var _navStack = [];
 var _suppressPush = false;
 
@@ -359,9 +359,9 @@ try{
   history.pushState({navIdx:0}, '', location.href);
 }catch(e){}
 
-/* (최초 설정 화면 제거됨 — API 키는 코드에 내장되어 있음) */
+/* (최초 설정 화면 제거됨  API 키는 코드에 내장되어 있음) */
 
-/* ── Admin 진입 (로고 5탭) ── */
+/*  Admin 진입 (로고 5탭)  */
 function logoTap(){
   var now=Date.now();
   if(now-_lastLogoTapTs<200) return; // onclick+ontouchstart 동시 발생 방지
@@ -390,7 +390,7 @@ function nameTap(){
   }
 }
 
-/* ── Admin 로그인 ── */
+/*  Admin 로그인  */
 function checkPw(){
   var pw = $id('admin-pw-input').value;
   var stored = S.g('mc_admin_pw')||'Kevin';
@@ -408,11 +408,11 @@ function checkPw(){
   }
 }
 
-/* ── Admin 기능 ── */
+/*  Admin 기능  */
 function _getUsers(){ return S.gj('mc_users', []); }
 function _setUsers(u){ S.sj('mc_users', u); }
 
-/* ── 환자 현황 모니터링 ── */
+/*  환자 현황 모니터링  */
 function _renderMonitorList(){
   var users = _getUsers();
   var el = $id('monitor-list'); if(!el) return;
@@ -421,7 +421,7 @@ function _renderMonitorList(){
     return;
   }
   var ml = {cancer:'질병 관리', keto:'케토제닉', carnivore:'카니보어', lchf:'저탄고지', diet:'다이어트 건강식'};
-  var mi = {cancer:'🔬', keto:'🥑', carnivore:'🥩', lchf:'🍖', diet:'🥗'};
+  var mi = {cancer:'', keto:'', carnivore:'', lchf:'', diet:''};
   var cn = {thyroid:'갑상선암',colorectal:'대장암',lung:'폐암',stomach:'위암',breast:'유방암',liver:'간암',pancreas:'췌장암',bile:'담낭·담도암',kidney:'신장암',cervical:'자궁경부암',prostate:'전립선암',other:'기타 암'};
 
   el.innerHTML = users.map(function(u){
@@ -455,10 +455,10 @@ function _renderMonitorList(){
 
     return '<button onclick="A.showPatient(\''+u.id+'\')" style="width:100%;text-align:left;background:#fff;border:none;border-radius:var(--r-sm);padding:13px 15px;margin-bottom:8px;box-shadow:var(--sh-sm);cursor:pointer;display:flex;flex-direction:column;align-items:flex-start;gap:10px;">'
       +'<div style="display:flex;align-items:center;gap:10px;width:100%;">'
-      +'<div class="admin-user-av '+(ic?'cancer':'health')+'" style="font-size:18px;">'+(mi[u.mode]||'👤')+'</div>'
+      +'<div class="admin-user-av '+(ic?'cancer':'health')+'" style="font-size:18px;">'+(mi[u.mode]||'')+'</div>'
       +'<div style="flex:1"><div class="admin-user-name">'+esc(u.name)+(u.birthYear?' · '+u.birthYear+'년생':'')+'</div>'
       +'<div class="admin-user-detail">'+esc(ms)+'</div></div>'
-      +'<i class="ti ti-chevron-right" style="color:var(--mu);font-size:18px;"></i>'
+      +''
       +'</div>'
       +(ic?'<div style="display:flex;gap:8px;width:100%;flex-wrap:wrap;">'
         +'<span style="background:var(--purple-l);color:var(--purple);font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;">PSA: '+esc(psaTxt)+'</span>'
@@ -487,11 +487,11 @@ function showPatient(userId){
   // 환자로 보기 버튼
   html += '<div style="padding:12px 16px 0;">'
     +'<button onclick="A.viewAsPatient(\''+u.id+'\')" style="width:100%;padding:14px;background:linear-gradient(135deg,var(--teal),var(--teal2));color:#fff;border:none;border-radius:var(--r-md);font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 14px rgba(25,184,155,.3);">'
-    +'<i class="ti ti-eye"></i> '+esc(u.name)+' 님 화면으로 보기'
+    +' '+esc(u.name)+' 님 화면으로 보기'
     +'</button></div>';
 
   // 기본 정보
-  html += '<div class="card"><div class="card-hd"><span>👤 기본 정보</span></div>'
+  html += '<div class="card"><div class="card-hd"><span> 기본 정보</span></div>'
     +'<div class="card-body">'
     +'<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--bd);"><span style="color:var(--mu);">이름</span><span style="font-weight:700;">'+esc(u.name)+'</span></div>'
     +(u.birthYear?'<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--bd);"><span style="color:var(--mu);">출생년도</span><span style="font-weight:700;">'+u.birthYear+'년생</span></div>':'')
@@ -501,7 +501,7 @@ function showPatient(userId){
   // PSA 기록 (암환자)
   if(ic){
     var psaData = S.gj('mc_'+u.id+'_psa', []);
-    html += '<div class="card"><div class="card-hd"><span>📈 PSA 기록</span></div><div class="card-body">';
+    html += '<div class="card"><div class="card-hd"><span> PSA 기록</span></div><div class="card-body">';
     if(!psaData.length){ html += '<div style="color:var(--mu);font-size:13px;">기록 없음</div>'; }
     else {
       [].concat(psaData).reverse().slice(0,5).forEach(function(p){
@@ -515,7 +515,7 @@ function showPatient(userId){
     // 증상 기록
     var symData = S.gj('mc_'+u.id+'_sym', {});
     var symKeys = Object.keys(symData).sort().reverse().slice(0,5);
-    html += '<div class="card"><div class="card-hd"><span>🩺 최근 증상</span></div><div class="card-body">';
+    html += '<div class="card"><div class="card-hd"><span> 최근 증상</span></div><div class="card-body">';
     if(!symKeys.length){ html += '<div style="color:var(--mu);font-size:13px;">기록 없음</div>'; }
     else {
       symKeys.forEach(function(date){
@@ -534,7 +534,7 @@ function showPatient(userId){
 
     // 복약
     var meds = S.gj('mc_'+u.id+'_meds', []);
-    html += '<div class="card"><div class="card-hd"><span>💊 복약 목록</span></div><div class="card-body">';
+    html += '<div class="card"><div class="card-hd"><span> 복약 목록</span></div><div class="card-body">';
     if(!meds.length){ html += '<div style="color:var(--mu);font-size:13px;">등록된 약 없음</div>'; }
     else { meds.forEach(function(m){ html += '<div style="padding:6px 0;border-bottom:1px solid var(--bd);font-size:13px;">'+esc(m.name)+(m.dose?' ('+esc(m.dose)+')':'')+(m.time?' · '+esc(m.time):'')+'</div>'; }); }
     html += '</div></div>';
@@ -542,7 +542,7 @@ function showPatient(userId){
 
   // 식단 기록
   var recs = S.gj('mc_'+u.id+'_records', []);
-  html += '<div class="card"><div class="card-hd"><span>🍽️ 최근 식단 기록</span></div><div class="card-body">';
+  html += '<div class="card"><div class="card-hd"><span> 최근 식단 기록</span></div><div class="card-body">';
   if(!recs.length){ html += '<div style="color:var(--mu);font-size:13px;">기록 없음</div>'; }
   else {
     [].concat(recs).reverse().slice(0,5).forEach(function(r){
@@ -569,7 +569,7 @@ function _renderAdminList(){
     return;
   }
   var ml = {cancer:'질병 관리', keto:'케토제닉', carnivore:'카니보어', lchf:'저탄고지', diet:'다이어트 건강식'};
-  var mi = {cancer:'🔬', keto:'🥑', carnivore:'🥩', lchf:'🍖', diet:'🥗'};
+  var mi = {cancer:'', keto:'', carnivore:'', lchf:'', diet:''};
   var cn = {thyroid:'갑상선암',colorectal:'대장암',lung:'폐암',stomach:'위암',breast:'유방암',liver:'간암',pancreas:'췌장암',bile:'담낭·담도암',kidney:'신장암',cervical:'자궁경부암',prostate:'전립선암',other:'기타 암'};
   el.innerHTML = users.map(function(u){
     var ic = u.mode==='cancer';
@@ -578,10 +578,10 @@ function _renderAdminList(){
     var by = u.birthYear ? ' · '+u.birthYear+'년생' : '';
     return '<div class="admin-user-card">'
       +'<button onclick="A.showPatient(\''+u.id+'\')" style="flex:1;display:flex;align-items:center;gap:0;background:none;border:none;padding:0;cursor:pointer;text-align:left;min-width:0;">'
-      +'<div class="admin-user-av '+(ic?'cancer':'health')+'">'+(mi[u.mode]||'👤')+'</div>'
+      +'<div class="admin-user-av '+(ic?'cancer':'health')+'">'+(mi[u.mode]||'')+'</div>'
       +'<div style="flex:1;min-width:0;"><div class="admin-user-name">'+esc(u.name)+'</div><div class="admin-user-detail">'+esc(ms)+esc(by)+'</div></div>'
       +'</button>'
-      +'<button class="admin-act del" onclick="A.delUser(\''+u.id+'\')"><i class="ti ti-trash"></i> 삭제</button>'
+      +'<button class="admin-act del" onclick="A.delUser(\''+u.id+'\')"> 삭제</button>'
       +'</div>';
   }).join('');
 }
@@ -601,7 +601,7 @@ function changePw(){
   if(p1!==p2){ toast('비밀번호가 일치하지 않아요'); return; }
   S.s('mc_admin_pw', p1);
   $id('new-pw1').value=''; $id('new-pw2').value='';
-  toast('비밀번호 변경됐어요 ✓');
+  toast('비밀번호 변경됐어요 ');
 }
 
 function forceCloudSave(){
@@ -614,14 +614,14 @@ function forceCloudSave(){
     slim[k] = v;
   });
   _docRef.set(slim).then(function(){
-    toast('✅ 데이터 강제 저장 완료!');
+    toast(' 데이터 강제 저장 완료!');
     alert('저장 완료! 키: ' + Object.keys(slim).join(', '));
   }).catch(function(err){
     alert('저장 실패: ' + err.message);
   });
 }
 
-/* ── 데이터 진단 (읽기 전용) ── */
+/*  데이터 진단 (읽기 전용)  */
 function runDiag(){
   goScreen('scr-admin-diag');
   var el = $id('diag-result'); if(!el) return;
@@ -646,7 +646,7 @@ function runDiag(){
     try{ recs = JSON.parse(_cache[key]||'[]')||[]; }catch(e){}
     var dates = recs.map(function(r){return r.date||'?';}).sort();
     lines.push('');
-    lines.push('👤 '+u.name+' (id: '+u.id+')');
+    lines.push(' '+u.name+' (id: '+u.id+')');
     lines.push('  records 키: '+key);
     lines.push('  기록 수: '+recs.length+'개');
     if(dates.length){
@@ -654,7 +654,7 @@ function runDiag(){
       lines.push('  마지막: '+dates[dates.length-1]);
       lines.push('  전체: '+dates.join(', '));
     } else {
-      lines.push('  ⚠️ 기록 없음');
+      lines.push('   기록 없음');
     }
   });
 
@@ -679,12 +679,12 @@ function runDiag(){
       if(doc.exists && doc.data().records){
         try{
           var oldRecs = JSON.parse(doc.data().records)||[];
-          lines.push('⚠️ '+u.name+' 구버전 경로에 '+oldRecs.length+'개 기록 존재');
+          lines.push(' '+u.name+' 구버전 경로에 '+oldRecs.length+'개 기록 존재');
           var oldDates = oldRecs.map(function(r){return r.date;}).sort();
           lines.push('   날짜: '+oldDates.join(', '));
         }catch(e){ lines.push(u.name+' 구버전 파싱 오류'); }
       } else {
-        lines.push('✅ '+u.name+' 구버전 경로 없음 (정상)');
+        lines.push(' '+u.name+' 구버전 경로 없음 (정상)');
       }
       checked++;
       if(checked===users.length){
@@ -704,7 +704,7 @@ function backup(){
   var a = document.createElement('a');
   a.href=url; a.download='metacare_'+new Date().toISOString().slice(0,10)+'.json'; a.click();
   URL.revokeObjectURL(url);
-  toast('백업 완료 ✓');
+  toast('백업 완료 ');
 }
 
 function backupText(){
@@ -757,27 +757,27 @@ function fullReset(){
   _docRef.set({}).then(function(){ location.reload(); }).catch(function(){ location.reload(); });
 }
 
-/* ── 사용자 추가 ── */
+/*  사용자 추가  */
 var _MODES = [
-  {id:'cancer', icon:'🔬', name:'질병 관리', desc:'PSA 추적 · 증상 기록 · 복약 · 식단 분석'},
-  {id:'keto',   icon:'🥑', name:'케토제닉', desc:'탄수화물 20g 이하 · 인슐린 억제 · 케톤 생성'},
-  {id:'carnivore', icon:'🥩', name:'카니보어', desc:'동물성 식품만 · 식물성 식품 배제 · 극단적 저탄수'},
-  {id:'lchf',   icon:'🍖', name:'저탄고지', desc:'탄수화물 50~100g · 혈당 안정 · 체중 관리'},
-  {id:'diet',   icon:'🥗', name:'다이어트 건강식', desc:'지중해식 · 칼로리 제한 · 균형 영양'}
+  {id:'cancer', icon:'', name:'질병 관리', desc:'PSA 추적 · 증상 기록 · 복약 · 식단 분석'},
+  {id:'keto',   icon:'', name:'케토제닉', desc:'탄수화물 20g 이하 · 인슐린 억제 · 케톤 생성'},
+  {id:'carnivore', icon:'', name:'카니보어', desc:'동물성 식품만 · 식물성 식품 배제 · 극단적 저탄수'},
+  {id:'lchf',   icon:'', name:'저탄고지', desc:'탄수화물 50~100g · 혈당 안정 · 체중 관리'},
+  {id:'diet',   icon:'', name:'다이어트 건강식', desc:'지중해식 · 칼로리 제한 · 균형 영양'}
 ];
 var _CTYPES = [
-  {id:'thyroid',    icon:'🦋', name:'갑상선암',    desc:'갑상선 종양 · 수술 후 관리'},
-  {id:'colorectal', icon:'🫁', name:'대장암',       desc:'대장·직장암 · 식단 관리'},
-  {id:'lung',       icon:'🫧', name:'폐암',         desc:'폐 종양 · 호흡기 관리'},
-  {id:'stomach',    icon:'🫃', name:'위암',         desc:'위 종양 · 소화기 관리'},
-  {id:'breast',     icon:'🎀', name:'유방암',       desc:'유방 종양 · 호르몬 관리'},
-  {id:'liver',      icon:'🫀', name:'간암',         desc:'간 종양 · 간 기능 관리'},
-  {id:'pancreas',   icon:'💊', name:'췌장암',       desc:'췌장 종양 · 혈당 관리'},
-  {id:'bile',       icon:'💊', name:'담낭·담도암',  desc:'담낭·담도 종양 관리'},
-  {id:'kidney',     icon:'💊', name:'신장암',       desc:'신장 종양 · 신기능 관리'},
-  {id:'cervical',   icon:'💊', name:'자궁경부암',   desc:'자궁경부 종양 관리'},
-  {id:'prostate',   icon:'🔬', name:'전립선암',     desc:'PSA 추적 · 병기별 관리'},
-  {id:'other',      icon:'💊', name:'기타 암',      desc:'증상 · 복약 통합 관리'}
+  {id:'thyroid',    icon:'', name:'갑상선암',    desc:'갑상선 종양 · 수술 후 관리'},
+  {id:'colorectal', icon:'', name:'대장암',       desc:'대장·직장암 · 식단 관리'},
+  {id:'lung',       icon:'', name:'폐암',         desc:'폐 종양 · 호흡기 관리'},
+  {id:'stomach',    icon:'', name:'위암',         desc:'위 종양 · 소화기 관리'},
+  {id:'breast',     icon:'', name:'유방암',       desc:'유방 종양 · 호르몬 관리'},
+  {id:'liver',      icon:'', name:'간암',         desc:'간 종양 · 간 기능 관리'},
+  {id:'pancreas',   icon:'', name:'췌장암',       desc:'췌장 종양 · 혈당 관리'},
+  {id:'bile',       icon:'', name:'담낭·담도암',  desc:'담낭·담도 종양 관리'},
+  {id:'kidney',     icon:'', name:'신장암',       desc:'신장 종양 · 신기능 관리'},
+  {id:'cervical',   icon:'', name:'자궁경부암',   desc:'자궁경부 종양 관리'},
+  {id:'prostate',   icon:'', name:'전립선암',     desc:'PSA 추적 · 병기별 관리'},
+  {id:'other',      icon:'', name:'기타 암',      desc:'증상 · 복약 통합 관리'}
 ];
 var _STAGES = [
   {n:1, name:'국소 저위험',    desc:'적극적 감시·수술·방사선'},
@@ -863,11 +863,11 @@ function addUser(){
   }
   users.push({id:'u'+Date.now(), name:name, birthYear:year, mode:_newMode, ctype:_newCtype, otherCancerName:otherCancerName, stage:_newStage, treatments:[], createdAt:Date.now()});
   _setUsers(users);
-  toast(name+' 님이 추가됐어요 ✓');
+  toast(name+' 님이 추가됐어요 ');
   goScreen('scr-admin-users');
 }
 
-/* ── 프로필 화면 ── */
+/*  프로필 화면  */
 function enterByName(){
   var name = ($id('login-name').value||'').trim();
   var year = ($id('login-year').value||'').trim();
@@ -900,7 +900,7 @@ function enterByName(){
   loginUser(match);
 }
 
-/* ── 자가 가입 ── */
+/*  자가 가입  */
 var _sjName='', _sjYear='', _sjMode='', _sjCtype='', _sjStage=0;
 
 function goSelfJoin(){
@@ -990,11 +990,11 @@ function selfJoin(){
   var newUser={id:'u'+Date.now(), name:_sjName, birthYear:_sjYear, mode:_sjMode, ctype:_sjCtype, otherCancerName:otherNm, stage:_sjStage, treatments:[], createdAt:Date.now(), agreeTerms:true, agreePrivacy:true, agreeData:agreeData, agreedAt:Date.now()};
   users.push(newUser);
   _setUsers(users);
-  toast(_sjName+' 님, 환영합니다! 🎉');
+  toast(_sjName+' 님, 환영합니다! ');
   loginUser(newUser);
 }
 
-/* ── 동의서 체크박스 동기화 ── */
+/*  동의서 체크박스 동기화  */
 function sjToggleAll(el){
   var checked=el.checked;
   ['sj-agree-terms','sj-agree-privacy','sj-agree-data'].forEach(function(id){
@@ -1008,7 +1008,7 @@ function sjSyncAll(){
   var allCb=$id('sj-agree-all'); if(allCb) allCb.checked=all;
 }
 
-/* ── 동의서 전문 팝업 ── */
+/*  동의서 전문 팝업  */
 var _CONSENT_TEXTS = {
   terms: {
     title: '서비스 이용약관',
@@ -1025,7 +1025,7 @@ var _CONSENT_TEXTS = {
       +'<b>수집 목적</b><br>개인 맞춤 건강 기록 관리, AI 식단·운동 분석 서비스 제공, 만보 챌린지 운영<br><br>'
       +'<b>보유 기간</b><br>회원 탈퇴 시까지. 단, 관계 법령에 따라 일정 기간 보존이 필요한 경우 해당 기간 보관<br><br>'
       +'<b>제3자 제공</b><br>이용자의 개인정보는 원칙적으로 제3자에게 제공하지 않습니다.<br><br>'
-      +'<b>처리 위탁</b><br>Firebase(Google LLC) — 데이터 저장·관리 / Anthropic — AI 분석(식단·운동 텍스트 및 사진 전송)<br><br>'
+      +'<b>처리 위탁</b><br>Firebase(Google LLC)  데이터 저장·관리 / Anthropic  AI 분석(식단·운동 텍스트 및 사진 전송)<br><br>'
       +'<b>이용자 권리</b><br>이용자는 언제든지 개인정보 열람·수정·삭제를 요청할 수 있습니다.'
   },
   data: {
@@ -1050,7 +1050,7 @@ function closeConsent(){
   var sheet=$id('consent-sheet'); if(sheet) sheet.style.display='none';
 }
 
-/* ── 어드민: 환자 화면으로 보기 ── */
+/*  어드민: 환자 화면으로 보기  */
 var _adminUser = null; // 어드민 복귀용 원래 USER 저장
 
 function viewAsPatient(userId){
@@ -1083,10 +1083,11 @@ function exitPatientView(){
   goScreen('scr-admin-patient');
 }
 
-/* ── 로그인 ── */
+/*  로그인  */
 function loginUser(u){
   USER = u;
-  _challengeCache = null; // 사용자 전환 시 이전 캐시 초기화
+  _challengeCache = null;
+  if(_stepsRefreshTimer){ clearInterval(_stepsRefreshTimer); _stepsRefreshTimer=null; }
   try{
     var saved = localStorage.getItem('mc_last_user');
     var lastPage = 'home';
@@ -1106,7 +1107,7 @@ function loginUser(u){
     _initApp();
     goScreen('scr-app');
     if(typeof initInstallBanner==='function') initInstallBanner();
-    // 마지막 페이지 복원 — records 로드 완료 후 실행해야 데이터가 있음
+    // 마지막 페이지 복원  records 로드 완료 후 실행해야 데이터가 있음
     try{
       var s=localStorage.getItem('mc_last_user');
       if(s){ var inf=JSON.parse(s); var lp=inf.lastPage||'home'; if(lp!=='home') setTimeout(function(){ goPage(lp); },100); }
@@ -1114,7 +1115,7 @@ function loginUser(u){
   });
 }
 
-/* ── 자동 재로그인 (한 번 로그인하면 유지) ── */
+/*  자동 재로그인 (한 번 로그인하면 유지)  */
 function _tryAutoLogin(){
   try{
     // 어드민 세션 복원 (새로고침(F5)일 때만, 새 URL 입력은 제외)
@@ -1137,7 +1138,7 @@ function _tryAutoLogin(){
   }catch(e){ return false; }
 }
 
-/* ── 사용자 records 컬렉션 로드 ── */
+/*  사용자 records 컬렉션 로드  */
 function _loadUserRecords(userId, cb){
   var cacheKey = 'mc_'+userId+'_records';
 
@@ -1155,7 +1156,7 @@ function _loadUserRecords(userId, cb){
     if(doc.exists && doc.data().records){
       try{ cloudRecs = JSON.parse(doc.data().records)||[]; }catch(e){}
     }
-    // 세 소스 병합: Firestore → localStorage → 메모리캐시 (나중이 우선)
+    // 세 소스 병합: Firestore  localStorage  메모리캐시 (나중이 우선)
     var lsRecs   = _lsLoadRecs(userId);
     var curRecs  = [];
     try{ curRecs = JSON.parse(_cache[cacheKey]||'null')||[]; }catch(e){}
@@ -1179,14 +1180,14 @@ function _loadUserRecords(userId, cb){
       try{ curRecs = JSON.parse(_cache[cacheKey]||'null')||[]; }catch(e){}
       if(lsRecs.length > curRecs.length){
         _cache[cacheKey] = JSON.stringify(lsRecs);
-        toast('⚠️ 네트워크 오류 - 로컬 백업에서 복원됐습니다 ('+lsRecs.length+'개)');
+        toast(' 네트워크 오류 - 로컬 백업에서 복원됐습니다 ('+lsRecs.length+'개)');
       }
     }
     cb();
   });
 }
 
-/* ── 앱 초기화 ── */
+/*  앱 초기화  */
 function _initApp(){
   var u = USER;
   var ic = u.mode==='cancer';
@@ -1255,7 +1256,7 @@ function _initApp(){
   _refreshCondSummary();
   _refreshHomeAnalysis();
   _refreshHomeExercise();
-  _refreshComprehensiveBtn();
+  _refreshComprehensiveBtn(); _refreshHomeTodayExercise();
   _refreshYesterdayFeedback();
   if(ic){ _refreshMedHome(); _refreshTodaySym(); }
   else{ _refreshStats(); }
@@ -1270,12 +1271,12 @@ function _initApp(){
   setTimeout(_initDragDrop, 500);
 }
 
-/* ── 건강관리 홈 ── */
+/*  건강관리 홈  */
 var _HEALTH_CFG = {
-  keto:{sub:'인슐린 통제 대사 모드',daysLbl:'연속 케토',goalBg:'linear-gradient(135deg,#2A7B7B,#1A5C5C)',goalLbl:'케토 목표',goalHtml:'<div class="goal-vals"><div class="goal-val-item"><div class="val">20g</div><div class="lbl-s">탄수화물</div></div><div class="goal-val-item"><div class="val">75%</div><div class="lbl-s">지방</div></div><div class="goal-val-item"><div class="val">20%</div><div class="lbl-s">단백질</div></div></div>',bannerSub:'케토 적합도와 영양 분석을 즉시 알려드려요',tipTitle:'오늘의 케토 팁',vg2:'"오늘 뭐 먹을까" — 케토 식단 추천'},
-  carnivore:{sub:'동물성 식품 전용 극단적 저탄수 모드',daysLbl:'연속 카니보어',goalBg:'linear-gradient(135deg,#7A2E2E,#4A1818)',goalLbl:'카니보어 목표',goalHtml:'<div class="goal-vals"><div class="goal-val-item"><div class="val">0g</div><div class="lbl-s">탄수화물</div></div><div class="goal-val-item"><div class="val">동물성</div><div class="lbl-s">식품만</div></div><div class="goal-val-item"><div class="val">고단백</div><div class="lbl-s">고지방</div></div></div>',bannerSub:'동물성 식품 적합도를 즉시 분석해 드려요',tipTitle:'오늘의 카니보어 팁',vg2:'"오늘 뭐 먹을까" — 카니보어 식단 추천'},
-  lchf:{sub:'저탄고지 혈당 안정 모드',daysLbl:'저탄고지',goalBg:'linear-gradient(135deg,#1a6b4a,#0d4f35)',goalLbl:'저탄고지 목표',goalHtml:'<div class="goal-vals"><div class="goal-val-item"><div class="val">100g</div><div class="lbl-s">탄수화물</div></div><div class="goal-val-item"><div class="val">50%</div><div class="lbl-s">지방</div></div><div class="goal-val-item"><div class="val">25%</div><div class="lbl-s">단백질</div></div></div>',bannerSub:'저탄고지 적합도와 혈당 영향을 분석해 드려요',tipTitle:'오늘의 저탄고지 팁',vg2:'"오늘 뭐 먹을까" — 저탄고지 식단 추천'},
-  diet:{sub:'균형 건강식 다이어트 모드',daysLbl:'다이어트',goalBg:'linear-gradient(135deg,#1565C0,#0D47A1)',goalLbl:'건강식 목표',goalHtml:'<div class="goal-vals"><div class="goal-val-item"><div class="val">1,600</div><div class="lbl-s">칼로리 목표</div></div><div class="goal-val-item"><div class="val">½</div><div class="lbl-s">채소 비율</div></div><div class="goal-val-item"><div class="val">30%</div><div class="lbl-s">단백질</div></div></div>',bannerSub:'칼로리와 영양 균형을 즉시 분석해 드려요',tipTitle:'오늘의 건강식 팁',vg2:'"오늘 뭐 먹을까" — 건강 식단 추천'}
+  keto:{sub:'인슐린 통제 대사 모드',daysLbl:'연속 케토',goalBg:'linear-gradient(135deg,#2A7B7B,#1A5C5C)',goalLbl:'케토 목표',goalHtml:'<div class="goal-vals"><div class="goal-val-item"><div class="val">20g</div><div class="lbl-s">탄수화물</div></div><div class="goal-val-item"><div class="val">75%</div><div class="lbl-s">지방</div></div><div class="goal-val-item"><div class="val">20%</div><div class="lbl-s">단백질</div></div></div>',bannerSub:'케토 적합도와 영양 분석을 즉시 알려드려요',tipTitle:'오늘의 케토 팁',vg2:'"오늘 뭐 먹을까"  케토 식단 추천'},
+  carnivore:{sub:'동물성 식품 전용 극단적 저탄수 모드',daysLbl:'연속 카니보어',goalBg:'linear-gradient(135deg,#7A2E2E,#4A1818)',goalLbl:'카니보어 목표',goalHtml:'<div class="goal-vals"><div class="goal-val-item"><div class="val">0g</div><div class="lbl-s">탄수화물</div></div><div class="goal-val-item"><div class="val">동물성</div><div class="lbl-s">식품만</div></div><div class="goal-val-item"><div class="val">고단백</div><div class="lbl-s">고지방</div></div></div>',bannerSub:'동물성 식품 적합도를 즉시 분석해 드려요',tipTitle:'오늘의 카니보어 팁',vg2:'"오늘 뭐 먹을까"  카니보어 식단 추천'},
+  lchf:{sub:'저탄고지 혈당 안정 모드',daysLbl:'저탄고지',goalBg:'linear-gradient(135deg,#1a6b4a,#0d4f35)',goalLbl:'저탄고지 목표',goalHtml:'<div class="goal-vals"><div class="goal-val-item"><div class="val">100g</div><div class="lbl-s">탄수화물</div></div><div class="goal-val-item"><div class="val">50%</div><div class="lbl-s">지방</div></div><div class="goal-val-item"><div class="val">25%</div><div class="lbl-s">단백질</div></div></div>',bannerSub:'저탄고지 적합도와 혈당 영향을 분석해 드려요',tipTitle:'오늘의 저탄고지 팁',vg2:'"오늘 뭐 먹을까"  저탄고지 식단 추천'},
+  diet:{sub:'균형 건강식 다이어트 모드',daysLbl:'다이어트',goalBg:'linear-gradient(135deg,#1565C0,#0D47A1)',goalLbl:'건강식 목표',goalHtml:'<div class="goal-vals"><div class="goal-val-item"><div class="val">1,600</div><div class="lbl-s">칼로리 목표</div></div><div class="goal-val-item"><div class="val">½</div><div class="lbl-s">채소 비율</div></div><div class="goal-val-item"><div class="val">30%</div><div class="lbl-s">단백질</div></div></div>',bannerSub:'칼로리와 영양 균형을 즉시 분석해 드려요',tipTitle:'오늘의 건강식 팁',vg2:'"오늘 뭐 먹을까"  건강 식단 추천'}
 };
 
 function _initHealthHome(mode){
@@ -1322,7 +1323,7 @@ function _initCancerHome(u){
   if(ip) _refreshPSABanner();
 }
 
-/* ── 암종별 종양 마커 설정 ── */
+/*  암종별 종양 마커 설정  */
 var _MARKER_CFG = {
   prostate:  {markers:['PSA'],           units:{PSA:'ng/mL'},          label:'PSA 추적'},
   breast:    {markers:['CA 15-3','CEA'], units:{'CA 15-3':'U/mL', CEA:'ng/mL'}, label:'유방암 마커'},
@@ -1369,7 +1370,7 @@ function openMarkerSheet(){
 }
 
 // 추적 탭 진입 시 마커 제목 업데이트
-/* ── AI 맞춤 추천 ── */
+/*  AI 맞춤 추천  */
 function loadAiRec(){
   if(!KEY){ toast('API 키가 없습니다'); return; }
   var recEl=$id('ai-rec-text'); if(!recEl) return;
@@ -1424,7 +1425,7 @@ function _updateDays(){
   el.style.color = ic?'var(--purple)':'var(--tld)';
 }
 
-/* ── 도움말 ── */
+/*  도움말  */
 function goHelp(){
   var u = USER;
   var ic = u && u.mode==='cancer';
@@ -1432,36 +1433,36 @@ function goHelp(){
   var modeName = ic ? (u.ctype==='prostate' ? u.stage+'기 전립선암' : '암환자') : (modeNames[u.mode]||'건강관리');
   var modeColor = {keto:'#2A7B7B', carnivore:'#7A2E2E', lchf:'#1a6b4a', diet:'#1565C0', cancer:'#6B21A8'}[u?u.mode:'lchf'] || 'var(--navy)';
 
-  // ── 빠른 시작 3단계 ──
+  //  빠른 시작 3단계 
   var quickStart = ic ? [
-    {num:'1', emoji:'📋', title:'매일 아침 증상 기록', desc:'홈에서 통증·배뇨·피로 점수를 입력하세요'},
-    {num:'2', emoji:'📸', title:'식사 사진 찍기', desc:'아침·점심·저녁 칸을 탭 → 사진 촬영 → AI가 암환자 식단으로 분석'},
-    {num:'3', emoji:'💊', title:'복약 체크', desc:'드신 약마다 체크 표시 → 하루 복약률 자동 계산'},
+    {num:'1', emoji:'', title:'매일 아침 증상 기록', desc:'홈에서 통증·배뇨·피로 점수를 입력하세요'},
+    {num:'2', emoji:'', title:'식사 사진 찍기', desc:'아침·점심·저녁 칸을 탭  사진 촬영  AI가 암환자 식단으로 분석'},
+    {num:'3', emoji:'', title:'복약 체크', desc:'드신 약마다 체크 표시  하루 복약률 자동 계산'},
   ] : [
-    {num:'1', emoji:'📸', title:'식사 사진 찍기', desc:'홈 화면 아침·점심·저녁 칸을 탭 → 사진 촬영 or 갤러리 선택'},
-    {num:'2', emoji:'🤖', title:'AI 분석 확인', desc:'몇 초 후 식단 분석 결과가 홈 화면에 자동으로 나타나요'},
-    {num:'3', emoji:'🏃', title:'운동 기록', desc:'하단 "운동" 탭 → 종류·시간 입력 → 여러 운동 연속 기록 가능'},
+    {num:'1', emoji:'', title:'식사 사진 찍기', desc:'홈 화면 아침·점심·저녁 칸을 탭  사진 촬영 or 갤러리 선택'},
+    {num:'2', emoji:'', title:'AI 분석 확인', desc:'몇 초 후 식단 분석 결과가 홈 화면에 자동으로 나타나요'},
+    {num:'3', emoji:'', title:'운동 기록', desc:'하단 "운동" 탭  종류·시간 입력  여러 운동 연속 기록 가능'},
   ];
 
-  // ── 기능별 상세 안내 ──
+  //  기능별 상세 안내 
   var sections = [];
 
   // 모드별 식단 팁
   var modeTips = {
     keto:{
-      color:'#2A7B7B', icon:'🥑', title:'케토제닉 식단 핵심',
+      color:'#2A7B7B', icon:'', title:'케토제닉 식단 핵심',
       items:[
-        '탄수화물 하루 <b>20g 이하</b> — 밥·빵·면·과자 제외',
+        '탄수화물 하루 <b>20g 이하</b>  밥·빵·면·과자 제외',
         '지방 75% · 단백질 20% · 탄수화물 5% 비율 목표',
         '<b>먹어도 되는 것</b>: 소고기, 삼겹살, 계란, 아보카도, 버터, 치즈, 견과류',
         '<b>피해야 할 것</b>: 쌀밥, 고구마, 과일, 과자, 음료수, 빵',
-        '처음 1~2주 두통·피로(케토 플루) → 소금물, 물 충분히 섭취',
+        '처음 1~2주 두통·피로(케토 플루)  소금물, 물 충분히 섭취',
       ]
     },
     carnivore:{
-      color:'#7A2E2E', icon:'🥩', title:'카니보어 식단 핵심',
+      color:'#7A2E2E', icon:'', title:'카니보어 식단 핵심',
       items:[
-        '동물성 식품만 — 고기, 생선, 달걀, 유제품(버터·치즈)',
+        '동물성 식품만  고기, 생선, 달걀, 유제품(버터·치즈)',
         '채소·과일·곡물·견과류 <b>완전 제외</b>',
         '소금은 적당히 섭취 (전해질 보충)',
         '처음 2~4주 적응 기간: 피로감, 소화 변화 정상',
@@ -1469,31 +1470,31 @@ function goHelp(){
       ]
     },
     lchf:{
-      color:'#1a6b4a', icon:'🥗', title:'저탄고지 식단 핵심',
+      color:'#1a6b4a', icon:'', title:'저탄고지 식단 핵심',
       items:[
-        '탄수화물 하루 <b>50~100g</b> — 케토보다 유연',
+        '탄수화물 하루 <b>50~100g</b>  케토보다 유연',
         '현미밥 반 공기, 고구마 조금은 허용',
-        '<b>식사 순서</b>: 채소 → 단백질(고기·생선) → 밥·면',
+        '<b>식사 순서</b>: 채소  단백질(고기·생선)  밥·면',
         '<b>좋은 지방</b>: 올리브오일, 아보카도, 견과류, 등 푸른 생선',
-        '혈당 스파이크 방지 → 식후 10~15분 가벼운 걷기 추천',
+        '혈당 스파이크 방지  식후 10~15분 가벼운 걷기 추천',
       ]
     },
     diet:{
-      color:'#1565C0', icon:'🥦', title:'균형 건강식 핵심',
+      color:'#1565C0', icon:'', title:'균형 건강식 핵심',
       items:[
-        '하루 <b>1,600kcal</b> 목표 — 식사 사진으로 AI가 추정',
+        '하루 <b>1,600kcal</b> 목표  식사 사진으로 AI가 추정',
         '채소·과일 <b>절반 이상</b>, 단백질 30%, 탄수화물 40%',
         '올리브오일·생선·견과류 중심의 지중해식',
-        '<b>식사 30분 전</b> 물 한 잔 → 포만감↑ 과식 방지',
+        '<b>식사 30분 전</b> 물 한 잔  포만감 과식 방지',
         '하루 <b>1.5~2리터</b> 물 섭취 목표',
       ]
     },
     cancer:{
-      color:'#6B21A8', icon:'🛡️', title:'암환자 식단 핵심',
+      color:'#6B21A8', icon:'', title:'암환자 식단 핵심',
       items:[
-        '항염 식품 위주 — 연어·고등어, 강황, 블루베리, 브로콜리',
+        '항염 식품 위주  연어·고등어, 강황, 블루베리, 브로콜리',
         '설탕·정제 탄수화물 최소화 (암세포 먹이)',
-        '단백질 충분히 — 근육 유지·면역력 강화',
+        '단백질 충분히  근육 유지·면역력 강화',
         '항암 치료 중: 메스꺼움 시 소량 자주, 부드러운 음식',
         '식욕 없을 땐 고열량 스무디(바나나+아몬드버터+우유)',
       ]
@@ -1502,11 +1503,11 @@ function goHelp(){
   if(modeTips[u?u.mode:'lchf']) sections.push({type:'tips', data:modeTips[u.mode], color:modeColor});
 
   // 공통 기능 섹션
-  sections.push({type:'features', title:'📱 주요 기능 안내', items:[
+  sections.push({type:'features', title:' 주요 기능 안내', items:[
     {icon:'ti-home', color:'#19B89B', title:'홈 화면',
-     steps:['오늘의 목표(상단 초록 박스)에서 식단 목표 확인','아침·점심·저녁 칸 탭 → 사진 촬영 or 갤러리 선택','PC에서는 사진을 슬롯으로 드래그 앤 드롭도 가능','AI 분석 결과가 자동으로 홈에 표시']},
+     steps:['오늘의 목표(상단 초록 박스)에서 식단 목표 확인','아침·점심·저녁 칸 탭  사진 촬영 or 갤러리 선택','PC에서는 사진을 슬롯으로 드래그 앤 드롭도 가능','AI 분석 결과가 자동으로 홈에 표시']},
     {icon:'ti-run', color:'#F0A500', title:'운동 탭 (하단 메뉴)',
-     steps:['운동 종류·시간 입력 후 "AI 운동 분석" 버튼','분석 완료 후 폼이 초기화 → 바로 다음 운동 추가 가능','여러 운동을 연속으로 기록할 수 있어요 (조깅 후 수영 등)','목록의 ✕ 버튼으로 개별 운동 삭제']},
+     steps:['운동 종류·시간 입력 후 "AI 운동 분석" 버튼','분석 완료 후 폼이 초기화  바로 다음 운동 추가 가능','여러 운동을 연속으로 기록할 수 있어요 (조깅 후 수영 등)','목록의  버튼으로 개별 운동 삭제']},
     {icon:'ti-sparkles', color:'#9B59B6', title:'오늘 종합 평가',
      steps:['식단 분석 + 운동 분석이 모두 있을 때 홈에 버튼 표시','AI가 식단·운동을 종합해 오늘 하루 총평 제공','내일을 위한 맞춤 조언도 함께']},
     {icon:'ti-table', color:'#1565C0', title:'기록장 탭',
@@ -1516,12 +1517,12 @@ function goHelp(){
     {icon:'ti-message-circle', color:'#2ECC71', title:'AI 코치 탭',
      steps:['"코치" 탭에서 AI에게 자유롭게 질문','식단 추천, 운동 방법, 건강 궁금증 모두 OK','하단 빠른 질문 버튼으로 자주 쓰는 질문 1탭']},
     {icon:'ti-microphone', color:'#E67E22', title:'음성 명령',
-     steps:['상단 오른쪽 🎤 마이크 탭 후 말하기','"아침 사진 찍어줘", "기록장 보여줘", "운동 탭 열어줘"','손이 불편할 때 음성으로 모든 기능 제어 가능']},
+     steps:['상단 오른쪽  마이크 탭 후 말하기','"아침 사진 찍어줘", "기록장 보여줘", "운동 탭 열어줘"','손이 불편할 때 음성으로 모든 기능 제어 가능']},
   ]});
 
   // 암환자 전용 추가 섹션
   if(ic){
-    sections.push({type:'features', title:'🏥 암환자 전용 기능', items:[
+    sections.push({type:'features', title:' 암환자 전용 기능', items:[
       {icon:'ti-activity', color:'#9B59B6', title:'증상 기록 (홈 화면)',
        steps:['통증·배뇨·피로 각각 0~10점 슬라이더','매일 기록하면 변화 추이 파악 가능','10점: 매우 심함, 0점: 전혀 없음']},
       {icon:'ti-pill', color:'#E74C3C', title:'복약 체크 (홈 화면)',
@@ -1532,16 +1533,16 @@ function goHelp(){
   }
 
   // 팁 섹션
-  sections.push({type:'tips-plain', title:'💡 알아두면 좋은 팁', color:'#F59E0B', items:[
-    '📶 오프라인에서도 기록 가능 — 연결 복구 시 자동 동기화',
-    '🔄 기록은 클라우드(Firestore)에 자동 저장 — 폰을 바꿔도 유지',
-    '📊 기록장 → 엑셀 내보내기로 주치의에게 리포트 제출 가능',
-    '🖼️ PC 사용 시 식사 사진을 홈 슬롯에 드래그 앤 드롭으로 업로드',
-    '🏃 운동은 하루에 여러 개 기록 가능 (조깅 30분 + 수영 40분 등)',
-    '🧬 로그인 화면에서 로고를 5번 탭하면 관리자 화면 진입',
+  sections.push({type:'tips-plain', title:' 알아두면 좋은 팁', color:'#F59E0B', items:[
+    ' 오프라인에서도 기록 가능  연결 복구 시 자동 동기화',
+    ' 기록은 클라우드(Firestore)에 자동 저장  폰을 바꿔도 유지',
+    ' 기록장  엑셀 내보내기로 주치의에게 리포트 제출 가능',
+    ' PC 사용 시 식사 사진을 홈 슬롯에 드래그 앤 드롭으로 업로드',
+    ' 운동은 하루에 여러 개 기록 가능 (조깅 30분 + 수영 40분 등)',
+    ' 로그인 화면에서 로고를 5번 탭하면 관리자 화면 진입',
   ]});
 
-  // ── 렌더링 ──
+  //  렌더링 
   var el = $id('help-body');
   if(!el) return;
 
@@ -1556,7 +1557,7 @@ function goHelp(){
 
   // 빠른 시작 3단계
   html += '<div style="background:#fff;border:1px solid var(--bd);border-radius:var(--r-md);padding:16px 18px;margin-bottom:12px;">'
-    +'<div style="font-size:14px;font-weight:800;color:var(--navy);margin-bottom:12px;">🚀 빠른 시작 — 오늘 당장 해보세요</div>'
+    +'<div style="font-size:14px;font-weight:800;color:var(--navy);margin-bottom:12px;"> 빠른 시작  오늘 당장 해보세요</div>'
     +'<div style="display:flex;flex-direction:column;gap:10px;">'
     +quickStart.map(function(s){
       return '<div style="display:flex;align-items:flex-start;gap:12px;">'
@@ -1583,7 +1584,7 @@ function goHelp(){
         html += '<div style="background:#fff;border:1px solid var(--bd);border-radius:var(--r-md);padding:14px 16px;margin-bottom:8px;">'
           +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">'
           +'<div style="width:36px;height:36px;border-radius:10px;background:'+item.color+'1a;display:flex;align-items:center;justify-content:center;flex-shrink:0;">'
-          +'<i class="ti '+item.icon+'" style="font-size:18px;color:'+item.color+';"></i></div>'
+          +'</div>'
           +'<div style="font-size:15px;font-weight:700;color:var(--navy);">'+esc(item.title)+'</div>'
           +'</div>'
           +'<div style="display:flex;flex-direction:column;gap:6px;">'
@@ -1610,7 +1611,7 @@ function goHelp(){
   goScreen('scr-help');
 }
 
-/* ── 내비게이션 ── */
+/*  내비게이션  */
 var _currentPage = 'home';
 
 function goPage(p){
@@ -1637,7 +1638,7 @@ function goPage(p){
     _refreshCondSummary();
     _refreshHomeAnalysis();
     _refreshHomeExercise();
-    _refreshComprehensiveBtn();
+    _refreshComprehensiveBtn(); _refreshHomeTodayExercise();
     _refreshYesterdayFeedback();
     _refreshHomeProgress();
     _refreshChallengeCard();
@@ -1647,14 +1648,14 @@ function goPage(p){
   }
 }
 
-/* ── 음성 ── */
+/*  음성  */
 var VS='idle', VQ=[], VR=null, VBusy=false;
 function _setVS(s){
   VS=s;
   var icon=$id('mic-icon'), bar=$id('vbar'), dot=$id('vdot'), txt=$id('vtxt');
-  if(s==='idle'){ bar.classList.remove('on'); if(icon) icon.className='ti ti-microphone'; }
-  else if(s==='listening'){ bar.classList.add('on'); dot.className='vdot L'; txt.textContent='듣고 있어요...'; if(icon) icon.className='ti ti-microphone-off'; }
-  else if(s==='thinking'){ bar.classList.add('on'); dot.className='vdot T'; txt.textContent='처리 중...'; if(icon) icon.className='ti ti-loader'; }
+  if(s==='idle'){ bar.classList.remove('on'); if(icon) icon.className=''; }
+  else if(s==='listening'){ bar.classList.add('on'); dot.className='vdot L'; txt.textContent='듣고 있어요...'; if(icon) icon.className=''; }
+  else if(s==='thinking'){ bar.classList.add('on'); dot.className='vdot T'; txt.textContent='처리 중...'; if(icon) icon.className=''; }
 }
 function onMic(){
   if(VS==='listening') _stopRec();
@@ -1724,7 +1725,7 @@ function goBack(){
 
   if(id==='scr-app'){
     if(_currentPage!=='home'){ goPage('home'); return; }
-    // 홈에서 사용자 아이콘 탭 → 로그아웃 확인
+    // 홈에서 사용자 아이콘 탭  로그아웃 확인
     if(!confirm(USER ? (USER.name+'님, 로그아웃 할까요?') : '로그아웃 할까요?')) return;
     try{ localStorage.removeItem('mc_last_user'); }catch(e){}
     USER = null;
@@ -1757,7 +1758,7 @@ function _runQ(){
 }
 function _interpret(cmd){
   if(!KEY){ tts('API 키가 없어요.'); return Promise.resolve(); }
-  var sys='한국어 음성 명령 분류기. JSON만 출력.\n출력:{"action":"페이지이동|AI코치|PSA기록|증상기록|없음","page":"diet|log|track|chat|home","say":"","query":"","psa":"","sym":"pain|urine|fatigue","nrs":""}\n규칙:-기록장/일지→페이지이동,log\n-홈/처음→페이지이동,home\n-사진/카메라→페이지이동,diet\n-PSA+숫자→PSA기록\n-통증/배뇨/피로+숫자→증상기록\n-나머지→AI코치,chat,query에원문';
+  var sys='한국어 음성 명령 분류기. JSON만 출력.\n출력:{"action":"페이지이동|AI코치|PSA기록|증상기록|없음","page":"diet|log|track|chat|home","say":"","query":"","psa":"","sym":"pain|urine|fatigue","nrs":""}\n규칙:-기록장/일지페이지이동,log\n-홈/처음페이지이동,home\n-사진/카메라페이지이동,diet\n-PSA+숫자PSA기록\n-통증/배뇨/피로+숫자증상기록\n-나머지AI코치,chat,query에원문';
   return _api({max_tokens:120,system:sys,messages:[{role:'user',content:cmd}]}, function(txt){
     txt=(txt||'').replace(/```json|```/g,'').trim();
     var r; try{ r=JSON.parse(txt); }catch(e){ r={action:'AI코치',page:'chat',query:cmd}; }
@@ -1774,11 +1775,11 @@ function _execCmd(r,orig){
 }
 function _symLbl(s){ return{pain:'통증',urine:'배뇨 불편',fatigue:'피로'}[s]||s; }
 
-/* ── TTS ── */
+/*  TTS  */
 function tts(t){ if(t) toast(t); }
 function _ttsP(text){ if(text) toast(text); return Promise.resolve(); }
 
-/* ── API 헬퍼 ── */
+/*  API 헬퍼  */
 function _api(opts, cb){
   var body = {model:'claude-haiku-4-5', max_tokens:opts.max_tokens||500};
   if(opts.system) body.system=opts.system;
@@ -1797,7 +1798,7 @@ function _api(opts, cb){
   });
 }
 
-/* ── AI 코치 ── */
+/*  AI 코치  */
 function _buildQbtns(){
   var wrap=$id('qbtns'); if(!wrap) return; wrap.innerHTML='';
   var u=USER; if(!u) return;
@@ -1809,7 +1810,7 @@ function _buildQbtns(){
   else if(u.mode==='diet') qs=[{i:'ti-camera',q:'이 음식 다이어트 관점으로 분석해줘'},{i:'ti-salad',q:'오늘 건강하고 살 빠지는 식단 추천해줘'},{i:'ti-heart',q:'지중해식 식단이 뭔가요?'}];
   else if(ip)           qs=[{i:'ti-camera',q:'식사 사진 암 환자 식단으로 분석해줘'},{i:'ti-chart-line',q:'PSA 수치가 올랐어요 어떻게 해야 하나요?'},{i:'ti-flame',q:'뼈 통증 관리 방법 알려주세요'}];
   else                  qs=[{i:'ti-camera',q:'식사 사진 암 환자 식단으로 분석해줘'},{i:'ti-flame',q:'항암 치료 중 통증 관리 방법은?'},{i:'ti-salad',q:'암 환자에게 좋은 항산화 식단 알려줘'}];
-  wrap.innerHTML=qs.map(function(q){ return '<button class="qbtn" onclick="A.askQ(\''+esc(q.q)+'\')"><i class="ti '+q.i+'"></i>'+esc(q.q)+'</button>'; }).join('');
+  wrap.innerHTML=qs.map(function(q){ return '<button class="qbtn" onclick="A.askQ(\''+esc(q.q)+'\')">'+esc(q.q)+'</button>'; }).join('');
   var g=$id('chat-greeting');
   var mn={keto:'케토제닉',carnivore:'카니보어',lchf:'저탄고지',diet:'다이어트 건강식'};
   if(g) g.textContent='안녕하세요, '+u.name+' 님! '+(ip?u.stage+'기 전립선암':(mn[u.mode]||'암 치유'))+' AI 코치입니다.';
@@ -1822,7 +1823,7 @@ function _buildSys(){
   if(u.mode==='carnivore') return '카니보어(육식) 식단 전문 건강 코치. 동물성 식품(고기, 생선, 달걀, 일부 유제품)만 섭취, 식물성 식품 완전 배제. 영양 균형, 적응 증상 관리, 내장육 활용법 안내. 한국어 3~5문장.';
   if(u.mode==='lchf') return '저탄고지(LCHF) 식단 전문 건강 코치. 탄수화물 50~100g, 혈당 안정, 자연식 지방 강조. 한국어 3~5문장.';
   if(u.mode==='diet') return '다이어트 건강식 전문 코치. 지중해식·DASH 기반, 칼로리 제한, 균형 영양. 한국어 3~5문장.';
-  var cd='최적 암환자 식단: ①케토/저탄고지로 암세포 포도당 차단 ②항산화(십자화과,베리,토마토) ③오메가3 ④강황·생강 항염 ⑤정제당·가공식품 배제.';
+  var cd='최적 암환자 식단: 케토/저탄고지로 암세포 포도당 차단 항산화(십자화과,베리,토마토) 오메가3 강황·생강 항염 정제당·가공식품 배제.';
   if(ip){ var si={1:'국소 저위험',2:'국소 중·고위험',3:'국소 진행성',4:'전이성'}; return '전립선암 '+u.stage+'기('+si[u.stage]+') 환자 AI 건강 코치. '+cd+' 리코펜(토마토),십자화과,녹차 강조. 한국어 3~5문장, 필요시 의사 상담 권유.'; }
   return '암 환자 통합 치유 AI 코치. '+cd+' 한국어 3~5문장.';
 }
@@ -1844,7 +1845,7 @@ function _sendChatP(){
   });
 }
 
-/* ── AI 식단/운동 분석 ── */
+/*  AI 식단/운동 분석  */
 function analyze(){
   if(!KEY){ toast('API 키가 없습니다'); return; }
   var name=$id('food-name').value.trim();
@@ -1860,7 +1861,7 @@ function analyze(){
   _api({max_tokens:400,messages:msgs,system:'음식 분석 시 첫 줄에 "주요 음식: 음식1, 음식2" 형식으로 인식된 음식명을 먼저 나열해주세요.'}, function(reply){
     var result = reply||'분석 결과를 가져오지 못했어요.';
     ar.innerHTML='<div class="tip-lbl">AI 식단 분석</div>'+esc(result);
-    // 인식된 음식명 → food-name 자동 채우기
+    // 인식된 음식명  food-name 자동 채우기
     if(hasPic && !name){
       var m = result.match(/주요\s*음식[:\s：]+([^\n]+)/);
       if(m){ var fn=$id('food-name'); if(fn) fn.value=m[1].trim(); }
@@ -1895,7 +1896,7 @@ function _refreshHomeAnalysis(){
   if(!dayRec||!dayRec.analysis){ el.style.display='none'; return; }
   var ana=dayRec.analysis;
   var parts=[];
-  var labels={morning:'🌅 아침',lunch:'☀️ 점심',dinner:'🌙 저녁'};
+  var labels={morning:' 아침',lunch:' 점심',dinner:' 저녁'};
   ['morning','lunch','dinner'].forEach(function(k){
     if(ana[k]) parts.push(
       '<div style="margin-bottom:14px;">'
@@ -1909,8 +1910,8 @@ function _refreshHomeAnalysis(){
   var isOpen = el.getAttribute('data-open')!=='false';
   el.innerHTML=
     '<div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding-bottom:'+(isOpen?'10px':'0')+';margin-bottom:'+(isOpen?'4px':'0')+';" onclick="A.toggleAnalysis()">'
-    +'<div class="tip-lbl" style="margin-bottom:0;"><i class="ti ti-salad" style="font-size:10px;"></i> 오늘의 식단 분석 보기</div>'
-    +'<span style="font-size:11px;color:var(--teal);font-weight:700;">'+(isOpen?'접기 ▲':'펼치기 ▼')+'</span>'
+    +'<div class="tip-lbl" style="margin-bottom:0;"> 오늘의 식단 분석 보기</div>'
+    +'<span style="font-size:11px;color:var(--teal);font-weight:700;">'+(isOpen?'접기 ':'펼치기 ')+'</span>'
     +'</div>'
     +'<div id="home-analysis-body" style="display:'+(isOpen?'block':'none')+'">'
     +parts.join('')
@@ -1972,7 +1973,7 @@ function addExToList(){
   document.querySelectorAll('.ex-chip').forEach(function(c){ c.classList.remove('active'); });
   _toggleExFields('');
   _renderExPending();
-  toast(type+' 추가됐어요 ✓');
+  toast(type+' 추가됐어요 ');
 }
 
 function _renderExPending(){
@@ -1980,8 +1981,8 @@ function _renderExPending(){
   wrap.style.display=_exPendingList.length?'block':'none';
   list.innerHTML=_exPendingList.map(function(ex,i){
     return '<div style="display:flex;align-items:center;gap:8px;background:#fff;border-radius:8px;padding:8px 10px;border:1px solid var(--bd);">'
-      +'<div style="flex:1;font-size:13px;font-weight:700;">🏃 '+esc(ex.type)+(ex.reps?' <span style="font-weight:400;color:var(--mu);">· '+esc(ex.reps)+'회</span>':'')+(ex.dur?' <span style="font-weight:400;color:var(--mu);">· '+esc(ex.dur)+'</span>':'')+(ex.steps?' <span style="font-weight:400;color:var(--mu);">· '+esc(ex.steps)+(ex.type==='계단 오르기'?'계단':'보')+'</span>':'')+'</div>'
-      +'<button onclick="A.removeExFromList('+i+')" style="background:none;border:none;color:var(--mu);font-size:16px;cursor:pointer;padding:0 4px;">✕</button>'
+      +'<div style="flex:1;font-size:13px;font-weight:700;"> '+esc(ex.type)+(ex.reps?' <span style="font-weight:400;color:var(--mu);">· '+esc(ex.reps)+'회</span>':'')+(ex.dur?' <span style="font-weight:400;color:var(--mu);">· '+esc(ex.dur)+'</span>':'')+(ex.steps?' <span style="font-weight:400;color:var(--mu);">· '+esc(ex.steps)+(ex.type==='계단 오르기'?'계단':'보')+'</span>':'')+'</div>'
+      +'<button onclick="A.removeExFromList('+i+')" style="background:none;border:none;color:var(--mu);font-size:16px;cursor:pointer;padding:0 4px;"></button>'
       +'</div>';
   }).join('');
 }
@@ -2011,7 +2012,7 @@ function analyzeExAll(){
     +modeLabel+'에서 전체 평가를 3~4문장으로 해주세요.';
   _api({max_tokens:400,messages:[{role:'user',content:prompt}]}, function(reply){
     var result=reply||'분석 결과를 가져오지 못했어요.';
-    var mealTag = todayMealMemo ? '<div style="font-size:11px;color:var(--teal);margin-bottom:6px;">🍽 식사 메모: '+esc(todayMealMemo)+'</div>' : '';
+    var mealTag = todayMealMemo ? '<div style="font-size:11px;color:var(--teal);margin-bottom:6px;"> 식사 메모: '+esc(todayMealMemo)+'</div>' : '';
     if(ar) ar.innerHTML='<div class="tip-lbl">AI 운동 분석</div>'+mealTag+md(result);
     // 한 번에 모두 저장 (중복 _xlLoad 방지)
     var days=_getRecs();
@@ -2019,17 +2020,16 @@ function analyzeExAll(){
     if(!dayRec){ dayRec={date:exDate,photos:{},steps:''}; days.push(dayRec); days.sort(function(a,b){return a.date<b.date?-1:1;}); }
     if(!dayRec.exercise) dayRec.exercise=[];
     list.forEach(function(ex){
-      dayRec.exercise.push({type:ex.type,dur:ex.dur,reps:ex.reps,steps:ex.steps,memo:ex.memo,analysis:result,ts:Date.now()});
-      if(ex.steps) dayRec.steps=ex.steps;
+      dayRec.exercise.push({type:ex.type,dur:ex.dur,reps:ex.reps,steps:ex.steps,memo:ex.memo,analysis:result,source:ex.source||'',ts:Date.now()});
     });
     _setRecs(days);
     _exPendingList=[];
     _renderExPending();
     _refreshHomeExercise();
-    _refreshComprehensiveBtn();
+    _refreshComprehensiveBtn(); _refreshHomeTodayExercise();
     _xlLoad();
     _refreshExPage();
-    toast('운동 '+list.length+'개 저장됐어요 ✓');
+    toast('운동 '+list.length+'개 저장됐어요 ');
   });
 }
 
@@ -2064,11 +2064,9 @@ function _saveExerciseResult(type, dur, steps, memo, analysis, targetDate){
   // 기존 배열에 추가 (여러 운동 지원)
   if(!dayRec.exercise) dayRec.exercise=[];
   dayRec.exercise.push({type:type,dur:dur,steps:steps,memo:memo,analysis:analysis,ts:Date.now()});
-  // 걸음 수를 steps 필드에도 저장 (마지막 입력값 우선)
-  if(steps) dayRec.steps=steps;
   _setRecs(days);
   _refreshHomeExercise();
-  _refreshComprehensiveBtn();
+  _refreshComprehensiveBtn(); _refreshHomeTodayExercise();
   // 기록장 카드 업데이트
   _xlLoad();
   // 폼 초기화 (다음 운동 바로 입력 가능)
@@ -2081,13 +2079,13 @@ function _saveExerciseResult(type, dur, steps, memo, analysis, targetDate){
   _refreshExPage();
   // 기록장에서 왔으면 기록장으로 돌아가기
   if(_exFromLog){ _exFromLog=null; setTimeout(function(){ goPage('log'); },300); }
-  toast('운동 기록이 저장됐어요 ✓');
+  toast('운동 기록이 저장됐어요 ');
 }
 
-/* ══════════════════════════════════
+/* 
    만보 챌린지
-══════════════════════════════════ */
-var _challengeCache = null; // { "2026-07-01": 12500, ... }  날짜→걸음수
+ */
+var _challengeCache = null; // { "2026-07-01": 12500, ... }  날짜걸음수
 var _challengeSaveTimer = null;
 var CHALLENGE_GOAL = 10000;
 var CHALLENGE_POINT = 100; // 원/일
@@ -2143,9 +2141,9 @@ function _refreshChallengeCard(){
   el.style.display='block';
   el.innerHTML=
     '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">'
-    +'<div style="font-size:13px;font-weight:700;color:var(--navy);">🏆 만보 챌린지</div>'
+    +'<div style="font-size:13px;font-weight:700;color:var(--navy);"> 만보 챌린지</div>'
     +'<div style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;'+(certified?'background:#E8F8F3;color:#0D7A52;':'background:var(--cream);color:var(--mu2);')+'">'
-    +(certified?'✅ 오늘 달성!':'오늘 미달성')+'</div>'
+    +(certified?' 오늘 달성!':'오늘 미달성')+'</div>'
     +'</div>'
     +'<div style="margin-bottom:10px;">'
     +'<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;">'
@@ -2167,9 +2165,8 @@ function _refreshChallengeCard(){
     +'<div style="font-size:20px;font-weight:800;color:var(--mu2);">'+(daysInMonth-stats.days)+'</div>'
     +'<div style="font-size:10px;color:var(--mu2);">남은 기회</div></div>'
     +'</div>'
-    +(!certified?
-      '<button onclick="A.autoReadHealthSteps()" ontouchstart="A.autoReadHealthSteps()" style="width:100%;padding:11px;background:linear-gradient(135deg,#1428A0,#2563EB);color:#fff;border:none;border-radius:var(--r-sm);font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">'
-      +'<i class="ti ti-shoe"></i> 걸음수 인증하기</button>':'');
+    +'<button onclick="A.goPage(\'ex\')" ontouchstart="A.goPage(\'ex\')" style="width:100%;padding:11px;background:linear-gradient(135deg,#0D7A52,#19B89B);color:#fff;border:none;border-radius:var(--r-sm);font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">'
+    +' 다른 운동 기록하기</button>';
 }
 
 function showChallengeAdmin(){
@@ -2200,7 +2197,7 @@ function showChallengeAdmin(){
       if(totalEl){ totalEl.style.display='block'; }
       if(totalAmtEl) totalAmtEl.textContent=grandTotal.toLocaleString()+'원';
       if(listEl) listEl.innerHTML=results.map(function(r,i){
-        var badge=i===0&&r.days>0?'🥇':i===1&&r.days>0?'🥈':i===2&&r.days>0?'🥉':'';
+        var badge=i===0&&r.days>0?'':i===1&&r.days>0?'':i===2&&r.days>0?'':'';
         return '<div style="background:#fff;border-radius:var(--r-sm);padding:12px 15px;margin-bottom:8px;box-shadow:var(--sh-sm);display:flex;align-items:center;gap:12px;">'
           +'<div style="width:30px;text-align:center;font-size:'+(badge?'20px':'13px')+';font-weight:800;color:var(--mu2);">'+(badge||(i+1))+'</div>'
           +'<div style="flex:1;">'
@@ -2217,7 +2214,7 @@ function showChallengeAdmin(){
   });
 }
 
-/* ── Health Connect API (Capacitor 네이티브 앱 전용) ── */
+/*  Health Connect API (Capacitor 네이티브 앱 전용)  */
 var _hcPlugin = null;
 
 function _getHCPlugin(){
@@ -2235,22 +2232,23 @@ function readHealthConnectSteps(cb){
   var plugin = _getHCPlugin();
   if(!plugin){ if(cb) cb(null, 'Health Connect 플러그인 없음'); return; }
   var today = todayStr();
-  var startDate = today+'T00:00:00.000Z';
-  var endDate   = today+'T23:59:59.999Z';
+  var startDate = new Date(today+'T00:00:00').toISOString();
+  var endDate   = new Date(today+'T23:59:59.999').toISOString();
   plugin.isAvailable().then(function(avail){
     if(!avail.available){ throw new Error('Health Connect 미지원 기기: '+(avail.reason||'')); }
     return plugin.requestAuthorization({ read: ['steps'] });
   }).then(function(){
-    return plugin.queryAggregated({
-      dataType: 'steps',
+    return plugin.readSamples({
+      dataType:  'steps',
       startDate: startDate,
       endDate:   endDate,
-      bucket:    'day'
+      limit:     1000,
+      ascending: true
     });
   }).then(function(res){
     var steps = 0;
     if(res && res.samples && res.samples.length){
-      res.samples.forEach(function(s){ steps += (s.value||0); });
+      res.samples.forEach(function(s){ if((s.value||0)>steps) steps=(s.value||0); });
     }
     if(cb) cb(steps, null);
   }).catch(function(err){
@@ -2267,6 +2265,7 @@ function _silentReadSteps(){
     var today = todayStr();
     if(!_challengeCache) _challengeCache = {};
     _challengeCache[today] = steps;
+    if(USER) _saveChallenge(USER.id);
     _refreshChallengeCard();
     // 운동 기록 동기화
     var days = _getRecs();
@@ -2279,6 +2278,8 @@ function _silentReadSteps(){
     dayRec.steps = String(steps);
     _setRecs(days);
     _refreshHomeExercise();
+    _refreshComprehensiveBtn();
+    _refreshHomeTodayExercise();
   });
 }
 
@@ -2298,13 +2299,19 @@ function autoReadHealthSteps(){
   readHealthConnectSteps(function(steps, err){
     if(err){ toast('걸음수 읽기 실패: '+err); return; }
     var today = todayStr();
-    // 챌린지 인증
+    if(!_challengeCache) _challengeCache = {};
+    if(steps > (_challengeCache[today]||0)){
+      _challengeCache[today] = steps;
+      if(USER) _saveChallenge(USER.id);
+    }
+    _refreshChallengeCard();
+    // 챌린지 인증 토스트
     if(steps >= CHALLENGE_GOAL){
       var certified = _certifyChallenge(today, steps);
       if(certified){
-        toast('🏆 오늘 '+steps.toLocaleString()+'보 달성! 만보 인증 완료');
+        toast(' 오늘 '+steps.toLocaleString()+'보 달성! 만보 인증 완료');
       } else {
-        toast(steps.toLocaleString()+'보 — 이미 인증됨');
+        toast(steps.toLocaleString()+'보  이미 인증됨');
       }
     } else {
       toast('오늘 '+steps.toLocaleString()+'보 (목표 '+CHALLENGE_GOAL.toLocaleString()+'보)');
@@ -2321,39 +2328,42 @@ function autoReadHealthSteps(){
     dayRec.steps = String(steps);
     _setRecs(days);
     _refreshHomeExercise();
-    _refreshComprehensiveBtn();
+    _refreshComprehensiveBtn(); _refreshHomeTodayExercise();
   });
 }
 
 
 function _refreshHomeExercise(){
   var el=$id('home-exercise-result'); if(!el) return;
+  el.style.display='none';
+}
+
+function _refreshHomeTodayExercise(){
+  var wrap=$id('home-today-exercise');
+  var body=$id('home-today-exercise-body');
+  if(!wrap||!body) return;
   var today=todayStr();
-  var days=_getRecs();
-  var dayRec=days.find(function(d){return d.date===today;});
-  if(dayRec&&dayRec.exercise&&dayRec.exercise.length){
-    var exList=dayRec.exercise;
-    el.style.display='block';
-    el.style.cursor='pointer';
-    var html='<div class="tip-lbl"><i class="ti ti-run" style="font-size:10px;"></i> 운동 분석 ('+exList.length+'개) <span style="float:right;font-size:10px;color:var(--teal);">운동 탭 →</span></div>';
-    exList.forEach(function(ex,i){
-      html+=(i>0?'<div style="border-top:1px solid var(--bd);margin:6px 0;"></div>':'')
-        +'<div style="font-size:11px;font-weight:700;margin-bottom:2px;">🏃 '+esc(ex.type)+(ex.dur?' · '+esc(ex.dur):'')+(ex.steps&&ex.source!=='healthconnect'?' · '+Number(ex.steps).toLocaleString()+'계단':'')+'</div>'
-        +(ex.analysis?'<div style="font-size:11px;">'+esc(ex.analysis)+'</div>':'');
-    });
-    el.innerHTML=html;
-    el.onclick=function(){ goPage('ex'); };
+  var dayRec=(_getRecs()||[]).find(function(d){return d.date===today;});
+  var chips=[];
+  var steps=parseInt(dayRec&&dayRec.steps||0,10)||0;
+  if(steps>0) chips.push('<span style="background:#E8F5E9;color:#0D7A52;border-radius:20px;padding:5px 12px;font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:4px;"> 걷기 '+steps.toLocaleString()+'보</span>');
+  var exList=dayRec&&dayRec.exercise||[];
+  exList.forEach(function(e){
+    chips.push('<span style="background:#EEF2FF;color:#1428A0;border-radius:20px;padding:5px 12px;font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:4px;"> '+esc(e.type)+(e.dur?' · '+esc(e.dur):'')+'</span>');
+  });
+  if(chips.length){
+    body.innerHTML=chips.join('');
+    wrap.style.display='block';
   } else {
-    el.style.display='none';
-    el.onclick=null;
+    wrap.style.display='none';
   }
 }
 
-/* ── PSA ── */
+/*  PSA  */
 function _getPSA(){ return ugj('psa',[]); }
 function _setPSA(d){ usj('psa',d); }
 
-function _buildPSABanner(){ return '<div class="psa-banner"><div class="psa-lbl">최근 PSA 수치</div><div class="psa-main"><div class="psa-num" id="psa-home-num">--</div><div class="psa-unit" style="margin-bottom:5px;">ng/mL</div></div><div id="psa-home-badge"></div><button class="psa-rec-btn" onclick="A.openSheet(\'sh-psa\')"><i class="ti ti-plus"></i> PSA 기록</button></div>'; }
+function _buildPSABanner(){ return '<div class="psa-banner"><div class="psa-lbl">최근 PSA 수치</div><div class="psa-main"><div class="psa-num" id="psa-home-num">--</div><div class="psa-unit" style="margin-bottom:5px;">ng/mL</div></div><div id="psa-home-badge"></div><button class="psa-rec-btn" onclick="A.openSheet(\'sh-psa\')"> PSA 기록</button></div>'; }
 
 function _refreshPSABanner(){
   var data=_getPSA();
@@ -2364,7 +2374,7 @@ function _refreshPSABanner(){
   if(gv) gv.querySelector&&(gv.querySelector('.val')&&(gv.querySelector('.val').textContent=last.v.toFixed(1)));
   var badge=$id('psa-home-badge'); if(!badge) return;
   var cls='warn',txt='첫 기록';
-  if(data.length>=2){ var diff=last.v-data[data.length-2].v; if(diff<-0.5){cls='good';txt='▼ 감소';}else if(diff>0.5){cls='danger';txt='▲ 증가 — 의사 상담';}else{cls='warn';txt='→ 안정적';} }
+  if(data.length>=2){ var diff=last.v-data[data.length-2].v; if(diff<-0.5){cls='good';txt=' 감소';}else if(diff>0.5){cls='danger';txt=' 증가  의사 상담';}else{cls='warn';txt=' 안정적';} }
   badge.innerHTML='<span class="psa-badge '+cls+'">'+txt+'</span>';
 }
 
@@ -2387,11 +2397,11 @@ function _quickSavePSA(v){ var data=_getPSA(); data.push({v:v,date:todayStr(),no
 function _loadPSAHistory(){
   var el=$id('psa-history'); if(!el) return;
   var data=_getPSA();
-  if(!data.length){ el.innerHTML='<div class="empty-state" style="padding:18px;"><i class="ti ti-chart-line"></i><br>기록이 없어요</div>'; return; }
+  if(!data.length){ el.innerHTML='<div class="empty-state" style="padding:18px;"><br>기록이 없어요</div>'; return; }
   el.innerHTML='';
   [].concat(data).reverse().forEach(function(item,i,arr){
-    var prev=arr[i+1],ac='',at='→';
-    if(prev&&prev.marker===item.marker){ if(item.v>prev.v){ac='up';at='▲';}else if(item.v<prev.v){ac='dn';at='▼';} }
+    var prev=arr[i+1],ac='',at='';
+    if(prev&&prev.marker===item.marker){ if(item.v>prev.v){ac='up';at='';}else if(item.v<prev.v){ac='dn';at='';} }
     var markerName=item.marker||'PSA';
     var unit=item.unit||'ng/mL';
     var row=document.createElement('div'); row.className='psa-row-item';
@@ -2401,7 +2411,7 @@ function _loadPSAHistory(){
   });
 }
 
-/* ── 증상 ── */
+/*  증상  */
 function _buildNRS(cid,type){
   var c=$id(cid); if(!c) return; c.innerHTML='';
   for(var i=0;i<=10;i++){ (function(n){
@@ -2460,14 +2470,14 @@ function _loadSymCards(){
     var d=data[date];
     var card=document.createElement('div'); card.className='sym-log-card';
     var hd=document.createElement('div'); hd.className='sym-log-hd';
-    var del=document.createElement('button'); del.className='sym-log-del'; del.innerHTML='<i class="ti ti-trash"></i>';
+    var del=document.createElement('button'); del.className='sym-log-del'; del.innerHTML='';
     del.onclick=function(){ var sd=_getSym(); delete sd[date]; _setSym(sd); _loadSymCards(); };
     hd.innerHTML='<div class="sym-log-date">'+esc(date)+'</div>'; hd.appendChild(del); card.appendChild(hd);
     var body=document.createElement('div'); body.className='sym-log-body';
     [{k:'pain',l:'통증',ic:'pain'},{k:'urine',l:'배뇨',ic:'urine'},{k:'fatigue',l:'피로',ic:'fatigue'}].forEach(function(r){
       if(d[r.k]===undefined) return;
       var row=document.createElement('div'); row.className='sym-log-row';
-      row.innerHTML='<div class="sym-log-icon '+r.ic+'"><i class="ti ti-'+({pain:'flame',urine:'droplet',fatigue:'zzz'}[r.k])+'"></i></div><div class="sym-log-key">'+r.l+'</div><div class="sym-log-val">'+d[r.k]+'점</div>';
+      row.innerHTML='<div class="sym-log-icon '+r.ic+'"></div><div class="sym-log-key">'+r.l+'</div><div class="sym-log-val">'+d[r.k]+'점</div>';
       body.appendChild(row);
     });
     if(d.memo){ var m=document.createElement('div'); m.style.cssText='font-size:11px;color:var(--mu);padding-top:3px;'; m.textContent=d.memo; body.appendChild(m); }
@@ -2483,7 +2493,7 @@ function _loadSymAvg(){
   if(ep)ep.textContent=avg(pain); if(ef)ef.textContent=avg(fatigue);
 }
 
-/* ── 복약 ── */
+/*  복약  */
 function _getMeds(){ return ugj('meds',[]); }
 function _setMeds(d){ usj('meds',d); }
 function _getMedDone(){ return ugj('med_done',{}); }
@@ -2507,7 +2517,7 @@ function toggleMed(id){
   var done=_getMedDone(),today=todayStr();
   if(!done[today])done[today]={};
   done[today][id]=!done[today][id]; _setMedDone(done); _refreshMedHome();
-  if(done[today][id]) toast('복약 완료 ✓');
+  if(done[today][id]) toast('복약 완료 ');
 }
 
 function deleteMed(id){ _setMeds(_getMeds().filter(function(m){return m.id!==id;})); _refreshMedHome(); }
@@ -2519,21 +2529,21 @@ function _refreshMedHome(){
   meds.forEach(function(med){
     var isDone=done[today]&&done[today][med.id];
     var item=document.createElement('div'); item.className='med-item';
-    item.innerHTML='<div class="med-check'+(isDone?' done':'')+'" onclick="A.toggleMed('+med.id+')">'+(isDone?'<i class="ti ti-check"></i>':'')+'</div>'
+    item.innerHTML='<div class="med-check'+(isDone?' done':'')+'" onclick="A.toggleMed('+med.id+')">'+(isDone?'':'')+'</div>'
       +'<div style="flex:1"><div class="med-nm">'+esc(med.name)+(med.dose?' <span style="font-size:10px;color:var(--mu);">'+esc(med.dose)+'</span>':'')+'</div>'+(med.time?'<div class="med-tm">'+esc(med.time)+'</div>':'')+'</div>'
-      +'<button style="background:none;border:none;color:var(--mu);font-size:15px;padding:3px;" onclick="A.deleteMed('+med.id+')"><i class="ti ti-x"></i></button>';
+      +'<button style="background:none;border:none;color:var(--mu);font-size:15px;padding:3px;" onclick="A.deleteMed('+med.id+')"></button>';
     el.appendChild(item);
   });
   var addBtn=document.createElement('button'); addBtn.className='med-add-btn';
-  addBtn.innerHTML='<i class="ti ti-plus"></i> 복약 추가';
+  addBtn.innerHTML=' 복약 추가';
   addBtn.onclick=function(){ $id('sh-med-nm').value=''; $id('sh-med-time').value=''; openSheet('sh-med'); };
   el.appendChild(addBtn);
 }
 
-/* ── 이미지 압축 ── */
-// Storage URL → base64 변환 (CORS 우회)
+/*  이미지 압축  */
+// Storage URL  base64 변환 (CORS 우회)
 function _urlToBase64(url, cb){
-  // fetch로 blob → base64 (CORS 우회)
+  // fetch로 blob  base64 (CORS 우회)
   fetch(url)
     .then(function(r){ return r.blob(); })
     .then(function(blob){
@@ -2567,7 +2577,7 @@ function _compress(dataUrl,cb){
   }; img.src=dataUrl;
 }
 
-/* ── 사진 파일 선택 ── */
+/*  사진 파일 선택  */
 function pickPhoto(src){ closeSheet('sh-photo'); $id('f-'+src).value=''; $id('f-'+src).click(); }
 var _pendingImg = null; // 사진 데이터 임시 보관 (메모 입력 전)
 var _pendingImgMeal = null;
@@ -2575,7 +2585,7 @@ var _pendingImgMeal = null;
 function onFile(e,src){
   var f=e.target.files[0]; e.target.value=''; if(!f) return;
   var meal = _pendingMeal; _pendingMeal = null;
-  var mealName = {morning:'🌅 아침', lunch:'☀️ 점심', dinner:'🌙 저녁'}[meal] || '식사';
+  var mealName = {morning:' 아침', lunch:' 점심', dinner:' 저녁'}[meal] || '식사';
   var r=new FileReader(); r.onload=function(ev){ _compress(ev.target.result,function(small){
     // 사진 데이터 임시 저장
     _pendingImg = small;
@@ -2629,7 +2639,7 @@ function _autoSavePhotoToLog(imgData, forceMeal, note){
     _setRecs(recs);
     _refreshPhotos(); _refreshStats();
     _xlLoad(); // 기록장 카드 DOM 업데이트
-    toast(mealNameForAI+' 사진 저장됐어요 ✓');
+    toast(mealNameForAI+' 사진 저장됐어요 ');
     _analyzeHomeMeal(imgData, mealNameForAI, note);
   }).catch(function(err){
     console.error('Storage 업로드 실패:', err);
@@ -2650,7 +2660,7 @@ function onMealFile(e,src){
     var card=$id(p.cardId); if(!card) return;
     var slot=card.querySelector('[data-meal="'+p.meal+'"]'); if(!slot) return;
     var dateVal = card.querySelector('.day-date').value;
-    var mealName={morning:'🌅 아침',lunch:'☀️ 점심',dinner:'🌙 저녁'}[p.meal]||p.meal;
+    var mealName={morning:' 아침',lunch:' 점심',dinner:' 저녁'}[p.meal]||p.meal;
 
     // 메모 입력 시트 열기 (홈과 동일)
     _pendingImg = small;
@@ -2709,7 +2719,7 @@ function saveMealWithMemo(){
     var blob=new Blob([ab],{type:'image/jpeg'});
     toast('업로드 중...');
     ref.put(blob).then(function(){ return ref.getDownloadURL(); }).then(function(url){
-      // records 캐시에 사진 URL 즉시 저장 → 홈 화면에 바로 반영
+      // records 캐시에 사진 URL 즉시 저장  홈 화면에 바로 반영
       var days2=_getRecs();
       var dayRec2=days2.find(function(d){return d.date===dateVal;});
       if(!dayRec2){ dayRec2={date:dateVal,photos:{},steps:''}; days2.push(dayRec2); }
@@ -2717,9 +2727,9 @@ function saveMealWithMemo(){
       dayRec2.photos[meal]=url;
       _setRecs(days2);
       _saveRot(logCtx.cardId,meal,0); _renderFilled(slot,url,0); _schedSave(); _refreshPhotos();
-      toast(mealName+' 사진 저장됐어요 ✓');
+      toast(mealName+' 사진 저장됐어요 ');
       // AI 분석 자동 실행
-      var mealNameFull={morning:'🌅 아침',lunch:'☀️ 점심',dinner:'🌙 저녁'}[meal]||meal;
+      var mealNameFull={morning:' 아침',lunch:' 점심',dinner:' 저녁'}[meal]||meal;
       _analyzeLogMeal(img, mealNameFull, note, dateVal, meal);
     }).catch(function(err){
       console.error('Storage 업로드 실패:', err);
@@ -2757,30 +2767,30 @@ function _analyzeLogMeal(imgData, mealName, note, dateVal, mealKey){
     dayRec.analysis[mealKey]=reply;
     if(dateVal===todayStr()) dayRec.analysis.latest=reply;
     _setRecs(days);
-    toast('분석 완료 ✓');
+    toast('분석 완료 ');
     if(dateVal===todayStr()) _refreshHomeAnalysis();
   });
 }
 
-/* ── 식단 기록장 ── */
+/*  식단 기록장  */
 function _getRecs(){ return ugj('records',[]); }
 function _setRecs(d){
-  if(!Array.isArray(d)){ console.error('🚨 _setRecs: 배열이 아닌 값 저장 차단'); return; }
+  if(!Array.isArray(d)){ console.error(' _setRecs: 배열이 아닌 값 저장 차단'); return; }
   var existing = ugj('records',[]);
   if(existing.length > 3 && d.length === 0){
-    console.error('🚨 _setRecs: 빈 배열 저장 차단 (기존:', existing.length, '개)');
-    toast('⚠️ 데이터 저장 오류 - 관리자에게 문의하세요');
+    console.error(' _setRecs: 빈 배열 저장 차단 (기존:', existing.length, '개)');
+    toast(' 데이터 저장 오류 - 관리자에게 문의하세요');
     return;
   }
   if(existing.length > 5 && d.length < existing.length * 0.5){
-    console.warn('⚠️ _setRecs: 데이터 급감 감지 ('+existing.length+'→'+d.length+')');
+    console.warn(' _setRecs: 데이터 급감 감지 ('+existing.length+''+d.length+')');
   }
   // base64 자동 제거
   d.forEach(function(rec){
     if(!rec||!rec.photos) return;
     Object.keys(rec.photos).forEach(function(meal){
       if(rec.photos[meal]&&rec.photos[meal].startsWith('data:image')){
-        console.warn('🧹 base64 자동 제거:', rec.date, meal);
+        console.warn(' base64 자동 제거:', rec.date, meal);
         delete rec.photos[meal];
       }
     });
@@ -2808,7 +2818,7 @@ function _schedSafetyBackup(){
         ts: Date.now(),
         date: todayStr(),
         count: recs.length
-      }).then(function(){ console.log('✅ 안전 백업 저장:', recs.length+'개'); })
+      }).then(function(){ console.log(' 안전 백업 저장:', recs.length+'개'); })
         .catch(function(e){ console.error('안전 백업 실패:', e); });
     }catch(e){ console.error('안전 백업 오류:', e); }
   }, 1800000); // 30분
@@ -2845,7 +2855,7 @@ function _makeCard(d){
   var card=document.createElement('div'); card.className='day-card'; card.id=id;
   var hd=document.createElement('div'); hd.className='day-hd';
   var di=document.createElement('input'); di.className='day-date'; di.type='text'; di.value=d.date||''; di.placeholder='날짜'; di.addEventListener('input',_schedSave);
-  var del=document.createElement('button'); del.className='day-del'; del.innerHTML='<i class="ti ti-trash"></i>'; del.addEventListener('click',function(){_delCard(card);});
+  var del=document.createElement('button'); del.className='day-del'; del.innerHTML=''; del.addEventListener('click',function(){_delCard(card);});
   hd.appendChild(di); hd.appendChild(del); card.appendChild(hd);
 
   // 식사 사진 3칸 + 간식
@@ -2861,7 +2871,7 @@ function _makeCard(d){
   exRow.className='steps-row'; exRow.style.borderTop='1px solid var(--bd)';
   exRow.setAttribute('data-ex-cardid', id);
   var exLbl=document.createElement('span'); exLbl.className='steps-lbl';
-  exLbl.innerHTML='<i class="ti ti-run" style="color:var(--warn);"></i>운동';
+  exLbl.innerHTML='운동';
   var exVal=document.createElement('div'); exVal.style.cssText='flex:1;font-size:12px;color:var(--mu);';
   exVal.setAttribute('data-ex-val','1');
   if(ex){
@@ -2900,9 +2910,9 @@ function _makeCard(d){
       medRow.style.cssText='padding:8px 12px;border-top:1px solid var(--bd);font-size:12px;';
       var medTxt = meds.map(function(m){
         var done = medDone[m.name];
-        return '<span style="margin-right:8px;color:'+(done?'var(--teal)':'var(--mu)')+';">'+(done?'✓ ':'○ ')+esc(m.name)+'</span>';
+        return '<span style="margin-right:8px;color:'+(done?'var(--teal)':'var(--mu)')+';">'+(done?' ':' ')+esc(m.name)+'</span>';
       }).join('');
-      medRow.innerHTML='<div style="font-size:11px;font-weight:700;color:var(--mu2);margin-bottom:4px;">💊 복약</div>'+medTxt;
+      medRow.innerHTML='<div style="font-size:11px;font-weight:700;color:var(--mu2);margin-bottom:4px;"> 복약</div>'+medTxt;
       card.appendChild(medRow);
     }
   }
@@ -2932,7 +2942,7 @@ var _exFromLog = null;
 function _renderEmpty(slot){
   var meal=slot.getAttribute('data-meal'),cid=slot.closest('.day-card').id;
   var lm={morning:'아침',lunch:'점심',dinner:'저녁',snack:'간식'},lc={morning:'am',lunch:'pm',dinner:'ev',snack:'sn'};
-  slot.innerHTML='<div class="meal-lbl '+lc[meal]+'">'+lm[meal]+'</div><div class="meal-empty" onclick="A._openMealSheet(\''+cid+'\',\''+meal+'\')"><i class="ti ti-camera-plus"></i><span>탭하여<br>선택</span></div>';
+  slot.innerHTML='<div class="meal-lbl '+lc[meal]+'">'+lm[meal]+'</div><div class="meal-empty" onclick="A._openMealSheet(\''+cid+'\',\''+meal+'\')"><span>탭하여<br>선택</span></div>';
   slot.removeAttribute('data-photo');
 }
 
@@ -2940,7 +2950,7 @@ function _renderFilled(slot,url,rot){
   var meal=slot.getAttribute('data-meal'),cid=slot.closest('.day-card').id;
   var lm={morning:'아침',lunch:'점심',dinner:'저녁',snack:'간식'},lc={morning:'am',lunch:'pm',dinner:'ev',snack:'sn'};
   slot.setAttribute('data-photo',url);
-  slot.innerHTML='<div class="meal-lbl '+lc[meal]+'">'+lm[meal]+'</div><div class="meal-filled" onclick="A._openViewer(\''+cid+'\',\''+meal+'\')" ><img src="'+url+'" alt="'+lm[meal]+'" style="transform:rotate('+(rot||0)+'deg)"><div class="meal-overlay"><i class="ti ti-eye"></i></div></div>';
+  slot.innerHTML='<div class="meal-lbl '+lc[meal]+'">'+lm[meal]+'</div><div class="meal-filled" onclick="A._openViewer(\''+cid+'\',\''+meal+'\')" ><img src="'+url+'" alt="'+lm[meal]+'" style="transform:rotate('+(rot||0)+'deg)"><div class="meal-overlay"></div></div>';
 }
 
 function _openMealSheet(cardId,meal){
@@ -2962,10 +2972,12 @@ function _delCard(card){ card.remove(); if(!$id('log-cards').children.length) $i
 function _schedSave(){ if(_saveTimer) clearTimeout(_saveTimer); _saveTimer=setTimeout(_doSave,300); }
 function _doSave(){
   var cards = document.querySelectorAll('#log-cards .day-card');
-  if(!cards.length) return; // 카드 없으면 저장 안 함
-  var existingRecs = _getRecs(); // 기존 저장된 데이터
+  if(!cards.length) return;
+  var existingRecs = _getRecs();
+  var logDates = {};
   var days=[]; cards.forEach(function(card){
     var dateVal = card.querySelector('.day-date').value;
+    logDates[dateVal] = true;
     var photos={};
     card.querySelectorAll('[data-meal]').forEach(function(slot){
       var p=slot.getAttribute('data-photo');
@@ -2990,6 +3002,9 @@ function _doSave(){
     if(existing&&existing.mealNotes) rec.mealNotes=existing.mealNotes;
     days.push(rec);
   });
+  // DOM 카드에 없는 날짜 레코드도 보존 (사진 유실 방지)
+  existingRecs.forEach(function(r){ if(r&&r.date&&!logDates[r.date]) days.push(r); });
+  days.sort(function(a,b){ return a.date<b.date?-1:a.date>b.date?1:0; });
   _setRecs(days); _showAutosave(); _refreshPhotos(); _refreshStats();
 }
 
@@ -2997,7 +3012,7 @@ function _xlLoad(){
   // 펜딩 DOM 저장이 있으면 먼저 flush (미저장 편집 유실 방지)
   if(_saveTimer){ clearTimeout(_saveTimer); _saveTimer=null; _doSave(); }
   var days=_getRecs();
-  // 날짜 형식 보정 (YYYYMMDD → YYYY-MM-DD)
+  // 날짜 형식 보정 (YYYYMMDD  YYYY-MM-DD)
   days.forEach(function(d){ if(d&&d.date) d.date=normDate(d.date); });
   // 중복 날짜 제거 (데이터 많은 쪽 병합)
   var merged={};
@@ -3050,9 +3065,9 @@ function exportExcel(){
     var analysis=d.analysis&&d.analysis.latest?d.analysis.latest.replace(/#+\s/g,'').substring(0,100):'';
     aoa.push([
       d.date,
-      d.photos&&d.photos.morning?'✓':'',
-      d.photos&&d.photos.lunch?'✓':'',
-      d.photos&&d.photos.dinner?'✓':'',
+      d.photos&&d.photos.morning?'':'',
+      d.photos&&d.photos.lunch?'':'',
+      d.photos&&d.photos.dinner?'':'',
       ex?ex.type:'',
       ex?ex.dur:'',
       analysis
@@ -3095,7 +3110,7 @@ function exportExcel(){
   toast('엑셀 저장 완료!');
 }
 
-/* ── 홈 그리드 & 통계 ── */
+/*  홈 그리드 & 통계  */
 function _refreshPhotos(){
   var days=_getRecs(), today=todayStr();
   var todayRec = days.find(function(d){ return d.date===today; });
@@ -3108,12 +3123,12 @@ function _refreshPhotos(){
     if(photo){
       var ov=document.createElement('div');
       ov.style.cssText='position:absolute;inset:0;background:rgba(0,0,0,.22);display:flex;align-items:center;justify-content:center;pointer-events:none;border-radius:var(--r-md);';
-      ov.innerHTML='<i class="ti ti-zoom-in" style="font-size:22px;color:#fff;opacity:.85;"></i>';
+      ov.innerHTML='';
       el.innerHTML='<img src="'+photo+'" alt="'+meal+'" style="width:100%;height:100%;object-fit:cover;display:block;">';
       el.appendChild(ov);
       el.style.position='relative';
     } else {
-      el.innerHTML='<i class="ti ti-camera" style="font-size:40px;color:#fff;"></i>';
+      el.innerHTML='';
       el.style.position='';
     }
   });
@@ -3126,7 +3141,7 @@ function _refreshStats(){
   // 건강관리 모드에서만 stat 섹션 있음
 }
 
-/* ── 뷰어 ── */
+/*  뷰어  */
 function _openViewer(cid,meal){
   var card=$id(cid); if(!card) return;
   var slot=card.querySelector('[data-meal="'+meal+'"]'); if(!slot) return;
@@ -3137,7 +3152,7 @@ function _openViewer(cid,meal){
   var dateVal = card.querySelector('.day-date') ? card.querySelector('.day-date').value : '';
   var days=_getRecs();
   var dayRec=days.find(function(d){return d.date===dateVal;});
-  // 키 변환 (morning↔breakfast 모두 시도)
+  // 키 변환 (morningbreakfast 모두 시도)
   var altMeal = {morning:'breakfast',breakfast:'morning',lunch:'lunch',dinner:'dinner'}[meal]||meal;
   var ana = '';
   if(dayRec&&dayRec.analysis){
@@ -3148,9 +3163,9 @@ function _openViewer(cid,meal){
   var infoEl=$id('viewer-analysis');
   if(infoEl){
     var txt='';
-    if(note) txt+='<div style="font-size:12px;color:rgba(255,255,255,.6);margin-bottom:4px;">📝 '+esc(note)+'</div>';
+    if(note) txt+='<div style="font-size:12px;color:rgba(255,255,255,.6);margin-bottom:4px;"> '+esc(note)+'</div>';
     if(ana)  txt+='<div style="font-size:12px;color:rgba(255,255,255,.85);line-height:1.7;">'+md(ana)+'</div>';
-    else txt+='<div style="font-size:12px;color:rgba(255,255,255,.45);">AI 분석 없음 — AI분석 버튼을 눌러주세요</div>';
+    else txt+='<div style="font-size:12px;color:rgba(255,255,255,.45);">AI 분석 없음  AI분석 버튼을 눌러주세요</div>';
     infoEl.style.display='block';
     infoEl.innerHTML=txt;
   }
@@ -3204,7 +3219,7 @@ function vSaveMemo(){
   if(infoEl){
     var ana=(dayRec.analysis&&(dayRec.analysis[_vCtx.meal]||''))||'';
     var txt='';
-    if(note) txt+='<div style="font-size:12px;color:rgba(255,255,255,.6);margin-bottom:4px;">📝 '+esc(note)+'</div>';
+    if(note) txt+='<div style="font-size:12px;color:rgba(255,255,255,.6);margin-bottom:4px;"> '+esc(note)+'</div>';
     if(ana)  txt+='<div style="font-size:12px;color:rgba(255,255,255,.85);line-height:1.7;">'+md(ana)+'</div>';
     else txt+='<div style="font-size:12px;color:rgba(255,255,255,.45);">AI 분석 없음</div>';
     infoEl.innerHTML=txt;
@@ -3216,7 +3231,7 @@ function vSaveMemo(){
     var allNotes=Object.values(dayRec.mealNotes).filter(Boolean).join(' / ');
     noteArea.value=allNotes;
   }
-  toast('메모가 저장됐어요 ✓');
+  toast('메모가 저장됐어요 ');
 }
 
 function vDel(){
@@ -3230,7 +3245,7 @@ function vAnalyze(){
   var card=$id(_vCtx.cid); if(!card) return;
   var dateVal=card.querySelector('.day-date')?card.querySelector('.day-date').value:'';
   var meal=_vCtx.meal;
-  var mealName={morning:'🌅 아침',lunch:'☀️ 점심',dinner:'🌙 저녁'}[meal]||meal;
+  var mealName={morning:' 아침',lunch:' 점심',dinner:' 저녁'}[meal]||meal;
   var photoUrl=$id('viewer-img').src;
   if(!photoUrl){ toast('사진이 없습니다'); return; }
   var infoEl=$id('viewer-analysis');
@@ -3259,7 +3274,7 @@ function vAnalyze(){
         dayRec.analysis.latest=reply;
         _setRecs(days);
         if(infoEl) infoEl.innerHTML='<div style="font-size:12px;color:rgba(255,255,255,.85);line-height:1.7;">'+md(reply)+'</div>';
-        toast('분석 완료 ✓');
+        toast('분석 완료 ');
         _refreshHomeAnalysis();
       });
     })();
@@ -3269,16 +3284,16 @@ function vAnalyze(){
 function _openHomeViewer(url,lbl){ $id('hv-img').src=url; $id('home-viewer').classList.add('on'); }
 function closeHomeViewer(){ $id('home-viewer').classList.remove('on'); }
 
-/* ── 회전값 ── */
+/*  회전값  */
 function _allRot(){ return ugj('rot',{}); }
 function _loadRot(c,m){ var a=_allRot(); return(a[c]&&a[c][m])||0; }
 function _saveRot(c,m,d){ var a=_allRot(); if(!a[c])a[c]={}; a[c][m]=d; usj('rot',a); }
 function _delRot(c,m){ var a=_allRot(); if(a[c]){ delete a[c][m]; usj('rot',a); } }
 
-/* ── 자동저장 배지 ── */
+/*  자동저장 배지  */
 function _showAutosave(){ var b=$id('autosave'); if(!b) return; b.classList.add('show'); setTimeout(function(){b.classList.remove('show');},1800); }
 
-/* ── 앱 백그라운드/종료 시 즉시 저장 ── */
+/*  앱 백그라운드/종료 시 즉시 저장  */
 function _emergencySave(){
   if(_currentPage==='log') _doSave();
   // localStorage에 즉시 동기 저장 (Firestore debounce가 실행 전에 페이지 종료 대비)
@@ -3291,11 +3306,11 @@ function _emergencySave(){
 }
 document.addEventListener('visibilitychange', function(){
   if(document.hidden){ _emergencySave(); }
-  else { _silentReadSteps(); }
+  else { if(USER && _getHCPlugin()) _silentReadSteps(); }
 });
 window.addEventListener('pagehide', _emergencySave);
 
-/* ── 초기 진입 ── */
+/*  초기 진입  */
 // Capgo Live Update: 앱이 정상 로드됐음을 알림 (롤백 방지)
 try{
   if(window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.CapacitorUpdater){
@@ -3315,7 +3330,7 @@ _loadCloudData(function(){
   }
 });
 
-/* ── 컨디션 빠른 팝업 ── */
+/*  컨디션 빠른 팝업  */
 var _quickCondState = '';
 
 function openQuickCond(){
@@ -3362,10 +3377,10 @@ function saveQuickCond(){
   closeQuickCond();
   _refreshCondSummary();
   _refreshHomeProgress();
-  toast('컨디션이 저장됐어요 ✓');
+  toast('컨디션이 저장됐어요 ');
 }
 
-/* ── 컨디션 기록 ── */
+/*  컨디션 기록  */
 var _condState = '';
 
 function openConditionSheet(){
@@ -3414,7 +3429,7 @@ function saveCondition(){
   closeSheet('sh-condition');
   _refreshCondSummary();
   _refreshHomeProgress();
-  toast('컨디션이 저장됐어요 ✓');
+  toast('컨디션이 저장됐어요 ');
 }
 
 function _getCondRecs(){ return ugj('condRecs',[]); }
@@ -3427,7 +3442,7 @@ function _refreshCondSummary(){
   var rec=recs.find(function(r){return r.date===today;});
   if(!rec){ el.textContent='탭해서 기록하세요'; return; }
   var parts=[];
-  var stateMap={good:'😊 좋음',normal:'😐 보통',bad:'😔 나쁨'};
+  var stateMap={good:' 좋음',normal:' 보통',bad:' 나쁨'};
   if(rec.state) parts.push(stateMap[rec.state]||rec.state);
   if(rec.weight) parts.push(rec.weight+'kg');
   if(rec.glucose) parts.push('혈당 '+rec.glucose);
@@ -3446,13 +3461,13 @@ function loadBackupList(){
     var btn=document.createElement('div');
     btn.className='row gap';
     btn.style.marginBottom='6px';
-    btn.innerHTML='<div style="flex:1;font-size:13px;font-weight:700;color:var(--navy);">📅 '+dateKey+'</div>'
+    btn.innerHTML='<div style="flex:1;font-size:13px;font-weight:700;color:var(--navy);"> '+dateKey+'</div>'
       +'<button class="btn-sm teal" onclick="if(confirm(\''+dateKey+' 백업으로 복원하시겠습니까?\')){A.restoreBackup(\''+dateKey+'\');}">복원</button>';
     el.appendChild(btn);
   });
 }
 
-/* ── 범용 백업 모듈 (다른 앱에도 적용 가능) ──
+/*  범용 백업 모듈 (다른 앱에도 적용 가능) 
    사용법:
    1. _autoBackup() - 앱 로드 시 호출
    2. _listBackups() - 백업 목록 조회
@@ -3464,7 +3479,7 @@ function loadBackupList(){
    - _saveCloud() 함수로 저장
    
    키 이름 규칙: mc_backup_YYYY-MM-DD
-── */
+ */
 
 function restoreCloudBackup(){
   if(!USER){ toast('로그인 필요'); return; }
@@ -3476,7 +3491,7 @@ function restoreCloudBackup(){
     try{
       var recs=JSON.parse(d.records);
       usj('records', recs);
-      toast('✅ 클라우드 백업 복원 완료 ('+recs.length+'일치). 앱을 새로고침하세요.');
+      toast(' 클라우드 백업 복원 완료 ('+recs.length+'일치). 앱을 새로고침하세요.');
       setTimeout(function(){ location.reload(); }, 2000);
     }catch(e){ toast('복원 실패: '+e.message); }
   }).catch(function(e){ toast('복원 오류: '+e.message); });
@@ -3496,11 +3511,11 @@ function _refreshExPage(){
     exList.forEach(function(ex,i){
       html+='<div style="display:flex;align-items:flex-start;justify-content:space-between;padding:8px 0;'+(i>0?'border-top:1px solid var(--bd);':'')+'">'
         +'<div style="flex:1;">'
-        +'<div style="font-size:13px;font-weight:700;">🏃 '+esc(ex.type)+(ex.dur?' · '+esc(ex.dur):'')+'</div>'
-        +(ex.steps?'<div style="font-size:11px;color:var(--mu);margin-top:2px;">👣 '+esc(ex.steps)+'보</div>':'')
+        +'<div style="font-size:13px;font-weight:700;"> '+esc(ex.type)+(ex.dur?' · '+esc(ex.dur):'')+'</div>'
+        +(ex.steps?'<div style="font-size:11px;color:var(--mu);margin-top:2px;"> '+esc(ex.steps)+'보</div>':'')
         +(ex.memo?'<div style="font-size:11px;color:var(--mu);margin-top:2px;">'+esc(ex.memo)+'</div>':'')
         +'</div>'
-        +'<button onclick="A.deleteExItem('+i+')" style="background:none;border:none;cursor:pointer;color:var(--mu);font-size:16px;padding:0 0 0 8px;line-height:1;" title="삭제">✕</button>'
+        +'<button onclick="A.deleteExItem('+i+')" style="background:none;border:none;cursor:pointer;color:var(--mu);font-size:16px;padding:0 0 0 8px;line-height:1;" title="삭제"></button>'
         +'</div>';
     });
     statusEl.innerHTML=html;
@@ -3519,7 +3534,7 @@ function deleteExItem(idx){
   _setRecs(days);
   _refreshExPage();
   _refreshHomeExercise();
-  _refreshComprehensiveBtn();
+  _refreshComprehensiveBtn(); _refreshHomeTodayExercise();
   _refreshHomeProgress();
   toast('운동 기록을 삭제했어요');
 }
@@ -3529,7 +3544,7 @@ function _refreshComprehensiveBtn(){
   var days=_getRecs();
   var dayRec=days.find(function(d){return d.date===today;});
   var hasFood=dayRec&&((dayRec.analysis&&dayRec.analysis.latest)||(dayRec.photos&&(dayRec.photos.morning||dayRec.photos.lunch||dayRec.photos.dinner)));
-  var hasEx=dayRec&&dayRec.exercise&&dayRec.exercise.length;
+  var hasEx=dayRec&&((dayRec.exercise&&dayRec.exercise.length)||(dayRec.steps&&dayRec.steps>0));
   var wrap=$id('home-comprehensive-wrap');
   if(wrap) wrap.style.display=(hasFood&&hasEx)?'block':'none';
   var compEl=$id('home-comprehensive-result');
@@ -3547,11 +3562,18 @@ function analyzeComprehensive(){
   if(!dayRec){ toast('오늘 기록이 없습니다'); return; }
   var foodAnalysis=dayRec.analysis&&dayRec.analysis.latest;
   var exList=dayRec.exercise||[];
-  if(!foodAnalysis||!exList.length){ toast('식단과 운동 분석이 모두 필요합니다'); return; }
+  var hcSteps=dayRec.steps||0;
+  if(!foodAnalysis||(!exList.length&&!hcSteps)){ toast('식단과 운동 기록이 모두 필요합니다'); return; }
   var compEl=$id('home-comprehensive-result');
   compEl.style.display='block';
   compEl.innerHTML='<div class="tip-lbl">오늘의 종합 평가</div><div class="dots"><span></span><span></span><span></span></div>';
-  var exSummary=exList.map(function(e){return e.type+(e.dur?' '+e.dur:'');}).join(', ');
+  var exParts=[];
+  if(hcSteps>0) exParts.push('삼성헬스 걷기 '+Number(hcSteps).toLocaleString()+'보');
+  exList.forEach(function(e){
+    if(e.source==='healthconnect') return;
+    exParts.push(e.type+(e.dur?' '+e.dur:''));
+  });
+  var exSummary=exParts.join(', ');
   var mode=USER?USER.mode:'lchf';
   var modeDesc={keto:'케토제닉',carnivore:'카니보어',lchf:'저탄고지',diet:'균형 건강식',cancer:'암 환자'}[mode]||mode;
   var prompt='['+modeDesc+' 모드] 오늘의 종합 평가를 해주세요.\n\n[식단 분석]\n'+foodAnalysis+'\n\n[운동 기록]\n'+exSummary+'\n\n식단과 운동을 종합해서 오늘 하루 건강 관리를 평가하고, 내일을 위한 조언을 3~4문장으로 해주세요.';
@@ -3567,7 +3589,7 @@ var _pendingMeal = null; // 홈 식사 슬롯에서 넘어올 때 시간대 기�
 function openMealSlot(meal){
   var mealMap = {breakfast:'morning', lunch:'lunch', dinner:'dinner'};
   var mealKey = mealMap[meal] || meal;
-  var mealName = {breakfast:'🌅 아침',lunch:'☀️ 점심',dinner:'🌙 저녁'}[meal]||meal;
+  var mealName = {breakfast:' 아침',lunch:' 점심',dinner:' 저녁'}[meal]||meal;
   var days=_getRecs(), today=todayStr();
   var todayRec=days.find(function(d){return d.date===today;});
   var existingPhoto = todayRec && todayRec.photos && todayRec.photos[mealKey];
@@ -3641,17 +3663,17 @@ function saveMealViewerNote(){
   if(!dayRec.mealNotes) dayRec.mealNotes={};
   dayRec.mealNotes[mealKey]=note;
   _setRecs(days);
-  toast('메모가 저장됐어요 ✓');
+  toast('메모가 저장됐어요 ');
   var btn=$id('hv-note-save');
-  if(btn){ btn.textContent='✓ 저장됨'; btn.style.opacity='1'; btn.style.background='#0e8f79';
-    setTimeout(function(){ btn.innerHTML='<i class="ti ti-check"></i> 메모 저장'; btn.style.background='#19B89B'; btn.style.opacity='.5'; },2000); }
+  if(btn){ btn.textContent=' 저장됨'; btn.style.opacity='1'; btn.style.background='#0e8f79';
+    setTimeout(function(){ btn.innerHTML=' 메모 저장'; btn.style.background='#19B89B'; btn.style.opacity='.5'; },2000); }
 }
 
 function reanalyzeMealPhoto(){
   if(!KEY){ toast('API 키가 없습니다'); return; }
   var meal=_viewerMeal;
   var mealKey={breakfast:'morning',lunch:'lunch',dinner:'dinner'}[meal]||meal;
-  var mealName={breakfast:'🌅 아침',lunch:'☀️ 점심',dinner:'🌙 저녁'}[meal]||meal;
+  var mealName={breakfast:' 아침',lunch:' 점심',dinner:' 저녁'}[meal]||meal;
   var today=todayStr(); var days=_getRecs();
   var dayRec=days.find(function(d){return d.date===today;});
   var photoUrl=dayRec&&dayRec.photos&&dayRec.photos[mealKey];
@@ -3663,7 +3685,7 @@ function reanalyzeMealPhoto(){
   if(anaEl) anaEl.innerHTML='<div class="dots"><span></span><span></span><span></span></div>';
   toast('분석 중...');
 
-  // Firebase Storage URL → fetch → base64 변환 후 API 전송
+  // Firebase Storage URL  fetch  base64 변환 후 API 전송
   _urlToBase64(photoUrl, function(dataUrl){
     if(!dataUrl){ toast('사진을 분석할 수 없습니다 (CORS)'); return; }
     (function(){
@@ -3673,7 +3695,7 @@ function reanalyzeMealPhoto(){
       var prompt;
       if(note){
         // 메모가 있으면 메모를 기준으로 분석 (사진은 참고만)
-        prompt='['+mealName+'] 사용자가 직접 입력한 식사 메모: "'+note+'" — 이 메모를 기준으로 '+modeDesc+' 관점에서 분석해주세요. 사진은 참고만 하고 메모의 음식명을 우선으로 판단하세요. 적합도와 개선 제안을 2~3문장으로.';
+        prompt='['+mealName+'] 사용자가 직접 입력한 식사 메모: "'+note+'"  이 메모를 기준으로 '+modeDesc+' 관점에서 분석해주세요. 사진은 참고만 하고 메모의 음식명을 우선으로 판단하세요. 적합도와 개선 제안을 2~3문장으로.';
       } else {
         prompt='['+mealName+' 식사 사진] '+modeDesc+' 관점에서 분석해주세요. 주요 음식명, 적합도, 개선 제안을 2~3문장으로 간결하게.';
       }
@@ -3689,7 +3711,7 @@ function reanalyzeMealPhoto(){
         _refreshHomeAnalysis();
         var anaEl2=$id('home-viewer-analysis');
         if(anaEl2){ anaEl2.style.display='block'; anaEl2.innerHTML='<div style="font-size:13px;color:#fff;line-height:1.8;">'+md(reply)+'</div>'; }
-        toast('분석 완료 ✓');
+        toast('분석 완료 ');
       });
     })();
   });
@@ -3747,7 +3769,7 @@ function onHomeMealFile(e,src){
     toast('저장 중...');
     ref.put(blob).then(function(){return ref.getDownloadURL();}).then(function(url){
       s.todayRec.photos[s.meal]=url; _setRecs(s.days); _refreshPhotos();
-      toast(mealName+' 사진 저장됐어요 ✓');
+      toast(mealName+' 사진 저장됐어요 ');
       _analyzeHomeMeal(small, mealName, note);
     }).catch(function(err){
       console.error('Storage 업로드 실패:', err);
@@ -3798,7 +3820,7 @@ function _analyzeHomeMeal(imgData, mealName, note){
   });
 }
 
-/* ── 전날 AI 피드백 ── */
+/*  전날 AI 피드백  */
 function _refreshYesterdayFeedback(){
   var wrap=$id('home-yesterday-wrap'); if(!wrap) return;
   var card=$id('home-yesterday-card'); if(!card) return;
@@ -3816,20 +3838,20 @@ function _refreshYesterdayFeedback(){
   if(!comp&&!foodAna&&!exInfo){ wrap.style.display='none'; return; }
   wrap.style.display='block';
   var tags='';
-  if(foodAna) tags+='<span class="ycard-tag food"><i class="ti ti-camera" style="font-size:9px;margin-right:3px;"></i>식단 분석</span>';
-  if(exInfo) tags+='<span class="ycard-tag ex"><i class="ti ti-run" style="font-size:9px;margin-right:3px;"></i>'+esc(exInfo.type)+(exInfo.dur?' · '+esc(exInfo.dur):'')+'</span>';
-  if(comp) tags+='<span class="ycard-tag comp"><i class="ti ti-sparkles" style="font-size:9px;margin-right:3px;"></i>종합 평가</span>';
+  if(foodAna) tags+='<span class="ycard-tag food">식단 분석</span>';
+  if(exInfo) tags+='<span class="ycard-tag ex">'+esc(exInfo.type)+(exInfo.dur?' · '+esc(exInfo.dur):'')+'</span>';
+  if(comp) tags+='<span class="ycard-tag comp">종합 평가</span>';
   var mainText = comp || foodAna;
   // 너무 길면 자르기
-  if(mainText.length>220) mainText=mainText.substring(0,220)+'…';
-  card.innerHTML='<div class="ycard-header"><div class="ycard-icon"><i class="ti ti-history" style="font-size:14px;color:var(--teal);"></i></div><div><div class="ycard-title">어제 ('+yesterday.substring(5)+') AI 피드백</div><div class="ycard-meta">클릭하면 추적 탭에서 전체 확인</div></div></div>'
+  if(mainText.length>220) mainText=mainText.substring(0,220)+'';
+  card.innerHTML='<div class="ycard-header"><div class="ycard-icon"></div><div><div class="ycard-title">어제 ('+yesterday.substring(5)+') AI 피드백</div><div class="ycard-meta">클릭하면 추적 탭에서 전체 확인</div></div></div>'
     +'<div class="ycard-body">'+esc(mainText)+'</div>'
     +'<div class="ycard-tags">'+tags+'</div>';
   card.onclick=function(){ goPage('track'); };
   card.style.cursor='pointer';
 }
 
-/* ── 기록장 메모만 저장 (사진 없이) ── */
+/*  기록장 메모만 저장 (사진 없이)  */
 function saveMealNoteOnly(){
   if(!_pendMeal) { closeSheet('sh-meal'); return; }
   var noteEl=$id('sh-meal-note');
@@ -3851,10 +3873,10 @@ function saveMealNoteOnly(){
     noteArea.value=allNotes;
   }
   closeSheet('sh-meal');
-  toast('메모가 저장됐어요 ✓');
+  toast('메모가 저장됐어요 ');
 }
 
-/* ── _homeMealSlot 세팅 래퍼 ── */
+/*  _homeMealSlot 세팅 래퍼  */
 function _prepHomeMealSlot(meal){
   var mealMap={breakfast:'morning',lunch:'lunch',dinner:'dinner'};
   var mealKey=mealMap[meal]||meal;
@@ -3864,7 +3886,7 @@ function _prepHomeMealSlot(meal){
   _homeMealSlot={meal:mealKey, today:today, days:days, todayRec:todayRec};
 }
 
-/* ── 드래그 앤 드롭 ── */
+/*  드래그 앤 드롭  */
 function _handleHomeMealDrop(file, meal){
   if(!file||!file.type.startsWith('image/')) return;
   _prepHomeMealSlot(meal);
@@ -3885,7 +3907,7 @@ function _handleHomeMealDrop(file, meal){
     toast('저장 중...');
     ref.put(blob).then(function(){return ref.getDownloadURL();}).then(function(url){
       s.todayRec.photos[s.meal]=url; _setRecs(s.days); _refreshPhotos();
-      toast(mealName+' 사진 저장됐어요 ✓');
+      toast(mealName+' 사진 저장됐어요 ');
       _analyzeHomeMeal(small, mealName, '');
     }).catch(function(err){
       console.error('Storage 업로드 실패:',err);
@@ -3947,7 +3969,7 @@ function _initDragDrop(){
   }
 }
 
-/* ── 랜딩 태그 선택 ── */
+/*  랜딩 태그 선택  */
 function pickLandingTag(el){
   document.querySelectorAll('.landing-tag').forEach(function(t){
     t.style.background='rgba(25,184,155,.2)';
@@ -3960,7 +3982,7 @@ function pickLandingTag(el){
   setTimeout(function(){ goScreen('scr-profile'); }, 300);
 }
 
-/* ── 공개 API ── */
+/*  공개 API  */
 return {
   // 화면
   goScreen:goScreen, logoTap:logoTap, nameTap:nameTap, enterByName:enterByName, goSelfJoin:goSelfJoin, selfJoin:selfJoin, goHelp:goHelp, goBack:goBack, pickLandingTag:pickLandingTag, confirmLogout:confirmLogout, sjToggleAll:sjToggleAll, sjSyncAll:sjSyncAll, showConsent:showConsent, closeConsent:closeConsent,

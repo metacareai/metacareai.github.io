@@ -42,17 +42,17 @@
 </head>
 <body>
 <div id="loading-overlay" style="position:fixed;inset:0;background:#0F1E31;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;z-index:99999;">
-  <div style="font-size:56px;filter:drop-shadow(0 6px 18px rgba(25,184,155,.35));">🧬</div>
+  <div style="font-size:56px;filter:drop-shadow(0 6px 18px rgba(25,184,155,.35));"></div>
   <div style="color:rgba(255,255,255,.9);font-size:16px;font-weight:700;letter-spacing:-.2px;">스마트 메타케어</div>
   <div style="color:rgba(255,255,255,.38);font-size:13px;">불러오는 중...</div>
 </div>
 <div id="app">
 
-  <!-- ── 랜딩 페이지 (첫 방문자) ── -->
+  <!--  랜딩 페이지 (첫 방문자)  -->
   <div id="scr-landing" class="screen dark" style="overflow-y:auto;justify-content:flex-start;padding:0;">
     <div style="background:linear-gradient(160deg,#0D1F33 0%,#0F3D2E 100%);padding:env(safe-area-inset-top,36px) 24px 40px;display:flex;flex-direction:column;align-items:center;text-align:center;width:100%;box-sizing:border-box;">
 
-      <div onclick="A.logoTap()" ontouchstart="A.logoTap()" style="font-size:64px;margin-bottom:12px;filter:drop-shadow(0 8px 24px rgba(25,184,155,.4));cursor:pointer;">🧬</div>
+      <div onclick="A.logoTap()" ontouchstart="A.logoTap()" style="font-size:64px;margin-bottom:12px;filter:drop-shadow(0 8px 24px rgba(25,184,155,.4));cursor:pointer;"></div>
       <div style="font-size:24px;font-weight:800;color:#fff;letter-spacing:-.5px;margin-bottom:8px;">스마트 메타케어</div>
       <div style="font-size:13px;color:rgba(255,255,255,.55);line-height:1.7;margin-bottom:28px;">
         식사 사진 한 장으로 시작하는<br><b style="color:#19B89B;">AI 맞춤 식단·건강 관리</b>
@@ -70,7 +70,7 @@
       <!-- 태그 클릭 안내 -->
       <div style="width:100%;max-width:420px;text-align:center;margin-bottom:20px;">
         <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:20px;padding:7px 16px;">
-          <span style="font-size:14px;">👆</span>
+          <span style="font-size:14px;"></span>
           <span style="font-size:12px;color:rgba(255,255,255,.85);font-weight:600;">위 버튼 중 하나를 선택하시면 입장하실 수 있습니다</span>
         </div>
       </div>
@@ -93,7 +93,7 @@
       <div style="display:flex;flex-direction:column;gap:12px;max-width:420px;margin:0 auto 24px;">
 
         <div style="background:#fff;border-radius:16px;padding:16px 18px;display:flex;align-items:center;gap:14px;box-shadow:0 2px 12px rgba(0,0,0,.06);">
-          <div style="font-size:32px;flex-shrink:0;">📸</div>
+          <div style="font-size:32px;flex-shrink:0;"></div>
           <div>
             <div style="font-size:14px;font-weight:800;color:#1a2a3a;margin-bottom:3px;">사진 한 장으로 식단 분석</div>
             <div style="font-size:12px;color:#6b7a8d;line-height:1.55;">먹은 음식을 사진으로 찍으면 AI가 영양 구성을 분석하고 식단 방향을 알려드려요.</div>
@@ -101,7 +101,7 @@
         </div>
 
         <div style="background:#fff;border-radius:16px;padding:16px 18px;display:flex;align-items:center;gap:14px;box-shadow:0 2px 12px rgba(0,0,0,.06);">
-          <div style="font-size:32px;flex-shrink:0;">🏃</div>
+          <div style="font-size:32px;flex-shrink:0;"></div>
           <div>
             <div style="font-size:14px;font-weight:800;color:#1a2a3a;margin-bottom:3px;">운동 기록 &amp; 결과 리포트</div>
             <div style="font-size:12px;color:#6b7a8d;line-height:1.55;">운동 종류와 시간을 기록하면 오늘 식사와 연계해 AI가 맞춤 피드백을 드려요.</div>
@@ -109,7 +109,7 @@
         </div>
 
         <div style="background:#fff;border-radius:16px;padding:16px 18px;display:flex;align-items:center;gap:14px;box-shadow:0 2px 12px rgba(0,0,0,.06);">
-          <div style="font-size:32px;flex-shrink:0;">💬</div>
+          <div style="font-size:32px;flex-shrink:0;"></div>
           <div>
             <div style="font-size:14px;font-weight:800;color:#1a2a3a;margin-bottom:3px;">궁금한 건 AI에게 바로 질문</div>
             <div style="font-size:12px;color:#6b7a8d;line-height:1.55;">저탄고지·케토·회복식단 등 내 목표에 맞는 식단 정보를 언제든지 물어보세요.</div>
@@ -141,19 +141,19 @@
       <div style="text-align:center;padding-bottom:32px;">
         <p style="color:#aab4be;font-size:11px;line-height:1.8;margin:0;">
           별도 앱 설치 없이 웹에서 바로 이용 · 데이터 암호화 보관<br>
-          <span style="color:#19B89B;font-weight:700;">↑ 위 태그를 탭해서 시작하세요</span>
+          <span style="color:#19B89B;font-weight:700;"> 위 태그를 탭해서 시작하세요</span>
         </p>
       </div>
 
     </div>
   </div>
 
-  <!-- ── 사용자 입장 (로그인) ── -->
+  <!--  사용자 입장 (로그인)  -->
   <div id="scr-profile" class="screen dark" style="overflow-y:auto;justify-content:flex-start;padding:0;">
 
     <!-- 히어로 배너 -->
     <div style="background:linear-gradient(160deg,#0D1F33 0%,#0F3D2E 100%);padding:env(safe-area-inset-top,12px) 24px 16px;text-align:center;">
-      <div onclick="A.logoTap()" ontouchstart="A.logoTap()" style="font-size:40px;margin-bottom:6px;cursor:pointer;filter:drop-shadow(0 4px 12px rgba(25,184,155,.4));">🧬</div>
+      <div onclick="A.logoTap()" ontouchstart="A.logoTap()" style="font-size:40px;margin-bottom:6px;cursor:pointer;filter:drop-shadow(0 4px 12px rgba(25,184,155,.4));"></div>
       <div style="font-size:18px;font-weight:800;color:#fff;letter-spacing:-.5px;margin-bottom:4px;">스마트 메타케어</div>
       <div style="font-size:12px;color:rgba(255,255,255,.65);line-height:1.5;">
         식사 사진 한 장으로 시작하는 <b style="color:#19B89B;">AI 맞춤 식단·건강 관리</b>
@@ -163,21 +163,21 @@
     <!-- 핵심 기능 3가지 -->
     <div style="padding:20px 20px 0;display:flex;flex-direction:column;gap:10px;">
       <div style="display:flex;align-items:center;gap:14px;background:rgba(255,255,255,.06);border-radius:14px;padding:14px 16px;">
-        <div style="font-size:32px;flex-shrink:0;">📸</div>
+        <div style="font-size:32px;flex-shrink:0;"></div>
         <div>
-          <div style="color:#fff;font-size:14px;font-weight:700;margin-bottom:2px;">식사 사진 → AI 즉시 분석</div>
+          <div style="color:#fff;font-size:14px;font-weight:700;margin-bottom:2px;">식사 사진  AI 즉시 분석</div>
           <div style="color:rgba(255,255,255,.5);font-size:12px;line-height:1.5;">탄수화물·지방·단백질 비율, 식단 적합도를 10초 안에</div>
         </div>
       </div>
       <div style="display:flex;align-items:center;gap:14px;background:rgba(255,255,255,.06);border-radius:14px;padding:14px 16px;">
-        <div style="font-size:32px;flex-shrink:0;">🏃</div>
+        <div style="font-size:32px;flex-shrink:0;"></div>
         <div>
           <div style="color:#fff;font-size:14px;font-weight:700;margin-bottom:2px;">운동 기록 + 종합 평가</div>
           <div style="color:rgba(255,255,255,.5);font-size:12px;line-height:1.5;">여러 운동을 연속 기록하고 식단·운동 AI 종합 피드백</div>
         </div>
       </div>
       <div style="display:flex;align-items:center;gap:14px;background:rgba(255,255,255,.06);border-radius:14px;padding:14px 16px;">
-        <div style="font-size:32px;flex-shrink:0;">💬</div>
+        <div style="font-size:32px;flex-shrink:0;"></div>
         <div>
           <div style="color:#fff;font-size:14px;font-weight:700;margin-bottom:2px;">AI 코치에게 무엇이든</div>
           <div style="color:rgba(255,255,255,.5);font-size:12px;line-height:1.5;">식단 추천, 건강 궁금증, 운동 방법 24시간 상담</div>
@@ -187,11 +187,11 @@
 
     <!-- iOS 설치 안내 (Safari) -->
     <div id="ios-install-banner" style="display:none;margin:16px 20px 0;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:14px;padding:14px 16px;">
-      <div style="color:#fff;font-size:13px;font-weight:700;margin-bottom:8px;">📲 iPhone 홈 화면에 추가하는 방법</div>
+      <div style="color:#fff;font-size:13px;font-weight:700;margin-bottom:8px;"> iPhone 홈 화면에 추가하는 방법</div>
       <div style="display:flex;flex-direction:column;gap:6px;">
         <div style="display:flex;gap:10px;align-items:flex-start;">
           <span style="color:#19B89B;font-weight:800;font-size:13px;flex-shrink:0;">1</span>
-          <span style="color:rgba(255,255,255,.75);font-size:12px;line-height:1.5;">Safari 하단 <b style="color:#fff;">공유 버튼 (□↑)</b> 탭</span>
+          <span style="color:rgba(255,255,255,.75);font-size:12px;line-height:1.5;">Safari 하단 <b style="color:#fff;">공유 버튼 ()</b> 탭</span>
         </div>
         <div style="display:flex;gap:10px;align-items:flex-start;">
           <span style="color:#19B89B;font-weight:800;font-size:13px;flex-shrink:0;">2</span>
@@ -199,7 +199,7 @@
         </div>
         <div style="display:flex;gap:10px;align-items:flex-start;">
           <span style="color:#19B89B;font-weight:800;font-size:13px;flex-shrink:0;">3</span>
-          <span style="color:rgba(255,255,255,.75);font-size:12px;line-height:1.5;"><b style="color:#fff;">추가</b> 탭 → 앱처럼 바로 실행!</span>
+          <span style="color:rgba(255,255,255,.75);font-size:12px;line-height:1.5;"><b style="color:#fff;">추가</b> 탭  앱처럼 바로 실행!</span>
         </div>
       </div>
       <button onclick="document.getElementById('ios-install-banner').style.display='none'" style="margin-top:10px;background:none;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.5);border-radius:8px;padding:6px 14px;font-size:11px;cursor:pointer;">닫기</button>
@@ -207,14 +207,14 @@
 
     <!-- 로그인 폼 -->
     <div style="padding:20px;margin-top:4px;">
-      <div style="color:rgba(255,255,255,.5);font-size:12px;font-weight:700;letter-spacing:.5px;margin-bottom:12px;text-align:center;">── 시작하기 ──</div>
+      <div style="color:rgba(255,255,255,.5);font-size:12px;font-weight:700;letter-spacing:.5px;margin-bottom:12px;text-align:center;"> 시작하기 </div>
       <input id="login-name" class="inp" type="text" placeholder="이름 (예: 홍길동)" style="margin-bottom:10px;">
       <input id="login-year" class="inp" type="number" placeholder="출생년도 (예: 1964)" maxlength="4"
              onkeydown="if(event.key==='Enter')A.enterByName()" style="margin-bottom:14px;">
-      <button class="btn-primary" onclick="A.enterByName()" style="font-size:16px;padding:18px;">시작하기 →</button>
+      <button class="btn-primary" onclick="A.enterByName()" style="font-size:16px;padding:18px;">시작하기 </button>
       <p id="login-error" class="sub" style="color:#FF8A80;display:none;text-align:center;margin-top:10px;"></p>
       <button id="login-join-btn" onclick="A.goSelfJoin()" style="width:100%;padding:14px;margin-top:8px;background:rgba(25,184,155,.15);border:1px solid rgba(25,184,155,.4);border-radius:12px;color:#19B89B;font-size:14px;font-weight:700;cursor:pointer;">
-        처음 오셨나요? 지금 가입하기 →
+        처음 오셨나요? 지금 가입하기 
       </button>
 
       <!-- 카카오톡 공유 버튼 -->
@@ -231,11 +231,11 @@
 
   </div>
 
-  <!-- ── 자가 가입 ── -->
+  <!--  자가 가입  -->
   <div id="scr-self-join" class="screen light">
     <div class="topbar navy">
-      <button class="back-btn" onclick="A.goScreen('scr-profile')"><i class="ti ti-arrow-left"></i></button>
-      <span class="topbar-title">🌱 회원 가입</span>
+      <button class="back-btn" onclick="A.goScreen('scr-profile')"></button>
+      <span class="topbar-title"> 회원 가입</span>
     </div>
     <div class="scroll-body">
       <div style="background:var(--teal);border-radius:var(--r-md);padding:14px 16px;margin-bottom:4px;">
@@ -285,7 +285,7 @@
           <button onclick="A.showConsent('data')" style="background:none;border:none;font-size:11px;color:var(--teal);font-weight:700;cursor:pointer;white-space:nowrap;padding:0;">보기</button>
         </label>
       </div>
-      <button class="btn-full navy" onclick="A.selfJoin()"><i class="ti ti-check"></i> 가입하고 시작하기</button>
+      <button class="btn-full navy" onclick="A.selfJoin()"> 가입하고 시작하기</button>
     </div>
   </div>
 
@@ -294,7 +294,7 @@
     <div style="position:absolute;bottom:0;left:0;right:0;max-height:80vh;background:#fff;border-radius:20px 20px 0 0;display:flex;flex-direction:column;">
       <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--bd);flex-shrink:0;">
         <div id="consent-title" style="font-size:15px;font-weight:800;color:var(--navy);"></div>
-        <button onclick="A.closeConsent()" style="background:none;border:none;font-size:22px;color:var(--mu);cursor:pointer;line-height:1;">✕</button>
+        <button onclick="A.closeConsent()" style="background:none;border:none;font-size:22px;color:var(--mu);cursor:pointer;line-height:1;"></button>
       </div>
       <div id="consent-body" style="overflow-y:auto;padding:16px 20px;font-size:12px;line-height:1.8;color:var(--mu2);flex:1;"></div>
       <div style="padding:12px 16px;flex-shrink:0;">
@@ -303,9 +303,9 @@
     </div>
   </div>
 
-  <!-- ── Admin 비밀번호 ── -->
+  <!--  Admin 비밀번호  -->
   <div id="scr-admin-pw" class="screen dark center">
-    <div style="font-size:48px;">🔐</div>
+    <div style="font-size:48px;"></div>
     <h2>Admin 로그인</h2>
     <input id="admin-pw-input" class="inp pw-inp" type="text" inputmode="text" autocomplete="off" placeholder="비밀번호 입력"
            onkeydown="if(event.key==='Enter')A.checkPw()">
@@ -315,55 +315,55 @@
     </div>
   </div>
 
-  <!-- ── Admin 대시보드 ── -->
+  <!--  Admin 대시보드  -->
   <div id="scr-admin" class="screen light">
     <div class="topbar red">
-      <button class="back-btn" onclick="A.goScreen('scr-profile')"><i class="ti ti-arrow-left"></i></button>
-      <span class="topbar-title">🛡️ Admin</span>
+      <button class="back-btn" onclick="A.goScreen('scr-profile')"></button>
+      <span class="topbar-title"> Admin</span>
     </div>
     <div class="scroll-body">
       <div class="admin-grid">
         <button class="admin-tile" onclick="A.goScreen('scr-admin-monitor')">
-          <div class="admin-tile-icon" style="background:#E8F5E9;">📊</div>
+          <div class="admin-tile-icon" style="background:#E8F5E9;"></div>
           <div class="admin-tile-name">환자 현황</div>
         </button>
         <button class="admin-tile" onclick="A.goScreen('scr-admin-users')">
-          <div class="admin-tile-icon teal">👥</div>
+          <div class="admin-tile-icon teal"></div>
           <div class="admin-tile-name">사용자 관리</div>
         </button>
         <button class="admin-tile" onclick="A.goScreen('scr-admin-backup')">
-          <div class="admin-tile-icon navy">💾</div>
+          <div class="admin-tile-icon navy"></div>
           <div class="admin-tile-name">백업 / 복원</div>
         </button>
         <button class="admin-tile" onclick="A.goScreen('scr-admin-password')">
-          <div class="admin-tile-icon purple">🔐</div>
+          <div class="admin-tile-icon purple"></div>
           <div class="admin-tile-name">비밀번호 변경</div>
         </button>
         <button class="admin-tile" onclick="A.goScreen('scr-admin-reset')">
-          <div class="admin-tile-icon red">⚠️</div>
+          <div class="admin-tile-icon red"></div>
           <div class="admin-tile-name">앱 초기화</div>
         </button>
         <button class="admin-tile" onclick="A.runDiag()">
-          <div class="admin-tile-icon" style="background:#0D7A52;">🔍</div>
+          <div class="admin-tile-icon" style="background:#0D7A52;"></div>
           <div class="admin-tile-name">데이터 진단</div>
         </button>
         <button class="admin-tile" onclick="shareAppKakao()">
-          <div class="admin-tile-icon" style="background:#FEE500;">💬</div>
+          <div class="admin-tile-icon" style="background:#FEE500;"></div>
           <div class="admin-tile-name">앱 공유</div>
         </button>
         <button class="admin-tile" onclick="A.showChallengeAdmin()">
-          <div class="admin-tile-icon" style="background:#FFF3E0;">🏆</div>
+          <div class="admin-tile-icon" style="background:#FFF3E0;"></div>
           <div class="admin-tile-name">챌린지 현황</div>
         </button>
       </div>
     </div>
   </div>
 
-  <!-- ── Admin: 챌린지 현황 ── -->
+  <!--  Admin: 챌린지 현황  -->
   <div id="scr-admin-challenge" class="screen light">
     <div class="topbar" style="background:linear-gradient(135deg,#1428A0,#2563EB);">
-      <button class="back-btn" onclick="A.goScreen('scr-admin')"><i class="ti ti-arrow-left"></i></button>
-      <span class="topbar-title">🏆 만보 챌린지 현황</span>
+      <button class="back-btn" onclick="A.goScreen('scr-admin')"></button>
+      <span class="topbar-title"> 만보 챌린지 현황</span>
     </div>
     <div class="scroll-body">
       <div id="challenge-admin-month" style="font-size:13px;font-weight:700;color:var(--mu2);margin-bottom:12px;text-align:center;"></div>
@@ -375,78 +375,78 @@
     </div>
   </div>
 
-  <!-- ── Admin: 환자 현황 목록 ── -->
+  <!--  Admin: 환자 현황 목록  -->
   <div id="scr-admin-monitor" class="screen light">
     <div class="topbar navy">
-      <button class="back-btn" onclick="A.goScreen('scr-admin')"><i class="ti ti-arrow-left"></i></button>
-      <span class="topbar-title">📊 환자 현황</span>
+      <button class="back-btn" onclick="A.goScreen('scr-admin')"></button>
+      <span class="topbar-title"> 환자 현황</span>
     </div>
     <div class="scroll-body" id="monitor-list"></div>
   </div>
 
-  <!-- ── Admin: 환자 상세 현황 ── -->
+  <!--  Admin: 환자 상세 현황  -->
   <div id="scr-admin-patient" class="screen light">
     <div class="topbar navy">
-      <button class="back-btn" onclick="A.goScreen('scr-admin-monitor')"><i class="ti ti-arrow-left"></i></button>
+      <button class="back-btn" onclick="A.goScreen('scr-admin-monitor')"></button>
       <span class="topbar-title" id="patient-topbar-title">환자 상세</span>
     </div>
     <div class="scroll-body" id="patient-detail"></div>
   </div>
 
-  <!-- ── Admin: 사용자 관리 ── -->
+  <!--  Admin: 사용자 관리  -->
   <div id="scr-admin-users" class="screen light">
     <div class="topbar navy">
-      <button class="back-btn" onclick="A.goScreen('scr-admin')"><i class="ti ti-arrow-left"></i></button>
-      <span class="topbar-title">👥 사용자 관리</span>
+      <button class="back-btn" onclick="A.goScreen('scr-admin')"></button>
+      <span class="topbar-title"> 사용자 관리</span>
     </div>
     <div class="scroll-body">
       <div class="row gap">
-        <input id="admin-user-search" class="inp" type="text" placeholder="🔍 이름으로 검색" oninput="A.filterAdminUsers()" style="flex:1;">
-        <button class="btn-sm teal" onclick="A.goScreen('scr-add-user')" style="flex-shrink:0;"><i class="ti ti-plus"></i> 추가</button>
+        <input id="admin-user-search" class="inp" type="text" placeholder=" 이름으로 검색" oninput="A.filterAdminUsers()" style="flex:1;">
+        <button class="btn-sm teal" onclick="A.goScreen('scr-add-user')" style="flex-shrink:0;"> 추가</button>
       </div>
       <div id="admin-user-list" style="margin-top:4px;"></div>
     </div>
   </div>
 
-  <!-- ── Admin: 백업/복원 ── -->
+  <!--  Admin: 백업/복원  -->
   <div id="scr-admin-backup" class="screen light">
     <div class="topbar navy">
-      <button class="back-btn" onclick="A.goScreen('scr-admin')"><i class="ti ti-arrow-left"></i></button>
-      <span class="topbar-title">💾 백업 / 복원</span>
+      <button class="back-btn" onclick="A.goScreen('scr-admin')"></button>
+      <span class="topbar-title"> 백업 / 복원</span>
     </div>
     <div class="scroll-body">
       <div class="card">
-        <div class="card-hd" style="background:#0d4f35;">🛡️ 자동 백업에서 복원</div>
+        <div class="card-hd" style="background:#0d4f35;"> 자동 백업에서 복원</div>
         <div class="card-body">
           <p class="sub dark-text mb8">앱이 실행될 때마다 자동으로 백업됩니다. 최근 7일치 보관.</p>
           <div id="auto-backup-list" class="col gap-sm"></div>
-          <button class="btn-full teal" onclick="A.loadBackupList()"><i class="ti ti-refresh"></i> 백업 목록 새로고침</button>
+          <button class="btn-full teal" onclick="A.loadBackupList()"> 백업 목록 새로고침</button>
         </div>
       </div>
       <div class="card">
         <div class="card-body">
           <p class="sub dark-text mb8">코드 업데이트 전 항상 백업하세요. 백업 파일은 모든 사용자 데이터를 포함합니다.</p>
-          <button class="btn-full teal" onclick="A.backup()">📥 파일로 백업 (다운로드)</button>
+          <button class="btn-full teal" onclick="A.backup()"> 파일로 백업 (다운로드)</button>
           <input type="file" id="restore-file" accept=".json" style="display:none" onchange="A.restore(event)">
-          <button class="btn-full navy" onclick="document.getElementById('restore-file').click()">📤 백업 파일로 복원</button>
+          <button class="btn-full navy" onclick="document.getElementById('restore-file').click()"> 백업 파일로 복원</button>
         </div>
       </div>
       <div class="card">
         <div class="card-body">
           <p class="sub dark-text mb8">다운로드 파일을 찾기 어려우면 텍스트로 백업해서 카카오톡으로 보내세요.</p>
-          <button class="btn-full purple" onclick="A.backupText()">📋 텍스트로 백업</button>
+          <button class="btn-full purple" onclick="A.backupText()"> 텍스트로 백업</button>
           <textarea id="backup-text-area" class="inp-sm" readonly style="display:none;height:120px;font-size:10px;margin-top:8px;resize:none;" onclick="this.select()"></textarea>
-          <button id="backup-copy-btn" class="btn-full teal" style="display:none;margin-top:8px;" onclick="A.copyBackupText()">📋 복사하기</button>
+          <button id="backup-copy-btn" class="btn-full teal" style="display:none;margin-top:8px;" onclick="A.copyBackupText()"> 복사하기</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- ── Admin: 비밀번호 변경 ── -->
+  <!--  Admin: 비밀번호 변경  -->
   <div id="scr-admin-password" class="screen light">
     <div class="topbar navy">
-      <button class="back-btn" onclick="A.goScreen('scr-admin')"><i class="ti ti-arrow-left"></i></button>
-      <span class="topbar-title">🔐 비밀번호 변경</span>
+      <button class="back-btn" onclick="A.goScreen('scr-admin')"></button>
+      <span class="topbar-title"> 비밀번호 변경</span>
     </div>
     <div class="scroll-body">
       <div class="card">
@@ -459,11 +459,11 @@
     </div>
   </div>
 
-  <!-- ── Admin: 앱 초기화 ── -->
+  <!--  Admin: 앱 초기화  -->
   <div id="scr-admin-reset" class="screen light">
     <div class="topbar navy">
-      <button class="back-btn" onclick="A.goScreen('scr-admin')"><i class="ti ti-arrow-left"></i></button>
-      <span class="topbar-title">⚠️ 앱 초기화</span>
+      <button class="back-btn" onclick="A.goScreen('scr-admin')"></button>
+      <span class="topbar-title"> 앱 초기화</span>
     </div>
     <div class="scroll-body">
       <div class="card">
@@ -475,22 +475,22 @@
     </div>
   </div>
 
-  <!-- ── 데이터 진단 ── -->
+  <!--  데이터 진단  -->
   <div id="scr-admin-diag" class="screen light">
     <div class="topbar navy">
-      <button class="back-btn" onclick="A.goScreen('scr-admin')"><i class="ti ti-arrow-left"></i></button>
-      <span class="topbar-title">🔍 데이터 진단 (읽기 전용)</span>
+      <button class="back-btn" onclick="A.goScreen('scr-admin')"></button>
+      <span class="topbar-title"> 데이터 진단 (읽기 전용)</span>
     </div>
     <div class="scroll-body">
       <div class="card"><div class="card-body" id="diag-result" style="font-size:13px;line-height:1.8;white-space:pre-wrap;word-break:break-all;">진단 중...</div></div>
     </div>
   </div>
 
-  <!-- ── 사용자 추가 ── -->
+  <!--  사용자 추가  -->
   <div id="scr-add-user" class="screen light">
     <div class="topbar navy">
-      <button class="back-btn" onclick="A.goScreen('scr-admin-users')"><i class="ti ti-arrow-left"></i></button>
-      <span class="topbar-title">👤 새 사용자 추가</span>
+      <button class="back-btn" onclick="A.goScreen('scr-admin-users')"></button>
+      <span class="topbar-title"> 새 사용자 추가</span>
     </div>
     <div class="scroll-body">
       <div>
@@ -517,24 +517,24 @@
         <label class="lbl">병기</label>
         <div id="stage-btns" class="grid2 gap-sm"></div>
       </div>
-      <button class="btn-full navy" onclick="A.addUser()"><i class="ti ti-check"></i> 사용자 추가</button>
+      <button class="btn-full navy" onclick="A.addUser()"> 사용자 추가</button>
     </div>
   </div>
 
-  <!-- ── 도움말 화면 ── -->
+  <!--  도움말 화면  -->
   <div id="scr-help" class="screen light">
     <div class="topbar navy">
-      <button class="back-btn" onclick="A.goScreen('scr-app')"><i class="ti ti-arrow-left"></i></button>
-      <span class="topbar-title">📖 사용 방법</span>
+      <button class="back-btn" onclick="A.goScreen('scr-app')"></button>
+      <span class="topbar-title"> 사용 방법</span>
     </div>
     <div class="scroll-body" id="help-body"></div>
   </div>
 
-  <!-- ── 메인 앱 ── -->
+  <!--  메인 앱  -->
   <div id="scr-app" class="screen light">
     <div id="app-topbar">
       <button onclick="A.goBack()" id="tb-user-btn" style="background:none;border:none;cursor:pointer;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--navy);flex-shrink:0;" title="프로필">
-        <i class="ti ti-user-circle" style="font-size:26px;"></i>
+        
       </button>
       <div style="flex:1;min-width:0;">
         <div class="topbar-title" id="tb-title">스마트 메타케어</div>
@@ -543,10 +543,10 @@
       <div class="row gap-sm" style="align-items:center;">
         <span class="badge" id="tb-badge"></span>
         <button onclick="A.goHelp()" style="background:none;border:none;cursor:pointer;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--mu2);" title="사용방법">
-          <i class="ti ti-help-circle" style="font-size:22px;"></i>
+          
         </button>
         <button onclick="A.confirmLogout()" style="background:none;border:none;cursor:pointer;padding:4px 8px;border-radius:12px;font-size:11px;font-weight:700;color:var(--mu2);white-space:nowrap;" title="로그아웃">나가기</button>
-        <button class="tb-btn" onclick="A.onMic()" id="vfab-top" style="width:38px;height:38px;font-size:20px;"><i class="ti ti-microphone" id="mic-icon"></i></button>
+        <button class="tb-btn" onclick="A.onMic()" id="vfab-top" style="width:38px;height:38px;font-size:20px;"></button>
       </div>
     </div>
 
@@ -560,12 +560,12 @@
       <!-- 홈 -->
       <div id="pg-home" class="page active">
 
-        <!-- ── 히어로 카드 ── -->
+        <!--  히어로 카드  -->
         <div style="background:linear-gradient(135deg,var(--navy) 0%,#0F3D2E 100%);border-radius:var(--r-lg);padding:20px;box-shadow:var(--sh-lg);">
           <!-- 인사 + 일수 -->
           <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;">
             <div style="flex:1;min-width:0;">
-              <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:3px;">안녕하세요 👋</div>
+              <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:3px;">안녕하세요 </div>
               <div style="font-size:19px;font-weight:800;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
                 <span class="uname" onclick="A.nameTap()" style="cursor:pointer;"></span> 님
               </div>
@@ -578,7 +578,7 @@
           </div>
           <!-- 목표 -->
           <div id="home-goal-card" style="width:100%;padding:12px 14px;border-radius:var(--r-md);display:flex;align-items:center;gap:12px;color:#fff;margin-bottom:10px;background:rgba(255,255,255,.08);">
-            <i class="ti ti-target" style="font-size:22px;flex-shrink:0;color:var(--teal);"></i>
+            
             <div>
               <div style="font-size:14px;font-weight:700;white-space:nowrap;" id="home-goal-lbl">목표</div>
               <div style="font-size:12px;opacity:.75;margin-top:1px;" id="home-goal-items"></div>
@@ -588,23 +588,23 @@
           <button class="condition-btn" onclick="A.openQuickCond()" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);">
             <div class="condition-btn-left">
               <div style="width:38px;height:38px;border-radius:50%;background:rgba(25,184,155,.25);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                <i class="ti ti-activity-heartbeat" style="font-size:20px;color:var(--teal);"></i>
+                
               </div>
               <div>
                 <div style="font-size:14px;font-weight:700;color:#fff;">오늘의 컨디션 기록</div>
                 <div class="condition-summary" id="condition-summary" style="font-size:11px;color:rgba(255,255,255,.6);margin-top:2px;">탭해서 기록하세요</div>
               </div>
             </div>
-            <i class="ti ti-chevron-right" style="opacity:.4;font-size:18px;color:#fff;"></i>
+            
           </button>
         </div>
 
-        <!-- ── 달성 현황 ── -->
+        <!--  달성 현황  -->
         <div style="background:#fff;border-radius:var(--r-md);padding:14px 16px;box-shadow:var(--sh-sm);border:1px solid var(--bd);">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-            <div style="font-size:13px;font-weight:700;color:var(--navy);">📋 오늘 달성 현황 <span id="home-progress-pct" style="color:var(--teal);font-size:12px;"></span></div>
+            <div style="font-size:13px;font-weight:700;color:var(--navy);"> 오늘 달성 현황 <span id="home-progress-pct" style="color:var(--teal);font-size:12px;"></span></div>
             <button onclick="A.goHelp()" style="background:var(--teal-g);color:var(--teal);border:none;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:4px;">
-              <i class="ti ti-book-2" style="font-size:13px;"></i>사용설명서
+              사용설명서
             </button>
           </div>
           <div id="home-progress-items" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
@@ -613,7 +613,7 @@
         <!-- 설치 배너 -->
         <div id="pwa-install-banner" style="display:none;background:linear-gradient(135deg,#0D7A52,#19B89B);border-radius:var(--r-md);padding:14px 16px;">
           <div style="display:flex;align-items:center;gap:12px;">
-            <span style="font-size:28px;flex-shrink:0;">📲</span>
+            <span style="font-size:28px;flex-shrink:0;"></span>
             <div style="flex:1;">
               <div style="color:#fff;font-size:13px;font-weight:800;margin-bottom:2px;">홈 화면에 바로가기 추가</div>
               <div style="color:rgba(255,255,255,.8);font-size:11px;" id="pwa-install-desc">한 번만 설치하면 앱처럼 바로 실행!</div>
@@ -622,35 +622,35 @@
           </div>
         </div>
 
-        <!-- ── 만보 챌린지 카드 ── -->
+        <!--  만보 챌린지 카드  -->
         <div id="home-challenge-card" style="display:none;background:#fff;border-radius:var(--r-md);padding:14px 16px;box-shadow:var(--sh-sm);border:1px solid var(--bd);"></div>
 
-        <!-- ── 오늘의 식사 ── -->
+        <!--  오늘의 식사  -->
         <div>
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
             <div style="font-size:14px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:6px;">
-              <i class="ti ti-sun" style="color:var(--warn);"></i> 오늘의 식사
+               오늘의 식사
             </div>
             <span style="font-size:11px;color:var(--mu);">탭하면 사진 찍기</span>
           </div>
           <div class="meal-slots" id="home-meal-slots">
             <div class="home-meal-slot" id="ms-breakfast" onclick="A.openMealSlot('breakfast')">
-              <div class="home-meal-slot-lbl">🌅 아침</div>
-              <div class="home-meal-slot-img" id="ms-img-breakfast"><i class="ti ti-camera" style="font-size:32px;color:rgba(255,255,255,.7);"></i></div>
+              <div class="home-meal-slot-lbl"> 아침</div>
+              <div class="home-meal-slot-img" id="ms-img-breakfast"></div>
             </div>
             <div class="home-meal-slot" id="ms-lunch" onclick="A.openMealSlot('lunch')">
-              <div class="home-meal-slot-lbl">☀️ 점심</div>
-              <div class="home-meal-slot-img" id="ms-img-lunch"><i class="ti ti-camera" style="font-size:32px;color:rgba(255,255,255,.7);"></i></div>
+              <div class="home-meal-slot-lbl"> 점심</div>
+              <div class="home-meal-slot-img" id="ms-img-lunch"></div>
             </div>
             <div class="home-meal-slot" id="ms-dinner" onclick="A.openMealSlot('dinner')">
-              <div class="home-meal-slot-lbl">🌙 저녁</div>
-              <div class="home-meal-slot-img" id="ms-img-dinner"><i class="ti ti-camera" style="font-size:32px;color:rgba(255,255,255,.7);"></i></div>
+              <div class="home-meal-slot-lbl"> 저녁</div>
+              <div class="home-meal-slot-img" id="ms-img-dinner"></div>
             </div>
           </div>
         </div>
         <div id="home-comprehensive-wrap" style="display:none;">
           <button onclick="A.analyzeComprehensive()" style="width:100%;padding:16px;background:linear-gradient(135deg,#3B1F8A,var(--teal));color:#fff;border:none;border-radius:var(--r-md);font-size:var(--fs-md);font-weight:700;display:flex;align-items:center;justify-content:center;gap:9px;box-shadow:0 4px 16px rgba(123,82,212,.25);">
-            <i class="ti ti-sparkles" style="font-size:20px;"></i> 오늘 종합 평가 받기
+             오늘 종합 평가 받기
           </button>
         </div>
         <div id="home-comprehensive-result" style="display:none;" class="tip-box"></div>
@@ -662,19 +662,19 @@
 
         <!-- 전날 AI 피드백 카드 -->
         <div id="home-yesterday-wrap" style="display:none;">
-          <div class="section-title" style="margin-top:4px;"><i class="ti ti-history"></i> 어제의 AI 피드백 <span style="font-size:11px;color:var(--mu);font-weight:400;">동기부여</span></div>
+          <div class="section-title" style="margin-top:4px;"> 어제의 AI 피드백 <span style="font-size:11px;color:var(--mu);font-weight:400;">동기부여</span></div>
           <div id="home-yesterday-card" class="yesterday-card"></div>
         </div>
         <!-- 암환자 전용 홈 섹션 -->
         <div id="home-cancer-section" style="display:none">
           <div id="psa-banner-wrap"></div>
-          <div class="section-title"><i class="ti ti-activity" style="color:var(--red)"></i> 오늘의 증상</div>
+          <div class="section-title"> 오늘의 증상</div>
           <div class="sym-grid">
-            <button class="sym-btn" onclick="A.openSymSheet('pain')"><i class="ti ti-flame" style="color:var(--red)"></i><div class="sym-lbl">통증</div><div class="sym-val" id="sd-pain">미기록</div></button>
-            <button class="sym-btn" id="sd-urine-btn" onclick="A.openSymSheet('urine')"><i class="ti ti-droplet" style="color:#1976D2"></i><div class="sym-lbl">배뇨</div><div class="sym-val" id="sd-urine">미기록</div></button>
-            <button class="sym-btn" onclick="A.openSymSheet('fatigue')"><i class="ti ti-zzz" style="color:var(--warn)"></i><div class="sym-lbl">피로</div><div class="sym-val" id="sd-fatigue">미기록</div></button>
+            <button class="sym-btn" onclick="A.openSymSheet('pain')"><div class="sym-lbl">통증</div><div class="sym-val" id="sd-pain">미기록</div></button>
+            <button class="sym-btn" id="sd-urine-btn" onclick="A.openSymSheet('urine')"><div class="sym-lbl">배뇨</div><div class="sym-val" id="sd-urine">미기록</div></button>
+            <button class="sym-btn" onclick="A.openSymSheet('fatigue')"><div class="sym-lbl">피로</div><div class="sym-val" id="sd-fatigue">미기록</div></button>
           </div>
-          <div class="section-title"><i class="ti ti-pill" style="color:var(--purple)"></i> 오늘의 복약</div>
+          <div class="section-title"> 오늘의 복약</div>
           <div id="med-list-home"></div>
         </div>
       </div>
@@ -682,7 +682,7 @@
       <!-- 운동 탭 -->
       <div id="pg-ex" class="page">
         <div class="card p12" style="background:linear-gradient(135deg,var(--warn),#C8830A);color:#fff;border:none;border-radius:var(--r-md);box-shadow:0 4px 16px rgba(240,165,0,.25);">
-          <div style="font-size:var(--fs-lg);font-weight:700;margin-bottom:4px;">🏃 운동 기록</div>
+          <div style="font-size:var(--fs-lg);font-weight:700;margin-bottom:4px;"> 운동 기록</div>
           <div style="font-size:var(--fs-xs);opacity:.85;">운동 종류와 시간을 입력하면 AI가 분석해드려요</div>
         </div>
         <div id="today-ex-status" style="display:none;" class="tip-box"></div>
@@ -694,20 +694,20 @@
         <div style="margin-top:10px;">
           <div style="font-size:11px;font-weight:700;color:var(--mu2);margin-bottom:7px;">빠른 선택 (탭하면 입력)</div>
           <div style="display:flex;flex-wrap:wrap;gap:6px;" id="ex-quick-chips">
-            <button class="ex-chip" onclick="A.pickExType('걷기')">🚶 걷기</button>
-            <button class="ex-chip" onclick="A.pickExType('런닝')">🏃 런닝</button>
-            <button class="ex-chip" onclick="A.pickExType('등산')">🧗 등산</button>
-            <button class="ex-chip" onclick="A.pickExType('계단 오르기')">🪜 계단 오르기</button>
-            <button class="ex-chip" onclick="A.pickExType('자전거')">🚴 자전거</button>
-            <button class="ex-chip" onclick="A.pickExType('수영')">🏊 수영</button>
-            <button class="ex-chip" onclick="A.pickExType('스쿼트')">🏋️ 스쿼트</button>
-            <button class="ex-chip" onclick="A.pickExType('윗몸 일으키기')">💪 윗몸 일으키기</button>
-            <button class="ex-chip" onclick="A.pickExType('플랭크')">🧘 플랭크</button>
-            <button class="ex-chip" onclick="A.pickExType('푸시업')">💪 푸시업</button>
-            <button class="ex-chip" onclick="A.pickExType('스트레칭')">🤸 스트레칭</button>
-            <button class="ex-chip" onclick="A.pickExType('줄넘기')">🪢 줄넘기</button>
-            <button class="ex-chip" onclick="A.pickExType('요가')">🧘 요가</button>
-            <button class="ex-chip" onclick="A.pickExType('헬스')">🏋️ 헬스</button>
+            <button class="ex-chip" onclick="A.pickExType('걷기')"> 걷기</button>
+            <button class="ex-chip" onclick="A.pickExType('런닝')"> 런닝</button>
+            <button class="ex-chip" onclick="A.pickExType('등산')"> 등산</button>
+            <button class="ex-chip" onclick="A.pickExType('계단 오르기')"> 계단 오르기</button>
+            <button class="ex-chip" onclick="A.pickExType('자전거')"> 자전거</button>
+            <button class="ex-chip" onclick="A.pickExType('수영')"> 수영</button>
+            <button class="ex-chip" onclick="A.pickExType('스쿼트')"> 스쿼트</button>
+            <button class="ex-chip" onclick="A.pickExType('윗몸 일으키기')"> 윗몸 일으키기</button>
+            <button class="ex-chip" onclick="A.pickExType('플랭크')"> 플랭크</button>
+            <button class="ex-chip" onclick="A.pickExType('푸시업')"> 푸시업</button>
+            <button class="ex-chip" onclick="A.pickExType('스트레칭')"> 스트레칭</button>
+            <button class="ex-chip" onclick="A.pickExType('줄넘기')"> 줄넘기</button>
+            <button class="ex-chip" onclick="A.pickExType('요가')"> 요가</button>
+            <button class="ex-chip" onclick="A.pickExType('헬스')"> 헬스</button>
           </div>
         </div>
         <input class="inp-sm" id="ex-type" type="text" placeholder="운동 종류 (직접 입력 또는 위에서 선택)" style="margin-top:10px;">
@@ -725,13 +725,13 @@
         <input class="inp-sm" id="ex-memo" type="text" placeholder="메모 (선택)" style="margin-top:8px;">
         <!-- 추가 버튼 -->
         <button onclick="A.addExToList()" style="width:100%;margin-top:10px;padding:13px;background:var(--teal);color:#fff;border:none;border-radius:var(--r-sm);font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
-          <i class="ti ti-plus"></i> 목록에 추가
+           목록에 추가
         </button>
         <!-- 추가된 운동 목록 -->
         <div id="ex-pending-wrap" style="display:none;margin-top:10px;background:var(--cream);border:1.5px solid var(--bd);border-radius:var(--r-sm);padding:10px 12px;">
-          <div style="font-size:12px;font-weight:700;color:var(--mu2);margin-bottom:8px;">📋 오늘 기록할 운동 목록</div>
+          <div style="font-size:12px;font-weight:700;color:var(--mu2);margin-bottom:8px;"> 오늘 기록할 운동 목록</div>
           <div id="ex-pending-list" style="display:flex;flex-direction:column;gap:6px;"></div>
-          <button class="btn-full warn" onclick="A.analyzeExAll()" style="margin-top:10px;"><i class="ti ti-sparkles"></i> AI 분석 후 전체 저장</button>
+          <button class="btn-full warn" onclick="A.analyzeExAll()" style="margin-top:10px;"> AI 분석 후 전체 저장</button>
         </div>
         <div id="ex-result" style="display:none" class="tip-box"></div>
       </div>
@@ -739,20 +739,20 @@
       <!-- 기록장 -->
       <div id="pg-log" class="page">
         <div class="row space-between align-center">
-          <div class="section-title mb0"><i class="ti ti-table"></i> 식단 기록장</div>
-          <div class="autosave" id="autosave"><i class="ti ti-device-floppy"></i> 저장됨</div>
+          <div class="section-title mb0"> 식단 기록장</div>
+          <div class="autosave" id="autosave"> 저장됨</div>
         </div>
-        <div id="log-empty" class="empty-state"><i class="ti ti-notebook"></i><br>아직 기록이 없어요</div>
+        <div id="log-empty" class="empty-state"><br>아직 기록이 없어요</div>
         <div id="log-cards" class="col gap"></div>
         <div class="row gap">
-          <button class="btn-dashed flex1" onclick="A.addLogDay()"><i class="ti ti-plus"></i> 날짜 추가</button>
-          <button class="btn-full navy" style="flex:0;padding:16px 18px;white-space:nowrap;" onclick="A.exportExcel()"><i class="ti ti-download"></i> 엑셀</button>
+          <button class="btn-dashed flex1" onclick="A.addLogDay()"> 날짜 추가</button>
+          <button class="btn-full navy" style="flex:0;padding:16px 18px;white-space:nowrap;" onclick="A.exportExcel()"> 엑셀</button>
         </div>
         <!-- 암환자 증상 기록 -->
         <div id="sym-log-section" style="display:none">
           <div class="divider-line"></div>
-          <div class="section-title"><i class="ti ti-activity" style="color:var(--red)"></i> 증상 기록</div>
-          <div id="sym-log-empty" class="empty-state" style="padding:20px;"><i class="ti ti-activity"></i><br>증상 기록이 없어요</div>
+          <div class="section-title"> 증상 기록</div>
+          <div id="sym-log-empty" class="empty-state" style="padding:20px;"><br>증상 기록이 없어요</div>
           <div id="sym-log-cards" class="col gap-sm"></div>
         </div>
       </div>
@@ -762,26 +762,26 @@
         <!-- 건강관리 추천 -->
         <div id="track-health">
           <div class="row space-between align-center">
-            <div class="section-title mb0"><i class="ti ti-list-check"></i> 오늘의 맞춤 추천</div>
-            <button class="btn-sm teal" onclick="A.loadAiRec()"><i class="ti ti-refresh"></i> 새 추천</button>
+            <div class="section-title mb0"> 오늘의 맞춤 추천</div>
+            <button class="btn-sm teal" onclick="A.loadAiRec()"> 새 추천</button>
           </div>
           <div id="ai-rec-box" class="tip-box" style="margin-top:8px;">
             <div class="tip-lbl">AI 추천</div>
             <div id="ai-rec-text">오늘 기록을 바탕으로 추천을 받아보세요.</div>
           </div>
-          <div class="section-title" style="margin-top:16px;"><i class="ti ti-chart-pie"></i> 이번 주 기록 현황</div>
+          <div class="section-title" style="margin-top:16px;"> 이번 주 기록 현황</div>
           <div id="week-stats-box" class="card"></div>
         </div>
         <!-- 종양 마커 추적 -->
         <div id="track-cancer" style="display:none">
           <div class="row space-between align-center">
-            <div class="section-title mb0"><i class="ti ti-chart-line" style="color:var(--purple)"></i> <span id="marker-title">종양 마커 추적</span></div>
-            <button class="btn-sm purple" onclick="A.openMarkerSheet()"><i class="ti ti-plus"></i> 기록</button>
+            <div class="section-title mb0"> <span id="marker-title">종양 마커 추적</span></div>
+            <button class="btn-sm purple" onclick="A.openMarkerSheet()"> 기록</button>
           </div>
           <div id="psa-history" class="col gap-sm">
-            <div class="empty-state" style="padding:18px;"><i class="ti ti-chart-line"></i><br>기록이 없어요</div>
+            <div class="empty-state" style="padding:18px;"><br>기록이 없어요</div>
           </div>
-          <div class="section-title"><i class="ti ti-activity" style="color:var(--red)"></i> 이번 주 증상 평균</div>
+          <div class="section-title"> 이번 주 증상 평균</div>
           <div class="stat-row">
             <div class="stat-card"><div class="stat-lbl">통증 평균</div><div class="stat-val red" id="avg-pain">--</div></div>
             <div class="stat-card"><div class="stat-lbl">피로 평균</div><div class="stat-val warn" id="avg-fatigue">--</div></div>
@@ -799,7 +799,7 @@
           </div>
           <div class="chat-bar">
             <input id="chat-in" type="text" placeholder="메시지를 입력하세요..." onkeydown="if(event.key==='Enter')A.sendChat()">
-            <button class="send-btn" onclick="A.sendChat()"><i class="ti ti-send"></i></button>
+            <button class="send-btn" onclick="A.sendChat()"></button>
           </div>
         </div>
       </div>
@@ -809,11 +809,11 @@
     
 
     <nav class="bnav">
-      <button class="nb active" id="nb-home"  onclick="A.goPage('home')"  ontouchstart="A.goPage('home')"><i class="ti ti-home"></i><span>홈</span></button>
-      <button class="nb"        id="nb-chat"  onclick="A.goPage('chat')"  ontouchstart="A.goPage('chat')"><i class="ti ti-message-circle"></i><span>AI코치</span></button>
-      <button class="nb"        id="nb-ex"    onclick="A.goPage('ex')"    ontouchstart="A.goPage('ex')"><i class="ti ti-run"></i><span>운동</span></button>
-      <button class="nb"        id="nb-log"   onclick="A.goPage('log')"   ontouchstart="A.goPage('log')"><i class="ti ti-table"></i><span>기록장</span></button>
-      <button class="nb"        id="nb-track" onclick="A.goPage('track')" ontouchstart="A.goPage('track')"><i class="ti ti-chart-line"></i><span id="nb-track-lbl">추적</span></button>
+      <button class="nb active" id="nb-home"  onclick="A.goPage('home')"  ontouchstart="A.goPage('home')"><span>홈</span></button>
+      <button class="nb"        id="nb-chat"  onclick="A.goPage('chat')"  ontouchstart="A.goPage('chat')"><span>AI코치</span></button>
+      <button class="nb"        id="nb-ex"    onclick="A.goPage('ex')"    ontouchstart="A.goPage('ex')"><span>운동</span></button>
+      <button class="nb"        id="nb-log"   onclick="A.goPage('log')"   ontouchstart="A.goPage('log')"><span>기록장</span></button>
+      <button class="nb"        id="nb-track" onclick="A.goPage('track')" ontouchstart="A.goPage('track')"><span id="nb-track-lbl">추적</span></button>
     </nav>
   </div><!-- /scr-app -->
 
@@ -830,8 +830,8 @@
 <div class="overlay" id="sh-photo" onclick="if(event.target.id==='sh-photo')A.closeSheet('sh-photo')">
   <div class="sheet">
     <div class="sh-title" id="sh-photo-title">사진 선택</div>
-    <button class="sh-btn" onclick="A.pickPhoto('cam')"><i class="ti ti-camera"></i> 촬영하기</button>
-    <button class="sh-btn" onclick="A.pickPhoto('gal')"><i class="ti ti-photo"></i> 폰에서 가져오기</button>
+    <button class="sh-btn" onclick="A.pickPhoto('cam')"> 촬영하기</button>
+    <button class="sh-btn" onclick="A.pickPhoto('gal')"> 폰에서 가져오기</button>
     <button class="sh-cancel" onclick="A.closeSheet('sh-photo')">취소</button>
   </div>
 </div>
@@ -841,7 +841,7 @@
   <div class="sheet">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
       <div id="sh-memo-thumb" style="width:56px;height:56px;border-radius:10px;overflow:hidden;flex-shrink:0;background:var(--cream);display:flex;align-items:center;justify-content:center;">
-        <i class="ti ti-photo" style="font-size:22px;color:var(--mu);"></i>
+        
       </div>
       <div>
         <div class="sh-title" id="sh-memo-title" style="margin-bottom:2px;">아침 메모</div>
@@ -851,7 +851,7 @@
     <textarea id="sh-memo-text" class="inp-sm" rows="3"
       placeholder="예: 현미밥 반공기, 된장국, 두부조림&#10;간단히 적어두면 AI 분석이 더 정확해져요"
       style="resize:none;margin-bottom:12px;"></textarea>
-    <button class="btn-primary" onclick="A.saveMealWithMemo()"><i class="ti ti-check"></i> 저장</button>
+    <button class="btn-primary" onclick="A.saveMealWithMemo()"> 저장</button>
     <button class="sh-cancel" onclick="A.saveMealWithMemo()">메모 없이 저장</button>
   </div>
 </div>
@@ -862,10 +862,10 @@
       <label class="lbl">식사 메모 (선택)</label>
       <textarea id="sh-meal-note" class="inp-sm" rows="2" placeholder="예: 현미밥 반공기, 된장국, 두부조림" style="resize:none;"></textarea>
     </div>
-    <button class="sh-btn" onclick="A.pickMeal('cam')"><i class="ti ti-camera"></i> 촬영하기</button>
-    <button class="sh-btn" onclick="A.pickMeal('gal')"><i class="ti ti-photo"></i> 폰에서 가져오기</button>
+    <button class="sh-btn" onclick="A.pickMeal('cam')"> 촬영하기</button>
+    <button class="sh-btn" onclick="A.pickMeal('gal')"> 폰에서 가져오기</button>
     <div style="padding:10px 0 0;">
-      <button class="btn-full teal" onclick="A.saveMealNoteOnly()" style="margin-bottom:0;"><i class="ti ti-check"></i> 메모만 저장 (사진 없이)</button>
+      <button class="btn-full teal" onclick="A.saveMealNoteOnly()" style="margin-bottom:0;"> 메모만 저장 (사진 없이)</button>
     </div>
     <button class="sh-cancel" onclick="A.closeSheet('sh-meal')">취소</button>
   </div>
@@ -908,38 +908,38 @@
   <div id="viewer-analysis" style="padding:10px 16px;max-height:28vh;overflow-y:auto;width:100%;min-height:40px;"></div>
   <div id="viewer-memo-area" style="display:none;padding:6px 16px;width:100%;box-sizing:border-box;">
     <textarea id="viewer-memo-input" style="width:100%;padding:8px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.12);color:#fff;font-size:13px;resize:none;box-sizing:border-box;" rows="2" placeholder="식사 내용 메모 (예: 닭가슴살 샐러드)"></textarea>
-    <button onclick="A.vSaveMemo()" style="margin-top:5px;width:100%;padding:8px;background:var(--teal);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;"><i class="ti ti-check"></i> 메모 저장</button>
+    <button onclick="A.vSaveMemo()" style="margin-top:5px;width:100%;padding:8px;background:var(--teal);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;"> 메모 저장</button>
   </div>
   <div class="viewer-btns">
-    <button class="vbtn" onclick="A.vRot(-90)"><i class="ti ti-rotate-counterclockwise"></i> 왼쪽</button>
-    <button class="vbtn" onclick="A.vRot(90)"><i class="ti ti-rotate-clockwise"></i> 오른쪽</button>
-    <button class="vbtn teal" onclick="A.vAnalyze()"><i class="ti ti-sparkles"></i> AI분석</button>
-    <button class="vbtn teal" onclick="A.vEditMemo()"><i class="ti ti-pencil"></i> 메모수정</button>
-    <button class="vbtn teal" onclick="A.vChg()"><i class="ti ti-replace"></i> 교체</button>
-    <button class="vbtn red" onclick="A.vDel()"><i class="ti ti-trash"></i> 삭제</button>
-    <button class="vbtn" onclick="A.closeViewer()"><i class="ti ti-x"></i> 닫기</button>
+    <button class="vbtn" onclick="A.vRot(-90)"> 왼쪽</button>
+    <button class="vbtn" onclick="A.vRot(90)"> 오른쪽</button>
+    <button class="vbtn teal" onclick="A.vAnalyze()"> AI분석</button>
+    <button class="vbtn teal" onclick="A.vEditMemo()"> 메모수정</button>
+    <button class="vbtn teal" onclick="A.vChg()"> 교체</button>
+    <button class="vbtn red" onclick="A.vDel()"> 삭제</button>
+    <button class="vbtn" onclick="A.closeViewer()"> 닫기</button>
   </div>
 </div>
 <div class="viewer" id="home-viewer">
   <div class="viewer-wrap"><img id="hv-img" src="" alt=""></div>
   <!-- 메모 입력 (메모수정 버튼으로 토글) -->
   <div id="hv-memo-area" style="display:none;padding:10px 16px 6px;width:100%;box-sizing:border-box;">
-    <div style="font-size:11px;color:rgba(255,255,255,.5);margin-bottom:5px;">📝 식단 메모 (수정 가능)</div>
+    <div style="font-size:11px;color:rgba(255,255,255,.5);margin-bottom:5px;"> 식단 메모 (수정 가능)</div>
     <textarea id="hv-note-input" rows="2" placeholder="예: 계란 2개, 소고기국, 견과류, 야채 절임, 블루베리&#10;더 자세히 적을수록 AI 분석이 정확해져요"
       style="width:100%;box-sizing:border-box;resize:none;background:rgba(255,255,255,.1);color:#fff;border:1.5px solid rgba(255,255,255,.2);border-radius:10px;padding:10px 12px;font-size:13px;line-height:1.5;font-family:inherit;outline:none;"
       oninput="document.getElementById('hv-note-save').style.opacity=1"></textarea>
     <button id="hv-note-save" onclick="A.saveMealViewerNote()"
       style="width:100%;margin-top:6px;background:#19B89B;color:#fff;border:none;border-radius:8px;padding:9px;font-size:13px;font-weight:700;cursor:pointer;opacity:.5;transition:opacity .2s;">
-      <i class="ti ti-check"></i> 메모 저장
+       메모 저장
     </button>
   </div>
   <div id="home-viewer-analysis" style="padding:4px 16px 8px;max-height:22vh;overflow-y:auto;width:100%;font-size:13px;color:#fff;line-height:1.7;box-sizing:border-box;"></div>
   <div class="viewer-btns">
-    <button class="vbtn teal" id="hv-reanalyze-btn"><i class="ti ti-sparkles"></i> 재분석</button>
-    <button class="vbtn teal" id="hv-memo-btn" onclick="A.toggleMemoArea()"><i class="ti ti-pencil"></i> 메모수정</button>
-    <button class="vbtn teal" id="hv-replace-btn"><i class="ti ti-replace"></i> 교체</button>
-    <button class="vbtn red"  id="hv-delete-btn"><i class="ti ti-trash"></i> 삭제</button>
-    <button class="vbtn" onclick="A.closeHomeMealViewer()"><i class="ti ti-x"></i> 닫기</button>
+    <button class="vbtn teal" id="hv-reanalyze-btn"> 재분석</button>
+    <button class="vbtn teal" id="hv-memo-btn" onclick="A.toggleMemoArea()"> 메모수정</button>
+    <button class="vbtn teal" id="hv-replace-btn"> 교체</button>
+    <button class="vbtn red"  id="hv-delete-btn"> 삭제</button>
+    <button class="vbtn" onclick="A.closeHomeMealViewer()"> 닫기</button>
   </div>
 </div>
 
@@ -949,25 +949,25 @@
     <div style="font-size:15px;font-weight:800;color:var(--navy);margin-bottom:6px;">오늘 컨디션은?</div>
     <div style="font-size:12px;color:var(--mu);margin-bottom:20px;" id="qc-date"></div>
     <div style="display:flex;gap:10px;justify-content:center;margin-bottom:20px;">
-      <button id="qc-good" onclick="A.quickCondPick('good')" style="flex:1;padding:14px 0;border-radius:14px;border:2px solid #eee;background:#f9f9f9;font-size:22px;cursor:pointer;transition:all .15s;">😊<br><span style="font-size:11px;font-weight:700;color:#555;">좋음</span></button>
-      <button id="qc-normal" onclick="A.quickCondPick('normal')" style="flex:1;padding:14px 0;border-radius:14px;border:2px solid #eee;background:#f9f9f9;font-size:22px;cursor:pointer;transition:all .15s;">😐<br><span style="font-size:11px;font-weight:700;color:#555;">보통</span></button>
-      <button id="qc-bad" onclick="A.quickCondPick('bad')" style="flex:1;padding:14px 0;border-radius:14px;border:2px solid #eee;background:#f9f9f9;font-size:22px;cursor:pointer;transition:all .15s;">😔<br><span style="font-size:11px;font-weight:700;color:#555;">나쁨</span></button>
+      <button id="qc-good" onclick="A.quickCondPick('good')" style="flex:1;padding:14px 0;border-radius:14px;border:2px solid #eee;background:#f9f9f9;font-size:22px;cursor:pointer;transition:all .15s;"><br><span style="font-size:11px;font-weight:700;color:#555;">좋음</span></button>
+      <button id="qc-normal" onclick="A.quickCondPick('normal')" style="flex:1;padding:14px 0;border-radius:14px;border:2px solid #eee;background:#f9f9f9;font-size:22px;cursor:pointer;transition:all .15s;"><br><span style="font-size:11px;font-weight:700;color:#555;">보통</span></button>
+      <button id="qc-bad" onclick="A.quickCondPick('bad')" style="flex:1;padding:14px 0;border-radius:14px;border:2px solid #eee;background:#f9f9f9;font-size:22px;cursor:pointer;transition:all .15s;"><br><span style="font-size:11px;font-weight:700;color:#555;">나쁨</span></button>
     </div>
     <button onclick="A.saveQuickCond()" style="width:100%;padding:13px;background:var(--teal);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:800;cursor:pointer;margin-bottom:8px;">저장</button>
-    <button onclick="A.closeQuickCond();A.openConditionSheet()" style="width:100%;padding:10px;background:none;border:1px solid var(--bd);border-radius:12px;font-size:13px;color:var(--mu);cursor:pointer;">자세히 기록하기 →</button>
+    <button onclick="A.closeQuickCond();A.openConditionSheet()" style="width:100%;padding:10px;background:none;border:1px solid var(--bd);border-radius:12px;font-size:13px;color:var(--mu);cursor:pointer;">자세히 기록하기 </button>
   </div>
 </div>
 
 <!-- 컨디션 기록 바텀시트 -->
 <div class="overlay" id="sh-condition" onclick="if(event.target.id==='sh-condition')A.closeSheet('sh-condition')">
   <div class="sheet" style="max-height:85vh;overflow-y:auto;">
-    <div class="sh-title">📋 오늘의 컨디션 기록</div>
+    <div class="sh-title"> 오늘의 컨디션 기록</div>
     <div style="margin-bottom:14px;">
       <div class="lbl">몸 상태</div>
       <div style="display:flex;gap:8px;">
-        <button class="cond-state-btn" id="cs-good" onclick="A.selectCondState('good')">😊 좋음</button>
-        <button class="cond-state-btn" id="cs-normal" onclick="A.selectCondState('normal')">😐 보통</button>
-        <button class="cond-state-btn" id="cs-bad" onclick="A.selectCondState('bad')">😔 나쁨</button>
+        <button class="cond-state-btn" id="cs-good" onclick="A.selectCondState('good')"> 좋음</button>
+        <button class="cond-state-btn" id="cs-normal" onclick="A.selectCondState('normal')"> 보통</button>
+        <button class="cond-state-btn" id="cs-bad" onclick="A.selectCondState('bad')"> 나쁨</button>
       </div>
     </div>
     <div style="margin-bottom:10px;">
@@ -994,7 +994,7 @@
       <div class="lbl">기타 메모</div>
       <textarea class="inp-sm" id="cond-memo" rows="2" placeholder="자유롭게 기록하세요" style="resize:none;"></textarea>
     </div>
-    <button class="btn-full teal" onclick="A.saveCondition()"><i class="ti ti-check"></i> 저장</button>
+    <button class="btn-full teal" onclick="A.saveCondition()"> 저장</button>
     <button class="sh-cancel" onclick="A.closeSheet('sh-condition')">취소</button>
   </div>
 </div>
@@ -1009,28 +1009,28 @@
 
 <!-- 어드민 환자 미리보기 복귀 배너 -->
 <div id="admin-preview-banner" style="display:none;position:fixed;bottom:calc(env(safe-area-inset-bottom,0px) + 76px);left:50%;transform:translateX(-50%);z-index:8000;background:linear-gradient(135deg,#E5404A,#c0392b);color:#fff;border-radius:24px;padding:10px 20px;align-items:center;gap:10px;box-shadow:0 4px 20px rgba(229,64,74,.4);white-space:nowrap;">
-  <span style="font-size:13px;font-weight:700;">🛡️ 어드민 미리보기 중</span>
+  <span style="font-size:13px;font-weight:700;"> 어드민 미리보기 중</span>
   <button onclick="A.exitPatientView()" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:16px;padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer;">복귀</button>
 </div>
 
 <script src="js/app.js"></script>
 <script>
-// ── 카카오톡 앱 공유 ──
+//  카카오톡 앱 공유 
 function shareAppKakao(){
   var APP_URL = 'https://metacareai.github.io';
-  var msg = '🧬 스마트 메타케어\n\n'
+  var msg = ' 스마트 메타케어\n\n'
     + '저탄고지·케토·다이어트 식단을 AI로 관리하는 앱이에요!\n\n'
-    + '📸 식사 사진 찍으면 → AI가 즉시 분석\n'
-    + '🏃 운동 기록 → 맞춤 피드백\n'
-    + '💬 AI 코치에게 건강 질문 24시간\n'
-    + '📊 기록장 · 엑셀 내보내기\n\n'
-    + '👇 지금 바로 시작해보세요\n'
+    + ' 식사 사진 찍으면  AI가 즉시 분석\n'
+    + ' 운동 기록  맞춤 피드백\n'
+    + ' AI 코치에게 건강 질문 24시간\n'
+    + ' 기록장 · 엑셀 내보내기\n\n'
+    + ' 지금 바로 시작해보세요\n'
     + APP_URL;
 
   // 모바일: 네이티브 공유 시트 (카카오톡 포함)
   if(navigator.share){
     navigator.share({
-      title: '🧬 스마트 메타케어 — AI 식단 건강관리',
+      title: ' 스마트 메타케어  AI 식단 건강관리',
       text: msg,
       url: APP_URL
     }).catch(function(){});
@@ -1040,7 +1040,7 @@ function shareAppKakao(){
   // PC 폴백: 클립보드 복사
   if(navigator.clipboard){
     navigator.clipboard.writeText(msg).then(function(){
-      alert('📋 공유 내용이 복사됐어요!\n카카오톡에 붙여넣기(Ctrl+V) 하세요.\n\n' + msg);
+      alert(' 공유 내용이 복사됐어요!\n카카오톡에 붙여넣기(Ctrl+V) 하세요.\n\n' + msg);
     });
   } else {
     // 구형 브라우저 폴백
@@ -1050,18 +1050,18 @@ function shareAppKakao(){
     ta.select();
     document.execCommand('copy');
     document.body.removeChild(ta);
-    alert('📋 공유 내용이 복사됐어요!\n카카오톡에 붙여넣기 하세요.');
+    alert(' 공유 내용이 복사됐어요!\n카카오톡에 붙여넣기 하세요.');
   }
 }
 
-// ── Service Worker 등록 ──
+//  Service Worker 등록 
 if('serviceWorker' in navigator){
   window.addEventListener('load', function(){
     navigator.serviceWorker.register('/metacare-voice/sw.js').catch(function(){});
   });
 }
 
-// ── PWA 설치 프롬프트 ──
+//  PWA 설치 프롬프트 
 var _pwaPrompt = null;
 var _ua = navigator.userAgent;
 var _isIOS = /iphone|ipad|ipod/i.test(_ua);
@@ -1082,7 +1082,7 @@ function _doInstall(){
     var iosBanner = document.getElementById('ios-install-banner');
     if(iosBanner){ iosBanner.style.display='block'; iosBanner.scrollIntoView({behavior:'smooth'}); }
   } else {
-    alert('Chrome 오른쪽 위 메뉴(⋮) →\n"앱 설치" 또는 "홈 화면에 추가"를 눌러주세요.');
+    alert('Chrome 오른쪽 위 메뉴() \n"앱 설치" 또는 "홈 화면에 추가"를 눌러주세요.');
   }
 }
 
@@ -1111,7 +1111,7 @@ function initInstallBanner(){
   banner.style.display = 'block';
 
   if(_isInApp){
-    if(desc) desc.textContent='카카오톡 안에서는 설치 불가 → Chrome으로 열어주세요';
+    if(desc) desc.textContent='카카오톡 안에서는 설치 불가  Chrome으로 열어주세요';
     btn.textContent='Chrome으로 열기';
     btn.onclick=function(){
       if(_isIOS){
@@ -1128,8 +1128,8 @@ function initInstallBanner(){
     btn.textContent='설치하기';
     btn.onclick=_doInstall;
   } else {
-    // prompt 아직 안 왔거나 이미 설치됨 → 메뉴 안내
-    if(desc) desc.textContent='Chrome 메뉴(⋮) → 앱 설치 / 홈 화면에 추가';
+    // prompt 아직 안 왔거나 이미 설치됨  메뉴 안내
+    if(desc) desc.textContent='Chrome 메뉴()  앱 설치 / 홈 화면에 추가';
     btn.textContent='설치 방법 보기';
     btn.onclick=_doInstall;
   }
