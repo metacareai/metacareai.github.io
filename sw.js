@@ -1,4 +1,4 @@
-const CACHE = 'metacare-v89';
+const CACHE = 'metacare-v90';
 const ASSETS = [
   '/',
   '/index.html',
@@ -16,20 +16,12 @@ self.addEventListener('install', function(e){
 
 self.addEventListener('activate', function(e){
   e.waitUntil(caches.keys().then(function(keys){
-    return Promise.all(keys.filter(function(k){ return k!==CACHE; }).map(function(k){ return caches.delete(k); }));
+    return Promise.all(keys.map(function(k){ return caches.delete(k); }));
   }));
   self.clients.claim();
 });
 
 self.addEventListener('fetch', function(e){
-  if(e.request.url.includes('firebase') || e.request.url.includes('anthropic') || e.request.url.includes('googleapis')) return;
-  e.respondWith(
-    fetch(e.request).then(function(res){
-      var clone = res.clone();
-      caches.open(CACHE).then(function(c){ c.put(e.request, clone); });
-      return res;
-    }).catch(function(){
-      return caches.match(e.request);
-    })
-  );
+  // 항상 네트워크에서 가져옴 (캐시 사용 안 함)
+  e.respondWith(fetch(e.request).catch(function(){ return caches.match(e.request); }));
 });
