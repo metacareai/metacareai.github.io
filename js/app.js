@@ -2863,10 +2863,10 @@ function _makeCard(d){
   ['morning','lunch','dinner','snack'].forEach(function(meal){ var slot=document.createElement('div'); slot.setAttribute('data-meal',meal); grid.appendChild(slot); });
   card.appendChild(grid);
 
-  // 걸음수 제거 (불필요)
-
   // 운동 기록 섹션
-  var ex = d.exercise && d.exercise.length ? d.exercise[d.exercise.length-1] : null;
+  var manualEx = d.exercise ? d.exercise.filter(function(e){ return e.source !== 'healthconnect'; }) : [];
+  var lastEx = manualEx.length ? manualEx[manualEx.length-1] : null;
+  var hcSteps = parseInt(d.steps||0, 10) || 0;
   var exRow=document.createElement('div');
   exRow.className='steps-row'; exRow.style.borderTop='1px solid var(--bd)';
   exRow.setAttribute('data-ex-cardid', id);
@@ -2874,11 +2874,10 @@ function _makeCard(d){
   exLbl.innerHTML='운동';
   var exVal=document.createElement('div'); exVal.style.cssText='flex:1;font-size:12px;color:var(--mu);';
   exVal.setAttribute('data-ex-val','1');
-  if(ex){
-    exVal.innerHTML='<span style="color:var(--navy);font-weight:600;">'+esc(ex.type)+(ex.dur?' · '+esc(ex.dur):'')+'</span>';
-  } else {
-    exVal.innerHTML='<span style="color:var(--mu);">기록 없음</span>';
-  }
+  var exHtml = '';
+  if(hcSteps > 0) exHtml += '<span style="color:#0D7A52;font-weight:600;">걷기 '+hcSteps.toLocaleString()+'보</span>';
+  if(lastEx) exHtml += (exHtml?'<span style="color:var(--mu);"> · </span>':'')+'<span style="color:var(--navy);font-weight:600;">'+esc(lastEx.type)+(lastEx.dur?' · '+esc(lastEx.dur):'')+'</span>';
+  exVal.innerHTML = exHtml || '<span style="color:var(--mu);">기록 없음</span>';
   var exBtn=document.createElement('button');
   exBtn.style.cssText='padding:5px 10px;background:var(--warn);color:#fff;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;';
   exBtn.textContent = ex ? '수정' : '기록';
