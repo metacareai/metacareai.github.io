@@ -3316,8 +3316,15 @@ try{
   }
 }catch(e){}
 
-_loadCloudData(function(){
-  var lo = $id('loading-overlay'); if(lo) lo.style.display='none';
+// Firestore 데이터가 인증 없이 인터넷에 그대로 노출돼 있던 문제 수정(2026-08-03) — 이 앱은 로그인
+// 화면이 없어서 실제 사용자 계정을 만들 수 없으므로, Firebase 익명 인증(anonymous auth)으로 매
+// 방문마다 자동으로 request.auth를 채워줌. 화면상 변화는 전혀 없고, Firestore 규칙에서
+// "allow read, write: if request.auth != null;"로 바꿔야 실제로 막힘(콘솔에서 별도 조치 필요)
+firebase.auth().signInAnonymously().catch(function(err){
+  console.error('익명 인증 실패:', err);
+}).finally(function(){
+  _loadCloudData(function(){
+    var lo = $id('loading-overlay'); if(lo) lo.style.display='none';
   // 자동 재로그인 시도
   if(!_tryAutoLogin()){
     // 기존 방문자(mc_last_user 있음)는 로그인 화면으로, 첫 방문자는 랜딩으로
@@ -3326,6 +3333,7 @@ _loadCloudData(function(){
     _navStack.push({type:'screen',id:firstScr});
     try{ history.replaceState({navIdx:0}, '', '#'+firstScr); }catch(e){}
   }
+  });
 });
 
 /*  컨디션 빠른 팝업  */
