@@ -8,6 +8,25 @@
 <meta name="apple-mobile-web-app-title" content="메타케어">
 <meta name="theme-color" content="#1A2F4C">
 <title>스마트 메타케어</title>
+<script>
+// 2026-08-03: 샘터(영어학습 앱)에서 발견된 것과 동일한 문제 — 이 앱도 로그인 화면에 "카카오톡으로
+// 앱 공유하기" 버튼이 있어서, 그 링크를 카카오톡 인앱 브라우저로 바로 열면 구글 익명 인증이
+// 막혀서 로그인이 안 됨(Kevin 본인 폰에서도 재현됨). 감지 즉시 기본 브라우저로 자동 전환.
+(function () {
+  var ua = navigator.userAgent || '';
+  if (/kakaotalk/i.test(ua)) {
+    location.href = 'kakaotalk://web/openExternal?url=' + encodeURIComponent(location.href);
+    setTimeout(function () {
+      var d = document.createElement('div');
+      d.style.cssText = 'position:fixed;inset:0;z-index:99999;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;font-family:sans-serif;';
+      d.innerHTML = '<div style="font-size:40px;margin-bottom:16px;">🌐</div>' +
+        '<div style="font-size:17px;font-weight:700;margin-bottom:10px;">브라우저로 열어주세요</div>' +
+        '<div style="font-size:14px;color:#555;line-height:1.6;">오른쪽 위 <b>··· (메뉴)</b> 를 누르고<br><b>"다른 브라우저로 열기"</b>를 선택해주세요</div>';
+      document.body.appendChild(d);
+    }, 1000);
+  }
+})();
+</script>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png">
 <link rel="apple-touch-icon" href="icons/icon-192x192.png">
