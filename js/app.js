@@ -2879,7 +2879,7 @@ function _makeCard(d){
   exVal.innerHTML = exHtml || '<span style="color:var(--mu);">기록 없음</span>';
   var exBtn=document.createElement('button');
   exBtn.style.cssText='padding:5px 10px;background:var(--warn);color:#fff;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;';
-  exBtn.textContent = ex ? '수정' : '기록';
+  exBtn.textContent = lastEx ? '수정' : '기록';
   exBtn.onclick = function(){ _openExerciseSheet(id, d.date); };
   exRow.appendChild(exLbl); exRow.appendChild(exVal); exRow.appendChild(exBtn);
   card.appendChild(exRow);
