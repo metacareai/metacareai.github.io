@@ -1077,7 +1077,26 @@ function shareAppKakao(){
 //  Service Worker 등록 
 if('serviceWorker' in navigator){
   window.addEventListener('load', function(){
-    navigator.serviceWorker.register('/metacare-voice/sw.js').catch(function(){});
+    // 2026-08-03 수정 — 예전 주소(changho105-dotcom.github.io/metacare-voice/)에서 쓰던 경로가
+    // 그대로 남아있어서, 새 주소(metacareai.github.io, 루트 경로)에서는 등록 자체가 404로 조용히
+    // 실패하고 있었음(Kevin 폰에 예전 주소 시절 설치된 서비스워커가 그대로 남아 계속 옛날 캐시를
+    // 서빙 — "DB 연결 오류: 사용자 목록이 비어있습니다" 원인). 상대경로로 고침 + 새 버전 감지되면
+    // 자동으로 활성화하고 새로고침해서 이런 일이 재발하지 않도록 함
+    navigator.serviceWorker.register('sw.js').then(function(reg){
+      reg.update();
+      reg.addEventListener('updatefound', function(){
+        var nw = reg.installing;
+        if (!nw) return;
+        nw.addEventListener('statechange', function(){
+          if (nw.state === 'activated') { nw.postMessage && nw.postMessage('skipWaiting'); }
+        });
+      });
+    }).catch(function(){});
+    var _reloaded = false;
+    navigator.serviceWorker.addEventListener('controllerchange', function(){
+      if (_reloaded) return; _reloaded = true;
+      location.reload();
+    });
   });
 }
 
