@@ -1,6 +1,6 @@
 {
   "name": "스마트 메타케어",
-  "short_name": "메타케어",
+  "short_name": "스마트메타케어",
   "description": "저탄고지·다이어트 식단 AI 건강관리 앱 — 식사 사진 찍으면 AI가 즉시 분석",
   "start_url": "/",
   "scope": "/",
