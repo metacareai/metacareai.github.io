@@ -2151,7 +2151,7 @@ function _refreshChallengeCard(){
     +'<div style="height:8px;background:var(--cream);border-radius:4px;overflow:hidden;">'
     +'<div style="height:100%;width:'+pct+'%;background:'+(certified?'var(--teal)':'#F0A500')+';border-radius:4px;transition:width .6s;"></div>'
     +'</div>'
-    +(todaySteps===0?'<div style="font-size:11px;color:var(--mu2);margin-top:4px;">잠시 후 자동으로 불러옵니다</div>':'')
+    +(todaySteps===0?'<div style="font-size:11px;color:'+(_stepsLastError?'#c0392b':'var(--mu2)')+';margin-top:4px;">'+(_stepsLastError?'걸음수 자동 조회 실패: '+esc(_stepsLastError):'잠시 후 자동으로 불러옵니다')+'</div>':'')
     +'</div>'
     +'<div style="display:flex;gap:8px;margin-bottom:'+(certified?'0':'10px')+'">'
     +'<div style="flex:1;text-align:center;background:var(--cream);border-radius:var(--r-sm);padding:8px 4px;">'
@@ -2257,10 +2257,20 @@ function readHealthConnectSteps(cb){
 
 // 조용히 걸음수 읽어서 카드만 갱신 (토스트 없음)
 var _stepsRefreshTimer = null;
+var _stepsLastError = null; // 마지막 자동조회 실패 사유 - 챌린지 카드에 그대로 노출해서 원인 진단용으로 쓴다
 function _silentReadSteps(){
-  if(!_getHCPlugin()) return;
+  if(!_getHCPlugin()){
+    _stepsLastError = '네이티브 앱 전용 기능 (Health 플러그인 없음)';
+    _refreshChallengeCard();
+    return;
+  }
   readHealthConnectSteps(function(steps, err){
-    if(err || steps == null) return;
+    if(err || steps == null){
+      _stepsLastError = err || '알 수 없는 오류';
+      _refreshChallengeCard();
+      return;
+    }
+    _stepsLastError = null;
     var today = todayStr();
     if(!_challengeCache) _challengeCache = {};
     _challengeCache[today] = steps;
@@ -2283,8 +2293,8 @@ function _silentReadSteps(){
 }
 
 function _startStepsAutoRefresh(){
+  _silentReadSteps(); // 플러그인이 없어도 내부에서 사유를 카드에 표시함
   if(!_getHCPlugin()) return;
-  _silentReadSteps();
   if(_stepsRefreshTimer) clearInterval(_stepsRefreshTimer);
   _stepsRefreshTimer = setInterval(_silentReadSteps, 5*60*1000);
 }
