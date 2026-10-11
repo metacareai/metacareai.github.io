@@ -2321,10 +2321,12 @@ function readHealthConnectSteps(cb){
   }).then(function(authStatus){
     var now = new Date();
     var midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+    // endDate가 startDate보다 반드시 앞서야 함 (자정 직후 오류 방지)
+    var endTime = new Date(Math.max(now.getTime(), midnight.getTime() + 60000));
     return plugin.readSamples({
       dataType:  'steps',
       startDate: midnight.toISOString(),
-      endDate:   now.toISOString(),
+      endDate:   endTime.toISOString(),
       limit:     0
     });
   }).then(function(res){

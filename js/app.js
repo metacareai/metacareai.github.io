@@ -89,6 +89,11 @@ function _saveCloud(){
       if(k.endsWith('_records')) return; // records는 컬렉션에 별도 저장
       slim[k] = v;
     });
+    // mc_users 보호: slim에 mc_users가 없으면 저장 중단 (데이터 손실 방지)
+    if(!slim.mc_users || slim.mc_users === '[]' || slim.mc_users === 'null'){
+      console.error(' mc_users 누락 - 저장 중단 (데이터 보호)');
+      return;
+    }
     var size = JSON.stringify(slim).length;
     if(size > 900000){
       console.error(' 저장 데이터 크기 초과:', size, 'bytes');
@@ -158,6 +163,19 @@ function _loadCloudData(cb){
     _cache = doc.exists ? (doc.data()||{}) : {};
     _cacheReady = true;
     dataLoaded = true;
+    // mc_users가 비어있으면 users_daily에서 자동 복구
+    var mcUsers = _cache['mc_users'];
+    var mcUsersEmpty = !mcUsers || mcUsers === '[]' || mcUsers === 'null';
+    if(mcUsersEmpty){
+      console.warn('mc_users 비어있음 - users_daily에서 자동 복구 시도');
+      _db.collection('metacare').doc('users_daily').get().then(function(udoc){
+        if(udoc.exists && udoc.data().latest){
+          _cache['mc_users'] = udoc.data().latest;
+          console.log('mc_users 자동 복구 성공:', udoc.data().latest_date);
+          _docRef.set(_cache).catch(function(e){ console.error('복구 저장 실패:', e); });
+        }
+      }).catch(function(e){ console.warn('users_daily 로드 실패:', e); });
+    }
     setTimeout(function(){
       _autoBackup();
       _verifyDataIntegrity();
@@ -166,7 +184,8 @@ function _loadCloudData(cb){
   }).catch(function(err){
     console.error('Firestore 로드 오류', err);
     toast('DB오류: '+(err&&err.message?err.message:String(err)));
-    _cache = {};
+    // 로드 실패 시 _cache를 비우지 않음 (이전 상태 유지)
+    if(!_cacheReady) _cache = {};
     _cacheReady = true;
     dataLoaded = true; tryDone();
   });
@@ -230,10 +249,19 @@ function _autoBackup(){
       }
     });
     
-    // 백업은 별도 backups 컬렉션에만 저장 (메인 문서에 포함 안 함)
+    // 전체 스냅샷 백업 (backups 문서)
     _db.collection('metacare').doc('backups').set(
       _cache[backupKey] ? {[backupKey]: _cache[backupKey]} : {}
     , {merge: true}).catch(function(e){ console.warn('백업 저장 실패:', e.message); });
+
+    // mc_users 전용 백업 (users_daily 문서) - 날짜별로 영구 보존
+    var mcUsers = _cache['mc_users'];
+    if(mcUsers && mcUsers !== '[]' && mcUsers !== 'null'){
+      var usersBackupKey = 'u_'+dateKey;
+      _db.collection('metacare').doc('users_daily').set(
+        {[usersBackupKey]: mcUsers, 'latest': mcUsers, 'latest_date': dateKey}
+      , {merge: true}).catch(function(e){ console.warn('사용자 백업 저장 실패:', e.message); });
+    }
   } catch(e) {
     console.error('백업 오류:', e);
   }
@@ -872,13 +900,18 @@ function enterByName(){
   var name = ($id('login-name').value||'').trim();
   var year = ($id('login-year').value||'').trim();
   var errEl = $id('login-error');
-  errEl.style.display = 'none';
+  if(errEl) errEl.style.display = 'none';
   if(!name){
     errEl.textContent = '이름을 입력해 주세요';
     errEl.style.display = 'block';
     return;
   }
   var users = _getUsers();
+  if(!users.length){
+    if(errEl){ errEl.textContent = '데이터 로딩 중입니다. 5초 후 다시 눌러주세요.'; errEl.style.display='block'; }
+    setTimeout(function(){ _db.collection('metacare').doc('data').get().then(function(doc){ if(doc.exists) _cache=doc.data()||{}; }); }, 100);
+    return;
+  }
   var match;
   if(year){
     // 이름+출생년도 모두 입력한 경우: 둘 다 일치해야 함
@@ -2132,7 +2165,10 @@ function _refreshChallengeCard(){
   var el=$id('home-challenge-card'); if(!el) return;
   if(!_challengeCache){ el.style.display='none'; return; }
   var today=todayStr(), yyyymm=today.slice(0,7);
+  var ydObj=new Date(); ydObj.setDate(ydObj.getDate()-1);
+  var yesterday=ydObj.getFullYear()+'-'+pad(ydObj.getMonth()+1)+'-'+pad(ydObj.getDate());
   var todaySteps=_challengeCache[today]||0;
+  var yesterdaySteps=_challengeCache[yesterday]||0;
   var certified=todaySteps>=CHALLENGE_GOAL;
   var stats=_getChallengeMonthStats(yyyymm);
   var pct=Math.min(100,Math.round(todaySteps/CHALLENGE_GOAL*100));
@@ -2146,12 +2182,16 @@ function _refreshChallengeCard(){
     +'</div>'
     +'<div style="margin-bottom:10px;">'
     +'<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;">'
-    +'<span style="font-size:26px;font-weight:800;color:'+(certified?'var(--teal)':'var(--navy)')+';">'+Number(todaySteps).toLocaleString()+'<span style="font-size:12px;font-weight:400;margin-left:3px;color:var(--mu2);">보</span></span>'
+    +'<span onclick="A.autoReadHealthSteps()" ontouchstart="A.autoReadHealthSteps()" style="font-size:26px;font-weight:800;color:'+(certified?'var(--teal)':'var(--navy)')+';">'+Number(todaySteps).toLocaleString()+'<span style="font-size:12px;font-weight:400;margin-left:3px;color:var(--mu2);">보</span></span>'
     +'<span style="font-size:11px;color:var(--mu2);">목표 '+Number(CHALLENGE_GOAL).toLocaleString()+'보</span></div>'
     +'<div style="height:8px;background:var(--cream);border-radius:4px;overflow:hidden;">'
     +'<div style="height:100%;width:'+pct+'%;background:'+(certified?'var(--teal)':'#F0A500')+';border-radius:4px;transition:width .6s;"></div>'
     +'</div>'
-    +(todaySteps===0?'<div style="font-size:11px;color:'+(_stepsLastError?'#c0392b':'var(--mu2)')+';margin-top:4px;">'+(_stepsLastError?'걸음수 자동 조회 실패: '+esc(_stepsLastError):'잠시 후 자동으로 불러옵니다')+'</div>':'')
+    +(todaySteps===0?'<div style="margin-top:6px;display:flex;align-items:center;gap:8px;"><span style="font-size:11px;color:var(--mu2);">걸음수를 불러오는 중...</span><button onclick="A.autoReadHealthSteps()" ontouchstart="A.autoReadHealthSteps()" style="font-size:11px;padding:3px 10px;border:1px solid var(--mu2);border-radius:20px;background:transparent;color:var(--mu2);cursor:pointer;">새로고침</button></div>':'')
+    +'<div style="margin-top:7px;display:flex;align-items:center;justify-content:space-between;">'
+    +'<span style="font-size:11px;color:var(--mu2);">어제 '+Number(yesterdaySteps).toLocaleString()+'보'+(yesterdaySteps>=CHALLENGE_GOAL?' ✓':'')+'</span>'
+    +'<button onclick="A.showStepsEditDialog()" ontouchstart="A.showStepsEditDialog()" style="font-size:10px;padding:2px 8px;border:1px solid var(--mu2);border-radius:20px;background:transparent;color:var(--mu2);cursor:pointer;">수정</button>'
+    +'</div>'
     +'</div>'
     +'<div style="display:flex;gap:8px;margin-bottom:'+(certified?'0':'10px')+'">'
     +'<div style="flex:1;text-align:center;background:var(--cream);border-radius:var(--r-sm);padding:8px 4px;">'
@@ -2166,6 +2206,51 @@ function _refreshChallengeCard(){
     +'</div>'
     +'<button onclick="A.goPage(\'ex\')" ontouchstart="A.goPage(\'ex\')" style="width:100%;padding:11px;background:linear-gradient(135deg,#0D7A52,#19B89B);color:#fff;border:none;border-radius:var(--r-sm);font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">'
     +' 다른 운동 기록하기</button>';
+}
+
+var _stepsEditOverlay=null;
+function showStepsEditDialog(){
+  if(_stepsEditOverlay){ _stepsEditOverlay.remove(); _stepsEditOverlay=null; }
+  var today=todayStr();
+  var yesterday=new Date(); yesterday.setDate(yesterday.getDate()-1);
+  var yStr=yesterday.getFullYear()+'-'+pad(yesterday.getMonth()+1)+'-'+pad(yesterday.getDate());
+  var dateOptions=[today,yStr];
+  for(var i=2;i<=6;i++){var d=new Date();d.setDate(d.getDate()-i);dateOptions.push(d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()));}
+  var opts=dateOptions.map(function(d){
+    var label=d===today?'오늘('+d+')':d===yStr?'어제('+d+')':d;
+    var cur=_challengeCache&&_challengeCache[d]?_challengeCache[d]:0;
+    return '<option value="'+d+'">'+label+(cur?' — '+cur.toLocaleString()+'보':'')+'</option>';
+  }).join('');
+  var ov=document.createElement('div');
+  ov.id='steps-edit-overlay';
+  ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center;';
+  ov.innerHTML='<div style="background:#fff;border-radius:16px;padding:24px;width:88%;max-width:360px;box-shadow:0 8px 32px rgba(0,0,0,.2);">'
+    +'<div style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:16px;"> 걸음수 직접 입력</div>'
+    +'<label style="font-size:12px;color:var(--mu2);">날짜</label>'
+    +'<select id="steps-edit-date" style="width:100%;margin:4px 0 14px;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:13px;">'+opts+'</select>'
+    +'<label style="font-size:12px;color:var(--mu2);">걸음수</label>'
+    +'<input id="steps-edit-val" type="number" min="0" max="99999" placeholder="예: 15600" style="width:100%;box-sizing:border-box;margin:4px 0 20px;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:16px;font-weight:700;"/>'
+    +'<div style="display:flex;gap:10px;">'
+    +'<button onclick="A.closeStepsEditDialog()" ontouchstart="A.closeStepsEditDialog()" style="flex:1;padding:11px;border:1px solid #ddd;border-radius:8px;background:#fff;font-size:13px;cursor:pointer;">취소</button>'
+    +'<button onclick="A.saveStepsEdit()" ontouchstart="A.saveStepsEdit()" style="flex:2;padding:11px;border:none;border-radius:8px;background:var(--teal);color:#fff;font-size:13px;font-weight:700;cursor:pointer;">저장</button>'
+    +'</div></div>';
+  document.body.appendChild(ov);
+  _stepsEditOverlay=ov;
+}
+function closeStepsEditDialog(){
+  if(_stepsEditOverlay){ _stepsEditOverlay.remove(); _stepsEditOverlay=null; }
+}
+function saveStepsEdit(){
+  var dateEl=$id('steps-edit-date'), valEl=$id('steps-edit-val');
+  if(!dateEl||!valEl){ toast('오류: 입력창을 찾을 수 없습니다'); return; }
+  var d=dateEl.value, v=parseInt(valEl.value,10);
+  if(!d||isNaN(v)||v<0){ toast('걸음수를 입력해주세요'); return; }
+  if(!_challengeCache) _challengeCache={};
+  _challengeCache[d]=v;
+  if(USER) _saveChallenge(USER.id);
+  _refreshChallengeCard();
+  closeStepsEditDialog();
+  toast(d+' 걸음수 '+v.toLocaleString()+'보 저장됨');
 }
 
 function showChallengeAdmin(){
@@ -2230,47 +2315,46 @@ function _getHCPlugin(){
 function readHealthConnectSteps(cb){
   var plugin = _getHCPlugin();
   if(!plugin){ if(cb) cb(null, 'Health Connect 플러그인 없음'); return; }
-  var today = todayStr();
-  var startDate = new Date(today+'T00:00:00').toISOString();
-  var endDate   = new Date(today+'T23:59:59.999').toISOString();
   plugin.isAvailable().then(function(avail){
     if(!avail.available){ throw new Error('Health Connect 미지원 기기: '+(avail.reason||'')); }
     return plugin.requestAuthorization({ read: ['steps'] });
-  }).then(function(){
+  }).then(function(authStatus){
+    var now = new Date();
+    var midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+    // endDate가 startDate보다 반드시 앞서야 함 (자정 직후 오류 방지)
+    var endTime = new Date(Math.max(now.getTime(), midnight.getTime() + 60000));
     return plugin.readSamples({
       dataType:  'steps',
-      startDate: startDate,
-      endDate:   endDate,
-      limit:     1000,
-      ascending: true
+      startDate: midnight.toISOString(),
+      endDate:   endTime.toISOString(),
+      limit:     0
     });
   }).then(function(res){
     var steps = 0;
+    var SHEALTH = 'com.sec.android.app.shealth';
     if(res && res.samples && res.samples.length){
-      res.samples.forEach(function(s){ if((s.value||0)>steps) steps=(s.value||0); });
+      var shealth = res.samples.filter(function(r){ return r.sourceId === SHEALTH; });
+      var src = shealth.length ? shealth : res.samples;
+      src.forEach(function(r){ steps += (r.value||0); });
     }
     if(cb) cb(steps, null);
   }).catch(function(err){
-    if(cb) cb(null, err && err.message ? err.message : String(err));
+    var msg = err && err.message ? err.message : String(err);
+    // SecurityException = 권한 미허용
+    if(msg.indexOf('SecurityException') >= 0 || msg.indexOf('permission') >= 0 || msg.indexOf('Permission') >= 0){
+      plugin.openHealthConnectSettings && plugin.openHealthConnectSettings();
+      msg = 'Health Connect에서 걸음수 권한을 허용해 주세요';
+    }
+    if(cb) cb(null, msg);
   });
 }
 
 // 조용히 걸음수 읽어서 카드만 갱신 (토스트 없음)
 var _stepsRefreshTimer = null;
-var _stepsLastError = null; // 마지막 자동조회 실패 사유 - 챌린지 카드에 그대로 노출해서 원인 진단용으로 쓴다
 function _silentReadSteps(){
-  if(!_getHCPlugin()){
-    _stepsLastError = '네이티브 앱 전용 기능 (Health 플러그인 없음)';
-    _refreshChallengeCard();
-    return;
-  }
+  if(!_getHCPlugin()) return;
   readHealthConnectSteps(function(steps, err){
-    if(err || steps == null){
-      _stepsLastError = err || '알 수 없는 오류';
-      _refreshChallengeCard();
-      return;
-    }
-    _stepsLastError = null;
+    if(err || steps == null) return;
     var today = todayStr();
     if(!_challengeCache) _challengeCache = {};
     _challengeCache[today] = steps;
@@ -2293,8 +2377,8 @@ function _silentReadSteps(){
 }
 
 function _startStepsAutoRefresh(){
-  _silentReadSteps(); // 플러그인이 없어도 내부에서 사유를 카드에 표시함
   if(!_getHCPlugin()) return;
+  _silentReadSteps();
   if(_stepsRefreshTimer) clearInterval(_stepsRefreshTimer);
   _stepsRefreshTimer = setInterval(_silentReadSteps, 5*60*1000);
 }
@@ -2308,13 +2392,14 @@ function autoReadHealthSteps(){
   readHealthConnectSteps(function(steps, err){
     if(err){ toast('걸음수 읽기 실패: '+err); return; }
     var today = todayStr();
+    // 챌린지 캐시 갱신 (항상 저장)
     if(!_challengeCache) _challengeCache = {};
     if(steps > (_challengeCache[today]||0)){
       _challengeCache[today] = steps;
       if(USER) _saveChallenge(USER.id);
     }
     _refreshChallengeCard();
-    // 챌린지 인증 토스트
+    // 토스트
     if(steps >= CHALLENGE_GOAL){
       var certified = _certifyChallenge(today, steps);
       if(certified){
@@ -2358,6 +2443,7 @@ function _refreshHomeTodayExercise(){
   if(steps>0) chips.push('<span style="background:#E8F5E9;color:#0D7A52;border-radius:20px;padding:5px 12px;font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:4px;"> 걷기 '+steps.toLocaleString()+'보</span>');
   var exList=dayRec&&dayRec.exercise||[];
   exList.forEach(function(e){
+    if(e.source==='healthconnect') return;
     chips.push('<span style="background:#EEF2FF;color:#1428A0;border-radius:20px;padding:5px 12px;font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:4px;"> '+esc(e.type)+(e.dur?' · '+esc(e.dur):'')+'</span>');
   });
   if(chips.length){
@@ -2885,7 +2971,7 @@ function _makeCard(d){
   exVal.setAttribute('data-ex-val','1');
   var exHtml = '';
   if(hcSteps > 0) exHtml += '<span style="color:#0D7A52;font-weight:600;">걷기 '+hcSteps.toLocaleString()+'보</span>';
-  if(lastEx) exHtml += (exHtml?'<span style="color:var(--mu);"> · </span>':'')+'<span style="color:var(--navy);font-weight:600;">'+esc(lastEx.type)+(lastEx.dur?' · '+esc(lastEx.dur):'')+'</span>';
+  if(lastEx) exHtml += (exHtml?'<span style="color:var(--mu);"> · </span>':'')+'<span style="color:var(--navy);font-weight:600;">'+esc(lastEx.type)+(lastEx.reps?' · '+esc(lastEx.reps)+'회':'')+(lastEx.dur?' · '+esc(lastEx.dur):'')+(lastEx.steps?' · '+esc(lastEx.steps)+'보':'')+'</span>';
   exVal.innerHTML = exHtml || '<span style="color:var(--mu);">기록 없음</span>';
   var exBtn=document.createElement('button');
   exBtn.style.cssText='padding:5px 10px;background:var(--warn);color:#fff;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;';
@@ -2980,8 +3066,8 @@ function _delCard(card){ card.remove(); if(!$id('log-cards').children.length) $i
 function _schedSave(){ if(_saveTimer) clearTimeout(_saveTimer); _saveTimer=setTimeout(_doSave,300); }
 function _doSave(){
   var cards = document.querySelectorAll('#log-cards .day-card');
-  if(!cards.length) return;
-  var existingRecs = _getRecs();
+  if(!cards.length) return; // 카드 없으면 저장 안 함
+  var existingRecs = _getRecs(); // 기존 저장된 데이터
   var logDates = {};
   var days=[]; cards.forEach(function(card){
     var dateVal = card.querySelector('.day-date').value;
@@ -2991,7 +3077,7 @@ function _doSave(){
       var p=slot.getAttribute('data-photo');
       if(p) photos[slot.getAttribute('data-meal')]=p;
     });
-    // 기존 records에 있는 photos와 병합 (홈에서 저장된 것 보존)
+    // 기존 records에 있는 photos와 병합 (홈/기타에서 저장된 것 보존)
     var existing = existingRecs.find(function(r){ return r.date===dateVal; });
     if(existing&&existing.photos){
       Object.keys(existing.photos).forEach(function(k){
@@ -3326,15 +3412,8 @@ try{
   }
 }catch(e){}
 
-// Firestore 데이터가 인증 없이 인터넷에 그대로 노출돼 있던 문제 수정(2026-08-03) — 이 앱은 로그인
-// 화면이 없어서 실제 사용자 계정을 만들 수 없으므로, Firebase 익명 인증(anonymous auth)으로 매
-// 방문마다 자동으로 request.auth를 채워줌. 화면상 변화는 전혀 없고, Firestore 규칙에서
-// "allow read, write: if request.auth != null;"로 바꿔야 실제로 막힘(콘솔에서 별도 조치 필요)
-firebase.auth().signInAnonymously().catch(function(err){
-  console.error('익명 인증 실패:', err);
-}).finally(function(){
-  _loadCloudData(function(){
-    var lo = $id('loading-overlay'); if(lo) lo.style.display='none';
+_loadCloudData(function(){
+  var lo = $id('loading-overlay'); if(lo) lo.style.display='none';
   // 자동 재로그인 시도
   if(!_tryAutoLogin()){
     // 기존 방문자(mc_last_user 있음)는 로그인 화면으로, 첫 방문자는 랜딩으로
@@ -3343,7 +3422,6 @@ firebase.auth().signInAnonymously().catch(function(err){
     _navStack.push({type:'screen',id:firstScr});
     try{ history.replaceState({navIdx:0}, '', '#'+firstScr); }catch(e){}
   }
-  });
 });
 
 /*  컨디션 빠른 팝업  */
@@ -4022,7 +4100,7 @@ return {
   // 컨디션 기록
   openConditionSheet:openConditionSheet, selectCondState:selectCondState, saveCondition:saveCondition,
   // 종합 분석
-  analyzeEx:analyzeEx, analyzeExAll:analyzeExAll, addExToList:addExToList, removeExFromList:removeExFromList, deleteExItem:deleteExItem, pickExType:pickExType, autoReadHealthSteps:autoReadHealthSteps, showChallengeAdmin:showChallengeAdmin,
+  analyzeEx:analyzeEx, analyzeExAll:analyzeExAll, addExToList:addExToList, removeExFromList:removeExFromList, deleteExItem:deleteExItem, pickExType:pickExType, autoReadHealthSteps:autoReadHealthSteps, showChallengeAdmin:showChallengeAdmin, showStepsEditDialog:showStepsEditDialog, closeStepsEditDialog:closeStepsEditDialog, saveStepsEdit:saveStepsEdit,
   analyzeComprehensive:analyzeComprehensive,
   // 증상
   openSymSheet:openSymSheet, saveSymQuick:saveSymQuick, saveSym:saveSym,
